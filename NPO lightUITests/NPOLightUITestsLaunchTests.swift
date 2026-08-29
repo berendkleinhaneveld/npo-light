@@ -1,5 +1,5 @@
 //
-//  NPO_lightUITestsLaunchTests.swift
+//  NPOLightUITestsLaunchTests.swift
 //  NPO lightUITests
 //
 //  Created by Berend Klein Haneveld on 29/08/2026.
@@ -7,8 +7,7 @@
 
 import XCTest
 
-final class NPO_lightUITestsLaunchTests: XCTestCase {
-
+final class NPOLightUITestsLaunchTests: XCTestCase {
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true
     }
@@ -22,8 +21,8 @@ final class NPO_lightUITestsLaunchTests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
-        // Insert steps here to perform after app launch but before taking a screenshot,
-        // such as logging into a test account or navigating somewhere in the app
+        // Insert steps here to perform after app launch but before taking a
+        // screenshot, such as logging into a test account or navigating somewhere.
 
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = "Launch Screen"
