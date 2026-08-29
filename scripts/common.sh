@@ -14,13 +14,14 @@ readonly XCODE_CONFIGURATION="${XCODE_CONFIGURATION:-Debug}"
 
 # Every build must be warning free, so warnings are promoted to errors on the
 # command line as well as in the project settings.
-readonly WARNINGS_AS_ERRORS=(
+# (Not marked readonly: bash 3.2, which macOS ships, cannot do that for arrays.)
+WARNINGS_AS_ERRORS=(
   "SWIFT_TREAT_WARNINGS_AS_ERRORS=YES"
   "GCC_TREAT_WARNINGS_AS_ERRORS=YES"
 )
 
 # The simulator does not need a signed binary, and CI has no signing identity.
-readonly SIMULATOR_SIGNING=(
+SIMULATOR_SIGNING=(
   "CODE_SIGNING_ALLOWED=NO"
   "CODE_SIGNING_REQUIRED=NO"
   "CODE_SIGN_IDENTITY="

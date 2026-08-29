@@ -13,13 +13,9 @@ fi
 # Devices are grouped per runtime ("-- tvOS 26.2 --"), oldest runtime first,
 # so the last match is a device on the newest installed tvOS runtime.
 udid="$(xcrun simctl list devices available \
-  | awk '
-      /^-- tvOS /  { in_tvos = 1; next }
-      /^-- /       { in_tvos = 0 }
-      in_tvos && match($0, /\([0-9A-Fa-f-]{36}\)/) {
-        print substr($0, RSTART + 1, RLENGTH - 2)
-      }' \
-  | tail -n 1)"
+  | awk '/^-- tvOS /{ in_tvos = 1; next } /^-- /{ in_tvos = 0 } in_tvos' \
+  | grep -Eo '[0-9A-Fa-f-]{36}' \
+  | tail -n 1)" || true
 
 if [[ -z "${udid}" ]]; then
   echo "error: no tvOS simulator is available." >&2
