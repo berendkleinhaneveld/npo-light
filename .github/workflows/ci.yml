@@ -23,7 +23,7 @@ jobs:
     runs-on: macos-26
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Verify that no lint exceptions were added
         run: ./scripts/check-lint-exceptions.sh
@@ -46,7 +46,7 @@ jobs:
     runs-on: macos-26
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Show the toolchain in use
         run: |
@@ -62,7 +62,7 @@ jobs:
     needs: build
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Show the toolchain in use
         run: |
@@ -74,7 +74,7 @@ jobs:
 
       - name: Upload test results
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: build/TestResults.xcresult
