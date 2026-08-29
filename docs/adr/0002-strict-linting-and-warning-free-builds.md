@@ -16,19 +16,19 @@ reviewer's attention when a linter can settle them.
 ## Decision
 
 Every pull request against `master`, and every push to `master` itself, runs a
-GitHub Actions pipeline with three jobs — lint, build, and test — on the
-`macos-26` runner image:
+GitHub Actions pipeline with two parallel jobs — lint, and build-and-test — on
+the `macos-26` runner image:
 
 - **Lint.** SwiftLint, installed fresh from Homebrew on every run so the latest
   release is always used, run with `--strict` so that a warning is an error.
   `.swiftlint.yml` carries the default rule set plus a set of opt-in rules, and
   deliberately contains no `disabled_rules` and no `excluded` paths.
-- **Build.** `xcodebuild` for the tvOS simulator with
+- **Build and test.** The unit and UI tests on a tvOS simulator, with
   `SWIFT_TREAT_WARNINGS_AS_ERRORS` and `GCC_TREAT_WARNINGS_AS_ERRORS` set to
-  `YES`. The same settings are set in the Xcode project, so a local build fails
-  on a warning exactly as CI does.
-- **Test.** The unit and UI tests on a tvOS simulator, with the same
-  warnings-as-errors settings applied to the test targets.
+  `YES` for the app and the test targets alike. The same settings are set in the
+  Xcode project, so a local build fails on a warning exactly as CI does. The
+  test action compiles everything it runs, so the pipeline does not build a
+  second time in a job of its own; `scripts/build.sh` remains for local use.
 
 Exceptions to the linting rules — an inline `swiftlint:disable`, a disabled
 rule, an excluded path — require explicit approval from the repository owner in
@@ -52,8 +52,12 @@ Linux container can lint before pushing instead of using CI as its linter.
 - **Allowing inline `swiftlint:disable` freely.** Rejected: an exception that
   one person can add silently is not a rule. Requiring approval keeps the rule
   set honest and makes the cost of an exception visible.
-- **A single CI job.** Rejected: separate jobs report which of lint, build or
-  test failed at a glance, and run in parallel.
+- **A single CI job**, with the linter marked `continue-on-error`. Rejected:
+  the two jobs run in parallel, so merging them would make the run slower in
+  wall-clock time, not faster, and a `continue-on-error` linter no longer fails
+  the run — which is the whole point of the lint job.
+- **A separate build job.** Dropped once the numbers were in: it duplicated a
+  compile the test job performs anyway, for no extra signal.
 
 ## Consequences
 
@@ -65,9 +69,10 @@ Linux container can lint before pushing instead of using CI as its linter.
   process above.
 - The Xcode scheme is shared (`xcshareddata/xcschemes`), because CI needs to
   resolve `-scheme "NPO light"` from a fresh clone.
-- macOS runner minutes are billed at a higher rate than Linux; the pipeline is
-  kept to three jobs, with `concurrency` cancelling superseded runs, and it is
-  not run on pushes to branches that have no pull request open.
+- macOS runner minutes are billed at a higher rate than Linux (free while this
+  repository is public); the pipeline is kept to two jobs, with `concurrency`
+  cancelling superseded runs, and it is not run on pushes to branches that have
+  no pull request open.
 - A branch with no pull request gets no CI. That is the accepted cost of not
   paying for runs nobody is waiting on; open a draft pull request to get
   feedback earlier.

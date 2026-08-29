@@ -22,16 +22,22 @@ The app and test targets use Xcode's synchronised file groups: a `.swift` file
 placed in one of those directories is part of the target automatically, and
 `project.pbxproj` does not need to be touched to add or rename a file.
 
-## The three checks
+## The checks
 
-Run all three before you push. CI runs exactly the same scripts, so a green run
-locally means a green run on GitHub.
+Run these before you push. CI runs the same scripts, so a green run locally
+means a green run on GitHub.
 
 ```sh
 ./scripts/lint.sh    # SwiftLint, strict; also blocks lint exceptions
 ./scripts/build.sh   # xcodebuild, warnings are errors
-./scripts/test.sh    # unit + UI tests on a tvOS simulator
+./scripts/test.sh    # builds, then runs the unit + UI tests on a simulator
 ```
+
+CI runs `lint.sh` and `test.sh` in two parallel jobs. It does not run
+`build.sh`: the test action already compiles the app and the test targets with
+the same warnings-as-errors settings, so a separate build job would only repeat
+that work. Locally `build.sh` is still the quicker check while iterating —
+it fails on a warning without waiting for the simulator.
 
 `build.sh` and `test.sh` need macOS with Xcode. `lint.sh` does not — see below.
 

@@ -41,8 +41,11 @@ jobs:
       - name: Lint (strict, warnings are errors)
         run: ./scripts/lint.sh
 
-  build:
-    name: Build (no warnings allowed)
+  # The test action compiles the app and the test targets with the same
+  # warnings-as-errors settings, so a separate build job would only repeat
+  # that work. scripts/build.sh stays as the faster check to run locally.
+  test:
+    name: Build and test (no warnings allowed)
     runs-on: macos-26
     steps:
       - name: Check out the repository
@@ -52,24 +55,9 @@ jobs:
         run: |
           xcodebuild -version
           swift --version
-
-      - name: Build for tvOS Simulator
-        run: ./scripts/build.sh
-
-  test:
-    name: Test
-    runs-on: macos-26
-    needs: build
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@v7
-
-      - name: Show the toolchain in use
-        run: |
-          xcodebuild -version
           xcrun simctl list runtimes
 
-      - name: Run unit and UI tests
+      - name: Build and run the unit and UI tests
         run: ./scripts/test.sh
 
       - name: Upload test results
