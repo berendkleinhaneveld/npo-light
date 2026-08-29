@@ -152,8 +152,7 @@ SwiftLint settles formatting; these are the conventions it cannot check.
 
 - Branch off `master`; never commit to `master` directly.
 - Keep commits focused, with a message that explains the why in the body.
-- Fill in the pull request template (`.github/pull_request_template.md`),
-  including the ADR and lint-exception checkboxes.
+- Fill in the pull request template (`.github/pull_request_template.md`).
 - Do not commit `xcuserdata/`, `build/` or `.xcresult` bundles (see
   `.gitignore`). Do commit changes to the shared scheme.
 
