@@ -15,8 +15,9 @@ reviewer's attention when a linter can settle them.
 
 ## Decision
 
-Every push and pull request runs a GitHub Actions pipeline with three jobs —
-lint, build, and test — on the `macos-26` runner image:
+Every pull request against `master`, and every push to `master` itself, runs a
+GitHub Actions pipeline with three jobs — lint, build, and test — on the
+`macos-26` runner image:
 
 - **Lint.** SwiftLint, installed fresh from Homebrew on every run so the latest
   release is always used, run with `--strict` so that a warning is an error.
@@ -36,7 +37,9 @@ the pull request, and an ADR recording the reason.
 build when an exception appears without that process having been followed.
 
 The commands live in `scripts/` rather than inline in the workflow, so that a
-developer or an agent runs locally exactly what CI runs.
+developer or an agent runs locally exactly what CI runs. `scripts/lint.sh` also
+accepts SwiftLint's statically linked Linux binary, so an agent working in a
+Linux container can lint before pushing instead of using CI as its linter.
 
 ## Alternatives considered
 
@@ -63,4 +66,8 @@ developer or an agent runs locally exactly what CI runs.
 - The Xcode scheme is shared (`xcshareddata/xcschemes`), because CI needs to
   resolve `-scheme "NPO light"` from a fresh clone.
 - macOS runner minutes are billed at a higher rate than Linux; the pipeline is
-  kept to three jobs, with `concurrency` cancelling superseded runs.
+  kept to three jobs, with `concurrency` cancelling superseded runs, and it is
+  not run on pushes to branches that have no pull request open.
+- A branch with no pull request gets no CI. That is the accepted cost of not
+  paying for runs nobody is waiting on; open a draft pull request to get
+  feedback earlier.

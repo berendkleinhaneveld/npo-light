@@ -33,9 +33,26 @@ locally means a green run on GitHub.
 ./scripts/test.sh    # unit + UI tests on a tvOS simulator
 ```
 
-They need macOS with Xcode and `brew install swiftlint`. On Linux, or without
-Xcode, you cannot verify a change locally — say so explicitly in your summary
-instead of claiming the change builds.
+`build.sh` and `test.sh` need macOS with Xcode. `lint.sh` does not — see below.
+
+### Linting on Linux
+
+There is no excuse for pushing unlinted code from a Linux container. SwiftLint
+publishes a statically linked Linux binary that needs no Swift toolchain:
+
+```sh
+./scripts/install-swiftlint-linux.sh   # installs into ~/.local/bin
+./scripts/lint.sh                      # picks up swiftlint-static from PATH
+```
+
+It runs every rule except the few that need SourceKit
+(`literal_expression_end_indentation`, `statement_position`,
+`vertical_whitespace_closing_braces`, `vertical_whitespace_opening_braces`),
+and it names each one it skips on stderr. So a clean local run is strong
+evidence, not proof: CI on macOS is the authority.
+
+Building and testing still need Xcode. When you cannot run them, say so
+explicitly in your summary rather than implying the change compiles.
 
 ## Rule 1: no lint exceptions
 
