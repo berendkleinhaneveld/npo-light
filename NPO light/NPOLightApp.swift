@@ -1,18 +1,18 @@
 //
-//  NPO_lightApp.swift
+//  NPOLightApp.swift
 //  NPO light
 //
 //  Created by Berend Klein Haneveld on 29/08/2026.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 @main
-struct NPO_lightApp: App {
+struct NPOLightApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Item.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

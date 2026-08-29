@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+# One run per branch: a new push cancels the run that is already in flight.
+concurrency:
+  group: ci-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: SwiftLint
+    runs-on: macos-26
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Verify that no lint exceptions were added
+        run: ./scripts/check-lint-exceptions.sh
+
+      - name: Install the latest SwiftLint
+        run: |
+          brew update
+          if brew list --formula swiftlint >/dev/null 2>&1; then
+            brew upgrade swiftlint
+          else
+            brew install swiftlint
+          fi
+          swiftlint version
+
+      - name: Lint (strict, warnings are errors)
+        run: ./scripts/lint.sh
+
+  # The test action compiles the app and the test targets with the same
+  # warnings-as-errors settings, so a separate build job would only repeat
+  # that work. scripts/build.sh stays as the faster check to run locally.
+  test:
+    name: Build and test (no warnings allowed)
+    runs-on: macos-26
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Show the toolchain in use
+        run: |
+          xcodebuild -version
+          swift --version
+          xcrun simctl list runtimes
+
+      - name: Build and run the unit and UI tests
+        run: ./scripts/test.sh
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: build/TestResults.xcresult
+          if-no-files-found: warn
+          retention-days: 7
