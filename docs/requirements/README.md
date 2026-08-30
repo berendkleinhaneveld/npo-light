@@ -89,10 +89,24 @@ that is simply work that has not been done yet.
 The app is written by coding agents under the repository owner's supervision,
 test-first:
 
-1. Pick a requirement that is `Accepted`.
-2. Write the failing test, naming the identifier.
-3. Make it pass, keeping the build lint-clean and warning-free.
-4. Flip the status to `Implemented` in the same pull request.
+1. Pick the smallest coherent piece of work — usually one `Accepted`
+   requirement, sometimes a handful that share a screen or a data model.
+2. Write the failing tests, each naming the identifier it proves.
+3. Make them pass, keeping the build lint-clean and warning-free.
+4. Flip the status of every requirement the change implements, in the same
+   pull request, and name them in its description.
+
+**How many at once?** As many as one reviewable change honestly covers, and no
+more. Some requirements only make sense together: `FR-SEARCH-04` to
+`FR-SEARCH-07` are one search-history store seen from four angles, and building
+them separately means writing that store four times. Others are cross-cutting
+and are never a change of their own: the accessibility and localisation
+requirements are conditions every screen has to meet, so tests name them again
+and again, and they reach `Implemented` only once they hold everywhere they
+apply.
+
+What matters is not the count. It is that every requirement a change implements
+is named, and that nothing is implemented that no requirement asks for.
 
 Changing *what* the app should do means changing a file here first. A pull
 request that adds behaviour nothing in this directory asks for is a pull

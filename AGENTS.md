@@ -130,14 +130,22 @@ The app's specification lives in [`docs/requirements/`](docs/requirements/),
 one file per area, every requirement carrying a permanent identifier such as
 `FR-SEARCH-03` — see [ADR 0003](docs/adr/0003-track-requirements-in-the-repository.md).
 
-Work test-first, one requirement at a time:
+Work test-first, one coherent change at a time:
 
-1. Pick a requirement whose status is `Accepted`.
-2. Write the failing test, naming the identifier in its display name:
+1. Pick the smallest coherent piece of work — usually one `Accepted`
+   requirement, sometimes a few that share a screen or a data model.
+2. Write the failing tests, each naming the identifier in its display name:
    `@Test("FR-SEARCH-03: typing is not blocked by a slow backend")`.
-3. Make it pass, lint-clean and warning-free.
-4. Set the requirement's status to `Implemented` in the same pull request, and
-   name the identifier in the pull request description.
+3. Make them pass, lint-clean and warning-free.
+4. Set the status of every requirement the change implements to `Implemented`
+   in the same pull request, and name them in its description.
+
+Take as many requirements as one reviewable change honestly covers, and no
+more. Some only make sense together — a store and the four requirements that
+describe it — and the cross-cutting ones, accessibility and localisation, are
+conditions every screen meets rather than work of their own: name them in the
+tests of the feature you are building, and leave them `Accepted` until they
+hold everywhere they apply.
 
 `./scripts/requirements-coverage.sh` fails when a test names an identifier no
 requirement defines, or when an `Implemented` requirement is named by no test.
