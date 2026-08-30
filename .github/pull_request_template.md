@@ -2,20 +2,29 @@
 
 <!-- A short description of the change and, more importantly, why it is needed. -->
 
+## Requirements
+
+<!--
+Which requirements in docs/requirements/ does this touch? Name the identifiers,
+so the specification and the code stay in step (ADR 0003) — or say that none is
+affected, for a fix, a rename or a change to the tooling.
+
+Behaviour that no requirement asks for needs a requirement first: add it here
+and say so, rather than widening the app quietly.
+-->
+
 ## How was it verified?
 
-<!-- Describe the manual checks. The automated checks below are run by CI. -->
-
-- [ ] `./scripts/lint.sh` passes (SwiftLint, strict, no exceptions)
-- [ ] `./scripts/build.sh` passes with zero warnings
-- [ ] `./scripts/test.sh` passes
-- [ ] Tested on the Apple TV simulator
-
-## Architecture decisions
-
-- [ ] This change makes no architecturally significant decision, **or**
-- [ ] An ADR was added or updated in `docs/adr/` and is linked here: <!-- docs/adr/000X-....md -->
+<!--
+The checks CI cannot do: what you tried on the simulator, what you looked at,
+and what you could not check. CI runs the linter, the tests and the requirement
+coverage, so there is no need to repeat those here.
+-->
 
 ## Notes for reviewers
 
-<!-- Anything worth calling out: trade-offs, follow-up work, screenshots. -->
+<!--
+Trade-offs, follow-up work, screenshots, a link to the ADR if this change makes
+an architecturally significant decision, and above all the things you would
+rather have questioned than nodded through.
+-->
