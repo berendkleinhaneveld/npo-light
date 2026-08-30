@@ -11,6 +11,7 @@ the old one as superseded instead of rewriting it.
 | --- | --- | --- |
 | [0001](0001-record-architecture-decisions.md) | Record architecture decisions | Accepted |
 | [0002](0002-strict-linting-and-warning-free-builds.md) | Strict linting and warning-free builds in CI | Accepted |
+| [0003](0003-track-requirements-in-the-repository.md) | Track requirements in the repository, linked to tests by identifier | Accepted |
 
 ## How to add one
 

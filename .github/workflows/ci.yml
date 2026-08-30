@@ -41,6 +41,16 @@ jobs:
       - name: Lint (strict, warnings are errors)
         run: ./scripts/lint.sh
 
+  requirements:
+    name: Requirement coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Check that requirements and tests still line up
+        run: ./scripts/requirements-coverage.sh
+
   # The test action compiles the app and the test targets with the same
   # warnings-as-errors settings, so a separate build job would only repeat
   # that work. scripts/build.sh stays as the faster check to run locally.

@@ -17,6 +17,7 @@ project, the rule here wins.
 | Unit tests | `NPO lightTests/` — Swift Testing (`import Testing`, `@Test`) |
 | UI tests | `NPO lightUITests/` — XCTest (`XCUIApplication`) |
 | Decisions | `docs/adr/` |
+| Requirements | `docs/requirements/` |
 
 The app and test targets use Xcode's synchronised file groups: a `.swift` file
 placed in one of those directories is part of the target automatically, and
@@ -28,18 +29,21 @@ Run these before you push. CI runs the same scripts, so a green run locally
 means a green run on GitHub.
 
 ```sh
-./scripts/lint.sh    # SwiftLint, strict; also blocks lint exceptions
-./scripts/build.sh   # xcodebuild, warnings are errors
-./scripts/test.sh    # builds, then runs the unit + UI tests on a simulator
+./scripts/lint.sh                    # SwiftLint, strict; also blocks lint exceptions
+./scripts/build.sh                   # xcodebuild, warnings are errors
+./scripts/test.sh                    # builds, then runs the unit + UI tests on a simulator
+./scripts/requirements-coverage.sh   # requirements and the tests that prove them
 ```
 
-CI runs `lint.sh` and `test.sh` in two parallel jobs. It does not run
+CI runs `lint.sh`, `test.sh` and `requirements-coverage.sh` in three parallel
+jobs. It does not run
 `build.sh`: the test action already compiles the app and the test targets with
 the same warnings-as-errors settings, so a separate build job would only repeat
 that work. Locally `build.sh` is still the quicker check while iterating —
 it fails on a warning without waiting for the simulator.
 
-`build.sh` and `test.sh` need macOS with Xcode. `lint.sh` does not — see below.
+`build.sh` and `test.sh` need macOS with Xcode. `lint.sh` and
+`requirements-coverage.sh` do not: run them from a Linux container too.
 
 ### Linting on Linux
 
@@ -119,6 +123,30 @@ supersede an outdated record with a new one — do not rewrite history. An agent
 that is unsure whether a decision is significant should write the ADR and let
 the reviewer decide; a decision that turns out to be routine costs one small
 file, an undocumented one costs an afternoon later.
+
+## Rule 4: build what the requirements ask for
+
+The app's specification lives in [`docs/requirements/`](docs/requirements/),
+one file per area, every requirement carrying a permanent identifier such as
+`FR-SEARCH-03` — see [ADR 0003](docs/adr/0003-track-requirements-in-the-repository.md).
+
+Work test-first, one requirement at a time:
+
+1. Pick a requirement whose status is `Accepted`.
+2. Write the failing test, naming the identifier in its display name:
+   `@Test("FR-SEARCH-03: typing is not blocked by a slow backend")`.
+3. Make it pass, lint-clean and warning-free.
+4. Set the requirement's status to `Implemented` in the same pull request, and
+   name the identifier in the pull request description.
+
+`./scripts/requirements-coverage.sh` fails when a test names an identifier no
+requirement defines, or when an `Implemented` requirement is named by no test.
+
+**Do not invent behaviour.** If a task needs something no requirement asks for,
+add or amend the requirement first and say so in the pull request — do not
+quietly widen the app. If a requirement is ambiguous, ask
+(@berendkleinhaneveld) rather than guessing; the answer belongs in the document
+either way. Identifiers are permanent: never renumber one, never reuse one.
 
 ## Code style
 
