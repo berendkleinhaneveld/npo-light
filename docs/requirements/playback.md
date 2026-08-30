@@ -53,19 +53,30 @@ not the whole episode.
 
 - **Status:** Accepted
 
-An episode counts as finished when playback passed a single, defined completion
-threshold. Everything that depends on "watched" — the next-episode logic, the
-tiles, autoplay — uses that one definition.
+An episode counts as finished once playback passes **the later of 95% of its
+duration and the point where 90 seconds remain**. Everything that depends on
+"watched" — the next-episode logic, the tiles, autoplay — uses that one
+definition.
+
+**Rationale.** A percentage alone is too strict for a long episode with several
+minutes of credits; a fixed number of seconds alone is too lenient for a short
+children's episode. Taking the later of the two lets the percentage govern
+short items and the fixed remainder govern long ones. The value is a starting
+point, chosen to be adjusted once the family has lived with it
+([Q-04](open-questions.md#q-04--what-counts-as-near-the-end)).
 
 **Acceptance criteria**
 
 - The threshold is one named constant, not a number repeated across the code.
+- A 60-minute episode is finished at 58:30; a 10-minute episode at 9:30.
+- An episode shorter than 90 seconds is finished at 95% of its duration — the
+  rule never resolves to a negative position.
+- An episode of unknown duration is finished only by playback actually reaching
+  its end.
 - Passing the threshold marks the episode watched, whether playback then
   stopped or ran to the very end.
 - Stopping just before the threshold leaves the episode unwatched, with its
   position.
-- The chosen value is recorded in
-  [Q-04](open-questions.md#q-04--what-counts-as-near-the-end).
 
 ## FR-PLAY-05 — Autoplay in normal mode
 

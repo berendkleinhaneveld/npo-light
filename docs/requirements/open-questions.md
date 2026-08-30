@@ -1,7 +1,9 @@
 # Open questions
 
-Unknowns that block a requirement. Each is answered by a spike, and each answer
-lands as an ADR plus a requirement update (NFR-MAINT-05).
+Unknowns that block a requirement. Each is answered by a spike or by the
+owner, and each answer lands as a requirement update — plus an ADR when the
+decision is architecturally significant (NFR-MAINT-05). Answered questions stay
+here, marked as such, so that the reasoning is not lost.
 
 ## Q-01 — How does NPO Plus sign-in work on tvOS?
 
@@ -43,27 +45,37 @@ function with a fake in tests.
 
 ## Q-04 — What counts as "near the end"?
 
-**Blocks:** FR-PLAY-04 (the mechanism is agreed; only the value is open).
+- **Answered:** 2026-08-30
+
+**Was blocking:** FR-PLAY-04.
 
 Is an episode finished at 95% of its duration, or with less than a fixed number
 of seconds remaining? Dutch broadcast episodes often end with a long trailer or
 credits, which argues for a generous threshold; a short children's episode
 argues against a fixed number of seconds.
 
-**How to answer:** pick a starting value (proposed: the later of 95% and
-"90 seconds remaining"), ship it as one named constant, and adjust it once the
-family has used it for a while.
+**Answer.** The later of the two: 95% of the duration, or the point where 90
+seconds remain. The percentage governs short items, the fixed remainder governs
+long ones. It ships as one named constant (FR-PLAY-04) and is meant to be
+adjusted once the family has lived with it — a tuning change, not a new
+decision, so no ADR.
 
 ## Q-05 — What language is the interface in?
 
-**Blocks:** NFR-A11Y-05.
+- **Answered:** 2026-08-30
+
+**Was blocking:** NFR-A11Y-05, now superseded by NFR-I18N-01.
 
 Dutch is the obvious answer for the family; English would make the project
 easier for other people to contribute to. Localising from the start costs
 little; retrofitting costs a sweep of every view.
 
-**How to answer:** owner's call. Either way, strings go in a string catalogue
-from the first view.
+**Answer.** Dutch first, but properly internationalised from the very first
+view, so another language is a catalogue entry rather than a refactor. That is
+more than a choice of words — it constrains how every string, date and quantity
+is produced — so it became its own requirement area
+([nfr-localisation.md](nfr-localisation.md)) and
+[ADR 0004](../adr/0004-dutch-first-localised-from-the-start.md).
 
 ## Q-06 — Is there a design wireframe to follow?
 

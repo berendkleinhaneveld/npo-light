@@ -22,6 +22,7 @@ non-functional requirements describe *how well it has to do it*.
 | [nfr-reliability.md](nfr-reliability.md) | `NFR-REL` | Network failures, caching, data durability |
 | [nfr-privacy.md](nfr-privacy.md) | `NFR-PRIV` | Local-only data, credential handling |
 | [nfr-accessibility.md](nfr-accessibility.md) | `NFR-A11Y` | Remote navigation and VoiceOver |
+| [nfr-localisation.md](nfr-localisation.md) | `NFR-I18N` | Dutch first, translatable from the start |
 | [nfr-maintainability.md](nfr-maintainability.md) | `NFR-MAINT` | How the code and its tests are kept honest |
 | [out-of-scope.md](out-of-scope.md) | — | What this app deliberately does not do |
 | [open-questions.md](open-questions.md) | `Q` | Unknowns that block a requirement until answered |

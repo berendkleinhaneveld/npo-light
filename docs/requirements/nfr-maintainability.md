@@ -74,5 +74,6 @@ changes are made in this directory before the code follows.
 
 **Acceptance criteria**
 
-- Each answered open question lands as an ADR and a requirement update.
+- Each answered open question lands as a requirement update, and as an ADR
+  when the decision is architecturally significant — a tuned constant is not.
 - A requirement is never renumbered or recycled (README).

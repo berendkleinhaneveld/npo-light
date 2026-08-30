@@ -67,13 +67,9 @@ No state is communicated by colour alone, and focus is always visible.
 
 ## NFR-A11Y-05 — Dutch is the language of the interface
 
-- **Status:** Proposed — blocked by [Q-05](open-questions.md#q-05--what-language-is-the-interface-in)
+- **Status:** Superseded by [NFR-I18N-01](nfr-localisation.md#nfr-i18n-01--dutch-is-the-base-language-and-every-string-is-localised)
 
-The content is Dutch and the audience is a Dutch family, so the interface is
-expected to be Dutch, with strings localised rather than hard-coded.
-
-**Acceptance criteria**
-
-- User-facing strings come from a string catalogue, never from a literal in a
-  view.
-- Adding a second language requires no code change.
+Written while the language was still open ([Q-05](open-questions.md#q-05--what-language-is-the-interface-in)).
+The answer — Dutch first, but properly internationalised from the start —
+turned out to be about more than a choice of words, so it moved to its own area.
+The identifier stays here, retired, because identifiers are never recycled.
