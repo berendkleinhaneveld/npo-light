@@ -48,14 +48,28 @@ Settings offers sign-out (FR-AUTH-04).
 
 ## FR-SET-04 — Erase local data
 
+- **Status:** Superseded by FR-SET-05
+
+Named the four things erasing removes. Watch later adds a fifth
+([watch-later.md](watch-later.md), FR-LATER-01), and a list of local data that
+misses one is a promise the app does not keep (NFR-PRIV-04), so the requirement
+was retired rather than rewritten.
+
+## FR-SET-05 — Erase local data
+
 - **Status:** Accepted
 
 Settings can erase locally stored data: pins, recently watched, playback
-positions and search history — for one mode or for both.
+positions, search history and the watch later list — for one mode or for both.
+
+Supersedes FR-SET-04, which listed the same data without watch later.
 
 **Acceptance criteria**
 
-- Erasing asks for confirmation and names what will be removed.
-- Erasing one mode leaves the other mode's data untouched (FR-MODE-05).
-- After erasing, the affected home page shows its empty states (FR-HOME-09).
+- Erasing asks for confirmation and names what will be removed, watch later
+  included.
+- Erasing one mode leaves the other mode's data untouched (FR-MODE-05,
+  FR-LATER-10).
+- After erasing, the affected home page shows its empty states (FR-HOME-09) and
+  its watch later row is gone (FR-LATER-05).
 - Erasing does not sign the user out.

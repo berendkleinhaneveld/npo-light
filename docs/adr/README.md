@@ -13,6 +13,7 @@ the old one as superseded instead of rewriting it.
 | [0002](0002-strict-linting-and-warning-free-builds.md) | Strict linting and warning-free builds in CI | Accepted |
 | [0003](0003-track-requirements-in-the-repository.md) | Track requirements in the repository, linked to tests by identifier | Accepted |
 | [0004](0004-dutch-first-localised-from-the-start.md) | Dutch first, localised from the start | Accepted |
+| [0005](0005-watch-later-is-a-separate-episode-level-list.md) | Watch later is a separate, episode-level list beside pinning | Accepted |
 
 ## How to add one
 

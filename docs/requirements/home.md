@@ -5,18 +5,11 @@ what they were watching last. Prefix `FR-HOME`.
 
 ## FR-HOME-01 — Home is pinned, then recently watched
 
-- **Status:** Accepted
+- **Status:** Superseded by FR-HOME-11
 
-The home page shows two rows: **pinned** first, **recently watched** below it.
-Search and — in normal mode — settings are reachable from the same page.
-
-**Acceptance criteria**
-
-- Home is the first screen after sign-in (FR-AUTH-01).
-- The pinned row is above the recently watched row.
-- Search is reachable in one remote action from home (FR-SEARCH-01).
-- No other content rows exist yet; a discover row is deferred
-  ([out of scope](out-of-scope.md)).
+Described a home page of exactly two rows, with no other content row. Watch
+later adds a third ([watch-later.md](watch-later.md), FR-LATER-05), so the
+requirement was retired rather than rewritten.
 
 ## FR-HOME-02 — Pinned order is most recently pinned first
 
@@ -147,3 +140,24 @@ shows the current state without a manual refresh.
 - Returning after pinning shows the new tile.
 - Focus lands somewhere sensible after the update rather than jumping to the
   first tile (NFR-A11Y-01).
+
+## FR-HOME-11 — Home is pinned, recently watched, then watch later
+
+- **Status:** Accepted
+
+The home page shows three rows, in this order: **pinned**, **recently
+watched**, **watch later**. Search and — in normal mode — settings are
+reachable from the same page.
+
+Supersedes FR-HOME-01, which described the first two rows and said no other
+content row existed.
+
+**Acceptance criteria**
+
+- Home is the first screen after sign-in (FR-AUTH-01).
+- The rows appear in that order, in both modes (FR-LATER-10).
+- The watch later row is absent while its list is empty (FR-LATER-05); the
+  other two rows show their empty states instead (FR-HOME-09).
+- Search is reachable in one remote action from home (FR-SEARCH-01).
+- No further content rows exist yet; a discover row is deferred
+  ([out of scope](out-of-scope.md)).
