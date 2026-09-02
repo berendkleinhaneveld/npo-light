@@ -107,10 +107,11 @@ of its own.
 
 - **Status:** Accepted
 
-The television displays a short code and a web address. The user opens that
-address on a phone or a computer, signs in to NPO there, and approves the
-code; the television notices by itself and continues. The app never draws a
-password field and never handles a password.
+The television displays a short code, a web address, and a QR code. The user
+either scans the QR code with a phone, or types the address and enters the
+code by hand; they sign in to NPO there and approve, and the television
+notices by itself and continues. The app never draws a password field and
+never handles a password.
 
 **Rationale.** This is how NPO's own television app signs in, and it is the
 only flow proven to work on this platform: it was run end to end on an Apple
@@ -121,11 +122,38 @@ nothing from tvOS that tvOS is willing to give: no web view, no browser
 hand-off, only a label and a poll. Typing a password with a remote control is
 avoided entirely, and so is the app ever holding one.
 
+**Why a QR code.** The sign-in response carries two addresses: a short one for
+a person to read and type, and a complete one with the code already in its
+query string. The second exists to be scanned, and scanning removes the only
+tedious step left — copying an eight-digit code onto a phone, across a room,
+correctly, inside five minutes. It is an accelerator and never the only route:
+everything still works from the printed address and code alone, which is what
+keeps the screen usable for someone with no camera to hand, sitting too far
+away, or listening to it through VoiceOver (NFR-A11Y-02).
+
 **Acceptance criteria**
 
 - Starting sign-in shows the code and the address on the television, both
   large enough to read from a sofa, and the app renders no credential fields
   of its own.
+- The address shown as text is the **short** one, without the code embedded in
+  it, so that it stays short enough to type.
+- A QR code is shown beside them, encoding the **complete** address — the one
+  that carries the code in its query string — so that scanning it lands on the
+  approval page with nothing left to enter.
+- The QR code encodes the complete address **exactly as the sign-in response
+  gives it**, rather than one the app builds by appending the code to the short
+  address itself.
+- Sign-in can be completed from the code and the address alone, with the QR
+  code ignored or unscannable; nothing is reachable only by scanning
+  (NFR-A11Y-01, NFR-A11Y-02).
+- The QR code is generated on the device. No image is fetched, and the code is
+  not sent to any host to render it (NFR-PRIV-03).
+- The QR code is scannable from normal viewing distance: large enough, with its
+  quiet zone intact, and drawn at a fixed dark-on-light contrast that does not
+  follow the interface's own light or dark styling (NFR-A11Y-04).
+- A refreshed code refreshes the QR code with it, so what is on screen and what
+  the app is polling for are never different codes.
 - The screen states plainly what the user has to do on the other device, and
   keeps waiting without any further input on the television.
 - Approving on the other device continues by itself, with no "I'm done" button

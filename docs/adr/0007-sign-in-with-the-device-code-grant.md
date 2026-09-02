@@ -36,7 +36,9 @@ enabled per client: `POST /connect/deviceauthorization` refuses the captured iOS
 `400 unauthorized_client` and answers the tvOS one with `200`. It returns an eight-digit code,
 a five-minute window, a five-second poll interval, and a verification page at
 **`id.npo.nl/koppel`** — a first-party NPO pairing page, not a stock IdentityServer path.
-That is the mechanism NPO's own television app uses.
+That is the mechanism NPO's own television app uses. It returns that page twice: once bare,
+to be read off the screen and typed, and once with the code already in the query string, which
+is the form meant to be put on screen as a QR code (FR-AUTH-06).
 
 It was then verified end to end on our own account, and it reaches everything: the tokens are
 accepted by the same app backend the iOS client uses (there is no separate tvOS host — 
@@ -111,7 +113,8 @@ Two costs are part of the decision rather than footnotes to it:
   provider, and the app should say so and point at NPO's own linked-devices page.
 - **Sign-in needs a second device**, which is a real cost for a household with no phone to
   hand, and it makes re-authentication the most expensive thing the app can ask for. That is
-  what FR-AUTH-07 exists to avoid.
+  what FR-AUTH-07 exists to avoid. A QR code of the pre-filled address removes the typing but
+  not the second device, so it lowers the cost without changing this consequence.
 - **If NPO disables the grant for this client or invalidates the identifier**, the fallbacks in
   order are the authorisation-code flow above and, last, the password form — which is why both
   are recorded here rather than deleted.
