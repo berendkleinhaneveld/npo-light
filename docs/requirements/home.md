@@ -72,33 +72,18 @@ detail page.
 
 ## FR-HOME-06 — Recently watched, most recent first
 
-- **Status:** Accepted
+- **Status:** Superseded by FR-HOME-12
 
-The recently watched row shows items the user played, most recently played
-first, each showing how far in it is.
-
-**Acceptance criteria**
-
-- Starting playback of an item moves it to the front of the row.
-- A series appears once, not once per episode.
-- The row is capped at a fixed number of items; the oldest entry is dropped
-  when the cap is exceeded.
-- Progress is shown per tile and matches the stored position (FR-PLAY-03).
+Left the cap as "a fixed number of items" and said nothing about what leaves
+the row or when. Retired once those were settled.
 
 ## FR-HOME-07 — Finishing an episode advances the tile
 
-- **Status:** Accepted
+- **Status:** Superseded by FR-HOME-13
 
-When playback of an episode stopped at or very near its end, the item's
-recently watched tile offers the *next* episode rather than the finished one.
-
-**Acceptance criteria**
-
-- An episode watched past the completion threshold (FR-PLAY-04) leaves a tile
-  that offers the next episode.
-- The next episode's tile shows no progress, since it has not been started.
-- When the finished episode was the last one, the tile says the series is
-  finished and does not offer to replay it silently.
+Kept a finished series on the row as a tile saying it was finished. The row is
+now unfinished items only (FR-HOME-13), so the requirement was retired rather
+than rewritten.
 
 ## FR-HOME-08 — Remove from recently watched
 
@@ -161,3 +146,92 @@ content row existed.
 - Search is reachable in one remote action from home (FR-SEARCH-01).
 - No further content rows exist yet; a discover row is deferred
   ([out of scope](out-of-scope.md)).
+
+## FR-HOME-12 — Recently watched holds twenty unfinished items per mode
+
+- **Status:** Accepted
+
+The recently watched row shows items the user started and has not finished,
+most recently played first, each showing how far in it is. It holds at most
+**twenty** items **per mode**; starting a twenty-first drops the oldest.
+Nothing expires by age.
+
+Supersedes FR-HOME-06.
+
+**Rationale.** Twenty is long enough that nothing the family is genuinely
+mid-way through falls off, and short enough to travel with a remote. Age is the
+wrong axis: a half-watched film from a year ago is exactly what somebody means
+to find, and a household that watches little would be punished for it. Like the
+completion threshold (FR-PLAY-04), the number is a starting point meant to be
+adjusted once the family has lived with it.
+
+**Acceptance criteria**
+
+- Starting playback of an item moves it to the front of the row (FR-PLAY-09).
+- A series appears once, not once per episode.
+- The cap is one named constant, not a number repeated across the code.
+- The twenty-first item pushes out the twentieth, and only that one.
+- The cap counts per mode: twenty in normal mode and twenty in kids mode, each
+  unaffected by the other (FR-MODE-05).
+- No entry is dropped because of its age, however long ago it was played, and
+  no sweep runs at launch.
+- Progress is shown per tile and matches the stored position (FR-PLAY-03).
+
+## FR-HOME-13 — A finished item leaves the row
+
+- **Status:** Accepted
+
+The row is what the family has not finished. An episode finished mid-series
+leaves the item on the row, pointing at the next episode; an item with nothing
+left to watch — a film, or a series whose last episode is finished — leaves the
+row altogether.
+
+Supersedes FR-HOME-07, which kept a finished series on the row as a tile
+saying so.
+
+**Rationale.** Twenty slots are worth more to live threads than to a record of
+what is already done, and "watch it again" is a deliberate act that belongs in
+search, not a tile the family has to step past every evening. It is the same
+rule the watch later list follows (FR-LATER-07): finishing something takes it
+off the list it was on.
+
+**Acceptance criteria**
+
+- An episode watched past the completion threshold (FR-PLAY-04) leaves a tile
+  that offers the next episode, with no progress shown since it has not been
+  started.
+- Finishing a film removes it from the row, on return from playback and for
+  good (FR-HOME-10).
+- Finishing the last episode of a series removes the series from the row; the
+  app does not leave a tile offering to replay it.
+- Leaving the row does **not** discard what was watched: the episodes stay
+  marked watched, so the series' detail page and its next-episode logic are
+  unchanged (FR-CONTENT-02, FR-HOME-04).
+- A pinned series that leaves the row keeps its pinned tile, which says the
+  series is finished (FR-HOME-04).
+- Playing a finished item again puts it back on the row, at the front, starting
+  from the beginning (FR-PLAY-02).
+
+## FR-HOME-14 — Falling off the row does not forget where you were
+
+- **Status:** Accepted
+
+An entry pushed off the end of the row by the cap keeps its stored playback
+position. Finding the item again — through search, or through a pinned series —
+resumes it where it was left.
+
+**Rationale.** The cap is about how long a row is worth travelling, not about
+forgetting. Removing an item by hand (FR-HOME-08) is the deliberate act that
+throws the position away; being crowded out by twenty newer things is not.
+
+**Acceptance criteria**
+
+- After an item is evicted, playing it from search or from a detail page
+  resumes at its stored position (FR-PLAY-02), and its detail page reads
+  *Verder kijken* (FR-CONTENT-03).
+- Playing an evicted item puts it back on the row at the front, with its
+  progress intact.
+- Stored positions therefore outlive the row: they are discarded only by
+  removing the item by hand (FR-HOME-08) or by erasing local data (FR-SET-05),
+  and nothing else prunes them
+  ([ADR 0006](../adr/0006-recently-watched-holds-unfinished-items.md)).

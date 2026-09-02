@@ -14,6 +14,7 @@ the old one as superseded instead of rewriting it.
 | [0003](0003-track-requirements-in-the-repository.md) | Track requirements in the repository, linked to tests by identifier | Accepted |
 | [0004](0004-dutch-first-localised-from-the-start.md) | Dutch first, localised from the start | Accepted |
 | [0005](0005-watch-later-is-a-separate-episode-level-list.md) | Watch later is a separate, episode-level list beside pinning | Accepted |
+| [0006](0006-recently-watched-holds-unfinished-items.md) | Twenty unfinished items, over positions that outlive the row | Accepted |
 
 ## How to add one
 

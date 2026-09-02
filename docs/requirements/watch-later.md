@@ -19,7 +19,7 @@ not something these requirements fix.
 - **Status:** Accepted
 
 The app keeps a watch later list per mode, separate from pinned items
-(FR-HOME-02) and from recently watched (FR-HOME-06). Saving, unsaving and
+(FR-HOME-02) and from recently watched (FR-HOME-12). Saving, unsaving and
 playing a saved item never change what is pinned.
 
 **Acceptance criteria**
@@ -69,7 +69,7 @@ navigating somewhere else first.
   detail page.
 - From a search result, without opening its detail page (FR-SEARCH-02).
 - From a recently watched tile, so something already started can be moved onto
-  the deliberate list (FR-HOME-06).
+  the deliberate list (FR-HOME-12).
 - In every one of those places the action toggles: it saves an unsaved item and
   removes a saved one, and its label says which it will do.
 - The action is reachable from the remote without a hidden gesture being the
@@ -120,7 +120,7 @@ Watch later holds as many items as the family saves. Nothing is dropped to make
 room.
 
 **Rationale.** Recently watched is a by-product of watching and can be trimmed
-silently (FR-HOME-06); this list is a set of deliberate choices, and silently
+silently (FR-HOME-12); this list is a set of deliberate choices, and silently
 discarding one loses something the user asked the app to remember. A row that
 grows uncomfortably long is a sign to watch something, not a bug.
 
@@ -144,8 +144,8 @@ through it.
   played from the watch later row or from anywhere else in the app.
 - Removal is immediate on return from playback (FR-HOME-10) and survives
   relaunch.
-- The item stays in recently watched with its watched state; only the watch
-  later entry goes.
+- Being finished, it leaves the recently watched row too (FR-HOME-13); what
+  was watched stays marked watched, so next-episode logic is unaffected.
 - Finishing a saved episode of a series does not save the next episode; a
   saved episode is one thing, not a subscription.
 - The item can be saved again afterwards, and then sits at the front of the row
@@ -228,6 +228,6 @@ A tile in the watch later row plays that exact item.
   its series and never the series' detail page.
 - Playback resumes at the stored position when there is one (FR-PLAY-02).
 - Starting playback moves the item to the front of recently watched
-  (FR-HOME-06) while leaving it on the watch later list (FR-LATER-08).
+  (FR-HOME-12) while leaving it on the watch later list (FR-LATER-08).
 - Autoplay of the following episode behaves exactly as it does elsewhere
   (FR-PLAY-05); what autoplay then plays is not itself saved.
