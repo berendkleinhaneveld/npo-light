@@ -15,6 +15,8 @@ the old one as superseded instead of rewriting it.
 | [0004](0004-dutch-first-localised-from-the-start.md) | Dutch first, localised from the start | Accepted |
 | [0005](0005-watch-later-is-a-separate-episode-level-list.md) | Watch later is a separate, episode-level list beside pinning | Accepted |
 | [0006](0006-recently-watched-holds-unfinished-items.md) | Twenty unfinished items, over positions that outlive the row | Accepted |
+| [0007](0007-sign-in-with-the-device-code-grant.md) | Sign in with the device-code grant, approved on a phone | Accepted |
+| [0008](0008-one-boundary-around-the-npo-backend.md) | One boundary around the NPO backend | Accepted |
 
 ## How to add one
 

@@ -42,7 +42,14 @@ the device, and no advertising identifier use.
 **Acceptance criteria**
 
 - The dependency list contains no analytics or advertising package.
-- The only hosts the app contacts are NPO's own, plus Apple's own services.
+- The app contacts only the hosts that serving NPO's own content requires:
+  NPO's website and identity provider, its player and DRM services, and the
+  content delivery network its streams are served from — plus Apple's own
+  services. Some of those are run for NPO by third parties, which is why this
+  is a list of purposes rather than a list of domains.
+- The app contacts no advertising or measurement host, and does not follow the
+  advertisement and tracking URLs NPO's own responses may contain
+  (FR-AUTH-05).
 
 ## NFR-PRIV-04 — Erasing really erases
 

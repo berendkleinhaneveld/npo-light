@@ -174,3 +174,33 @@ A stream that will not play says why and offers a way forward.
 - An expired session during playback refreshes and retries once before giving
   up (FR-AUTH-03).
 - An item that is no longer available says so (FR-CONTENT-05).
+
+## FR-PLAY-11 — Protected streams play through the system's DRM
+
+- **Status:** Accepted
+
+NPO's streams are protected. The app obtains the licence for a stream through
+the platform's own content-key handling and plays it with the system player; it
+does not implement, wrap or work around the protection itself.
+
+**Rationale.** The licence exchange belongs to the operating system, which
+holds the key material; the app's only job is to forward what NPO's backend
+mints for it. NPO's licence credential is short-lived — around a minute — which
+makes the order of operations part of the requirement rather than an
+implementation detail: the stream details are fetched immediately before
+playback starts, not held from earlier
+([Q-02](open-questions.md#q-02--which-npo-endpoints-back-search-catalogue-and-streams),
+[ADR 0008](../adr/0008-one-boundary-around-the-npo-backend.md)).
+
+**Acceptance criteria**
+
+- Starting playback fetches the stream details and begins playback promptly
+  enough that the licence credential is still valid, with no reuse of details
+  fetched for an earlier playback.
+- A licence that has to be renewed during a long playback is renewed without
+  interrupting what is on screen.
+- A licence that cannot be obtained surfaces as a playback error with a retry
+  (FR-PLAY-10), and a retry fetches fresh stream details rather than reusing
+  the expired ones.
+- Resuming (FR-PLAY-02) and autoplaying the next episode (FR-PLAY-05) each
+  obtain their own stream details.
