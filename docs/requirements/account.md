@@ -216,8 +216,7 @@ such as a new password.
 
 ## FR-AUTH-08 — NPO Plus is required, and the app says so plainly
 
-- **Status:** Accepted — the exact check awaits
-  [Q-08](open-questions.md#q-08--what-does-an-account-without-npo-plus-look-like)
+- **Status:** Accepted
 
 Immediately after signing in, the app checks that the account has an NPO Plus
 subscription. If it does not, the app explains that NPO light needs one, that
@@ -242,6 +241,11 @@ whose every tile says the item cannot be played.
 
 - The subscription is checked as part of completing sign-in, before the home
   page is shown, so an account without Plus never reaches the catalogue.
+- **Only an exact `premium` subscription type counts as NPO Plus.** Any other
+  value, an empty one, or a missing field is treated as a free account and
+  signed out. The check admits what it recognises rather than rejecting what it
+  knows to be free, so an unfamiliar value can never let an account through
+  ([Q-08](open-questions.md#q-08--what-does-an-account-without-npo-plus-look-like)).
 - An account with Plus proceeds to the home page with nothing shown and nothing
   to dismiss (FR-AUTH-01).
 - An account without Plus is told three things in plain Dutch: that NPO light

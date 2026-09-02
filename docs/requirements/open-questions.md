@@ -229,7 +229,9 @@ wire-level contract is in the companion recon repository (`npo-api`:
 
 ## Q-08 — What does an account without NPO Plus look like?
 
-**Blocks:** FR-AUTH-08 — the exact check, not the decision behind it.
+- **Answered:** 2026-09-02 — by decision, not by evidence
+
+**Was blocking:** FR-AUTH-08 — the exact check, not the decision behind it.
 
 NPO light requires an NPO Plus subscription and signs out an account that does
 not have one (FR-AUTH-08). Every capture and every prototype run so far used a
@@ -251,9 +253,23 @@ guessed values would fail in the worst possible direction — either signing out
 a paying subscriber, or letting a free account through into exactly the
 advertisement handling FR-AUTH-05 exists to avoid.
 
-**How to answer:** sign in once with an NPO account that has no Plus
-subscription and record what `/account` and `/subscription` return, plus the
-`contentIndication` on a premium item. That is one account and two requests. The
-check should then treat **only** an explicitly recognised Plus value as
-entitlement, so that an unrecognised or missing value fails towards the
-explanation rather than towards silent admission.
+**Decision: assume the absence.** `subscriptionType` of exactly `premium`
+means NPO Plus; every other value — a different string, an empty one, a missing
+field — is treated as a free account and signed out (FR-AUTH-08). No capture is
+waited for.
+
+This is the fail-closed direction, and it is the right one: an unrecognised
+value never admits an account into the advertisement handling FR-AUTH-05 exists
+to avoid. **The cost is in the other direction, and it is real.** If NPO renames
+the value, adds a tier — a trial, an annual plan, a paused or past-due state —
+or moves the authoritative field, then paying subscribers are signed out, and
+the app looks broken to exactly the people it is built for. That failure is
+loud and quick to diagnose, which is why it is the acceptable one, but it is
+not hypothetical: a household's subscription genuinely does lapse and resume.
+
+**Still worth a capture, when a free account is to hand.** Signing in with one
+and reading `/account` and `/subscription` would replace the assumption with a
+fact, and would also show whether a lapsed subscription is distinguishable from
+one that never existed — the two states this assumption cannot tell apart. It
+is recorded as a nice-to-have in the recon repository (`npo-api`:
+`notes/app-api.md`, and the capture backlog in `notes/app-capture.md`).
