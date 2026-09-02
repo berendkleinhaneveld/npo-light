@@ -26,9 +26,21 @@ would mean building the advertisement handling this app exists to avoid.
 Tokens and any credential material are stored in the Keychain, never in
 `UserDefaults`, the SwiftData store, a plist or a log line (NFR-PRIV-02).
 
+**Rationale.** On a television this is a correctness requirement before it is a
+privacy one. A real Apple TV gives an app no writable durable storage at all —
+`Documents` and `Application Support` are read-only there, and the only
+writable directories are evictable caches — so the Keychain is not the *safest*
+place for the token, it is the *only* place it survives. The tvOS Simulator
+writes to those directories happily, which is why this has to be stated rather
+than discovered.
+
 **Acceptance criteria**
 
 - No credential material appears in the app's container outside the Keychain.
+- The stored token survives relaunch and a reboot of the television, without
+  the user signing in again.
+- The token is readable after a reboot on a television nobody has interacted
+  with, so a scheduled refresh does not depend on someone being in the room.
 - No credential material appears in log output at any log level.
 - Erasing local data (FR-SET-04) does not leave orphaned Keychain items behind
   after sign-out.
@@ -55,10 +67,20 @@ genuinely fails sends the user back to sign-in.
 The user can sign out from settings (FR-SET-03). Signing out clears the session
 but keeps local data.
 
+**Sign-out is local, and the screen says so.** The app cannot revoke its own
+token at NPO — revocation is closed to a client without a secret, and this is a
+public client ([ADR 0007](../adr/0007-sign-in-with-the-device-code-grant.md)).
+Signing out therefore forgets the token here; the coupling continues to exist
+at NPO until it expires or is removed there. An app that implied otherwise
+would be lying about a privacy-relevant action, which NFR-PRIV-02 does not
+allow.
+
 **Acceptance criteria**
 
 - After sign-out the app is on the sign-in screen and no token remains in the
   Keychain.
+- Signing out tells the user that the television is forgotten here but remains
+  linked to their NPO account, and where to remove it there.
 - Pins, recently watched and search history survive sign-out and are there
   again after signing back in.
 - Erasing local data is a separate, explicit action (FR-SET-04).
@@ -76,17 +98,82 @@ of its own.
 - No pre-roll, mid-roll or post-roll is requested, scheduled or rendered.
 - If the backend returns a stream that requires advertisement handling, the app
   reports it as an error rather than playing an advertisement.
+- The advertisement fields NPO's stream response carries are ignored, not
+  followed. For a signed-in Plus account they are empty in any case: the
+  response says there is no pre-roll, where the same programme requested
+  anonymously carries one.
 
-## FR-AUTH-06 — The sign-in mechanism
+## FR-AUTH-06 — Sign-in is a code on the screen, approved on a phone
 
-- **Status:** Proposed — blocked by [Q-01](open-questions.md#q-01--how-does-npo-plus-sign-in-work-on-tvos)
+- **Status:** Accepted
 
-Whether sign-in is an on-device form, a device-code pairing flow, or something
-else, is decided by a feasibility spike against NPO's actual endpoints. The
-requirement above (FR-AUTH-01 to FR-AUTH-05) holds whichever mechanism wins;
-this entry is where the chosen mechanism gets written down, with an ADR.
+The television displays a short code and a web address. The user opens that
+address on a phone or a computer, signs in to NPO there, and approves the
+code; the television notices by itself and continues. The app never draws a
+password field and never handles a password.
+
+**Rationale.** This is how NPO's own television app signs in, and it is the
+only flow proven to work on this platform: it was run end to end on an Apple
+TV, through to protected content playing
+([Q-01](open-questions.md#q-01--how-does-npo-plus-sign-in-work-on-tvos),
+[ADR 0007](../adr/0007-sign-in-with-the-device-code-grant.md)). It also needs
+nothing from tvOS that tvOS is willing to give: no web view, no browser
+hand-off, only a label and a poll. Typing a password with a remote control is
+avoided entirely, and so is the app ever holding one.
 
 **Acceptance criteria**
 
-- The spike records what NPO's backend supports in an ADR.
-- This requirement is rewritten as the concrete flow and moved to `Accepted`.
+- Starting sign-in shows the code and the address on the television, both
+  large enough to read from a sofa, and the app renders no credential fields
+  of its own.
+- The screen states plainly what the user has to do on the other device, and
+  keeps waiting without any further input on the television.
+- Approving on the other device continues by itself, with no "I'm done" button
+  to press on the television, and lands on the home page (FR-AUTH-01).
+- The app stores only the tokens it receives, in the Keychain (FR-AUTH-02,
+  NFR-PRIV-02), and never receives a password at all.
+- A code that expires before it is approved says so and offers a fresh one
+  rather than failing silently or waiting forever.
+- A sign-in the user abandons, and one that fails on the network, are
+  distinguishable on screen, and each offers a way to try again.
+- Sign-in works for an account without an NPO Plus subscription: it succeeds,
+  and entitlement then decides what plays (FR-CONTENT-06).
+
+## FR-AUTH-07 — The session is kept alive without asking again
+
+- **Status:** Accepted
+
+The stored session carries an expiry. The app refreshes it before it lapses and
+after it has lapsed, without involving the user, and sends the user back to
+sign-in only when NPO itself no longer recognises the session.
+
+**Rationale.** Signing in needs a second device (FR-AUTH-06), so asking for it
+again is the most expensive thing the app can do — and a television is the
+device most likely to be picked up after a fortnight of not being touched. The
+access token lasts an hour and comes with a refresh token, so renewing is a
+real mechanism rather than a re-run of a login.
+
+**How long a coupled television stays signed in is not known**, and the
+requirement is written so that it does not depend on the answer: the token
+carries no session identifier, so nothing outside the app ends it, and its life
+is the refresh token's life — a server-side value NPO does not return. It ends
+when that expires, when NPO revokes the grant, or on an account-level change
+such as a new password.
+
+**Acceptance criteria**
+
+- The app knows when the access token expires without having to make a request
+  fail first, and renews it before it does.
+- A refresh that NPO accepts is invisible: no screen, no interruption to
+  playback (FR-PLAY-10).
+- Concurrent requests meeting an expired token cause exactly one refresh
+  (FR-AUTH-03).
+- **Each refresh replaces the stored token before it is used again.** NPO's
+  refresh tokens are single-use and rotate, so a refresh that succeeds while
+  the old token is still stored leaves the session dead on the next attempt.
+- An interrupted refresh — the app quits, or the network drops, between asking
+  and storing — leaves the app able to recover rather than stranded with a
+  spent token.
+- A refresh NPO rejects returns to sign-in with local data intact.
+- The refresh token is the only credential kept, and it is kept in the Keychain
+  (FR-AUTH-02).
