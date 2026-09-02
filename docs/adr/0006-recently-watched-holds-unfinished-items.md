@@ -22,10 +22,11 @@ There is still no production code, so nothing has to be migrated.
 
 ## Decision
 
-The recently watched row is **twenty unfinished items per mode, ordered by when
-they were last played, with no expiry by age**. Finishing something takes it
-off the row — an episode finished mid-series leaves the item pointing at the
-next episode, an item with nothing left to watch leaves the row entirely.
+The recently watched row is **twenty items per mode, ordered by when they were
+last played**. It holds what the family has not finished, with no expiry by
+age, plus a seven-day tail of what it has: an episode finished mid-series
+leaves the item pointing at the next episode, and an item with nothing left to
+watch stays seven days as a finished tile and then goes.
 
 The **playback positions outlive the row.** An entry pushed off the end by the
 cap keeps its position, so finding the item again through search resumes it. A
@@ -46,9 +47,15 @@ by `FR-HOME-12` and `FR-HOME-07` by `FR-HOME-13`.
 - **Making the cap a setting** — rejected for now. `FR-SET-02` holds three
   timings the family will plausibly want to tune; a row length is a number to
   get right once, in code, the way the completion threshold is.
-- **Keeping finished items on the row** — rejected. Twenty slots are worth more
-  to live threads than to a record of what is done, and replaying is a
-  deliberate act that search serves.
+- **Keeping finished items on the row indefinitely** — rejected. Twenty slots
+  are worth more to live threads than to a permanent record of what is done,
+  and replaying is a deliberate act that search serves.
+- **Dropping a finished item the moment the credits roll** — rejected, and it
+  was the first draft of this decision. It takes the evening's viewing off the
+  screen with it: "what was that film called?" is asked days later, and a
+  family member who was not in the room never sees what the others watched.
+  Seven days is the compromise — long enough to cover the week, short enough
+  that the row does not silt up.
 - **Discarding the position when an entry is evicted** — rejected, though it is
   the tidier option; see the consequence below. Being crowded out by twenty
   newer things is not the user saying "forget this".
@@ -67,9 +74,14 @@ by `FR-HOME-12` and `FR-HOME-07` by `FR-HOME-13`.
   `NFR-PERF-03`'s home-page timing has to be measured with a store far larger
   than the twenty rows on screen.
 - Finishing is now a fan-out of three: it advances a pinned tile
-  (`FR-HOME-04`), removes a watch later entry (`FR-LATER-07`), and removes or
-  advances a recently watched entry (`FR-HOME-13`). One place should observe
-  the threshold and drive all three.
+  (`FR-HOME-04`), removes a watch later entry at once (`FR-LATER-07`), and
+  marks a recently watched entry finished for seven days (`FR-HOME-13`). One
+  place should observe the threshold and drive all three.
+- The seven days are a property of the row, not a job: the row filters on the
+  finish timestamp when it renders, so nothing has to run while the app is
+  closed and an entry cannot outlive its tail by being missed. Whether the
+  entries are then deleted lazily is an implementation detail with no
+  behaviour attached.
 - "Watched" and "has a position" become separate facts. A finished item has no
   row entry but is still marked watched, and the next-episode logic reads the
   watched state, never the row.

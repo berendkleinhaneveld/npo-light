@@ -156,6 +156,14 @@ quietly widen the app. If a requirement is ambiguous, ask
 (@berendkleinhaneveld) rather than guessing; the answer belongs in the document
 either way. Identifiers are permanent: never renumber one, never reuse one.
 
+**Until it is merged, a branch is still a draft.** The permanence rule protects
+what is on `master`: an identifier there has been read, reviewed and possibly
+referred to elsewhere. A requirement — or an ADR — that a branch adds and then
+has to correct before that branch merges is edited in place, not superseded by
+a second number in the same pull request. Retiring an identifier nobody has
+seen yet is ceremony, and it leaves the reviewer reading a history of a
+decision that was never made. Once it is on `master`, supersede.
+
 ## Code style
 
 SwiftLint settles formatting; these are the conventions it cannot check.

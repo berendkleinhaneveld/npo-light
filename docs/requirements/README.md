@@ -50,6 +50,11 @@ one (status `Superseded`, with a pointer) and add a new number — never
 renumber, and never recycle a number, because tests, commits and pull requests
 refer to it.
 
+That holds from the moment the requirement is on `master`. A requirement a
+branch adds and then corrects before that branch merges is edited in place
+instead: nothing outside the branch can refer to it yet, so a supersession
+would only make the reviewer read a decision that was never made.
+
 ## Status values
 
 | Status | Meaning |

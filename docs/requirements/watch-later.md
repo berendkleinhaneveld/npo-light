@@ -144,8 +144,10 @@ through it.
   played from the watch later row or from anywhere else in the app.
 - Removal is immediate on return from playback (FR-HOME-10) and survives
   relaunch.
-- Being finished, it leaves the recently watched row too (FR-HOME-13); what
-  was watched stays marked watched, so next-episode logic is unaffected.
+- It leaves the watch later list at once, while the recently watched row keeps
+  it for seven days as a finished tile (FR-HOME-13) — the two lists answer
+  different questions, and only this one is a queue.
+- What was watched stays marked watched, so next-episode logic is unaffected.
 - Finishing a saved episode of a series does not save the next episode; a
   saved episode is one thing, not a subscription.
 - The item can be saved again afterwards, and then sits at the front of the row

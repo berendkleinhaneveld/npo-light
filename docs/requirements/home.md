@@ -147,23 +147,23 @@ content row existed.
 - No further content rows exist yet; a discover row is deferred
   ([out of scope](out-of-scope.md)).
 
-## FR-HOME-12 — Recently watched holds twenty unfinished items per mode
+## FR-HOME-12 — Recently watched holds twenty items per mode
 
 - **Status:** Accepted
 
-The recently watched row shows items the user started and has not finished,
-most recently played first, each showing how far in it is. It holds at most
-**twenty** items **per mode**; starting a twenty-first drops the oldest.
-Nothing expires by age.
+The recently watched row shows items the user played and has not finished, plus
+the ones finished in the last seven days (FR-HOME-13), most recently played
+first, each showing how far in it is. It holds at most **twenty** items **per
+mode**; starting a twenty-first drops the oldest. Nothing else expires by age.
 
 Supersedes FR-HOME-06.
 
 **Rationale.** Twenty is long enough that nothing the family is genuinely
 mid-way through falls off, and short enough to travel with a remote. Age is the
-wrong axis: a half-watched film from a year ago is exactly what somebody means
-to find, and a household that watches little would be punished for it. Like the
-completion threshold (FR-PLAY-04), the number is a starting point meant to be
-adjusted once the family has lived with it.
+wrong axis for something unfinished: a half-watched film from a year ago is
+exactly what somebody means to find, and a household that watches little would
+be punished for it. Like the completion threshold (FR-PLAY-04), the number is a
+starting point meant to be adjusted once the family has lived with it.
 
 **Acceptance criteria**
 
@@ -171,46 +171,60 @@ adjusted once the family has lived with it.
 - A series appears once, not once per episode.
 - The cap is one named constant, not a number repeated across the code.
 - The twenty-first item pushes out the twentieth, and only that one.
+- A finished item still on its seven days occupies a slot like any other; the
+  cap does not treat it specially.
 - The cap counts per mode: twenty in normal mode and twenty in kids mode, each
   unaffected by the other (FR-MODE-05).
-- No entry is dropped because of its age, however long ago it was played, and
-  no sweep runs at launch.
+- No unfinished entry is dropped because of its age, however long ago it was
+  played, and no sweep runs at launch.
 - Progress is shown per tile and matches the stored position (FR-PLAY-03).
 
-## FR-HOME-13 — A finished item leaves the row
+## FR-HOME-13 — A finished item stays seven days, then leaves
 
 - **Status:** Accepted
 
-The row is what the family has not finished. An episode finished mid-series
-leaves the item on the row, pointing at the next episode; an item with nothing
-left to watch — a film, or a series whose last episode is finished — leaves the
-row altogether.
+The row is what the family has not finished, plus a short tail of what it just
+did finish. An episode finished mid-series leaves the item on the row, pointing
+at the next episode. An item with nothing left to watch — a film, or a series
+whose last episode is finished — stays for **seven days** after it was
+finished, marked as finished, and then leaves.
 
-Supersedes FR-HOME-07, which kept a finished series on the row as a tile
-saying so.
+Supersedes FR-HOME-07, which kept a finished series on the row indefinitely.
 
-**Rationale.** Twenty slots are worth more to live threads than to a record of
-what is already done, and "watch it again" is a deliberate act that belongs in
-search, not a tile the family has to step past every evening. It is the same
-rule the watch later list follows (FR-LATER-07): finishing something takes it
-off the list it was on.
+**Rationale.** Two things are true at once: twenty slots are worth more to live
+threads than to a permanent record of what is done, and an item that vanishes
+the moment the credits roll takes the evening's viewing with it — "what was
+that film called?" is a question asked days later, and a family member who was
+not in the room deserves to see what everyone else watched. Seven days is long
+enough to cover the week and short enough that the row does not silt up.
 
 **Acceptance criteria**
 
 - An episode watched past the completion threshold (FR-PLAY-04) leaves a tile
   that offers the next episode, with no progress shown since it has not been
-  started.
-- Finishing a film removes it from the row, on return from playback and for
-  good (FR-HOME-10).
-- Finishing the last episode of a series removes the series from the row; the
-  app does not leave a tile offering to replay it.
+  started. That item is not finished, so the seven days do not apply to it.
+- A film or a fully watched series stays on the row for seven days from the
+  moment it passed the threshold, marked as finished rather than showing
+  progress.
+- On the eighth day it is gone, whether or not the app was opened in between:
+  the row never shows an item finished more than seven days ago, rather than
+  relying on a sweep having run.
+- The seven days are one named constant, alongside the cap (FR-HOME-12).
+- Selecting a finished tile opens the item's detail page rather than silently
+  replaying it, as a finished pinned tile does (FR-HOME-04).
+- Playing it again from there puts it back on the row as a live entry, at the
+  front, starting from the beginning (FR-PLAY-02), and the seven days no longer
+  apply until it is finished again.
 - Leaving the row does **not** discard what was watched: the episodes stay
   marked watched, so the series' detail page and its next-episode logic are
   unchanged (FR-CONTENT-02, FR-HOME-04).
 - A pinned series that leaves the row keeps its pinned tile, which says the
   series is finished (FR-HOME-04).
-- Playing a finished item again puts it back on the row, at the front, starting
-  from the beginning (FR-PLAY-02).
+- Removing a finished item by hand (FR-HOME-08) takes it away before its seven
+  days are up.
+- A device clock that moves backwards does not extend the seven days
+  indefinitely: an entry whose finish time is in the future is treated as
+  finished now.
 
 ## FR-HOME-14 — Falling off the row does not forget where you were
 
