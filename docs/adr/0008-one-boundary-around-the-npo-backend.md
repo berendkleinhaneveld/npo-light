@@ -39,11 +39,16 @@ AVFoundation: the app forwards a certificate and a token, and the operating
 system holds everything that matters.
 
 The wire-level detail — endpoints, headers, token lifetimes, the FairPlay
-handshake and the captures behind them — is written up in the companion recon
-repository (`npo-api`: `API_SPEC.md` and `notes/`), together with the Swift
-prototype that played protected content end to end. It is deliberately kept out
-of this repository: it contains capture material, and it changes on NPO's
-schedule rather than the app's.
+handshake and the captures behind them — is written up outside this repository,
+together with the throwaway Swift proof-of-concept that played protected content
+end to end. It stays outside deliberately: it is capture material from a private
+account, and it changes on NPO's schedule rather than the app's.
+
+What this repository keeps instead is what it can act on: the decisions here,
+the requirements the app is built to, and — since
+[ADR 0009](0009-test-doubles-at-two-seams.md) — sanitised response *shapes* in
+the test fixtures. A shape the tests can decode is not the same thing as a
+capture, and it is the part that goes stale loudly rather than quietly.
 
 The app's other requirements assume this is all replaceable: NFR-MAINT-04 asks
 for one boundary, FR-CONTENT-04 for caching that does not know where data came

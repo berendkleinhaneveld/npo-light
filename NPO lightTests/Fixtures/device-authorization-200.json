@@ -1,0 +1,8 @@
+{
+  "device_code": "0000000000000000000000000000000000000000000000000000000000000000",
+  "user_code": "51411921",
+  "verification_uri": "https://id.npo.nl/koppel",
+  "verification_uri_complete": "https://id.npo.nl/koppel?userCode=51411921",
+  "expires_in": 300,
+  "interval": 5
+}

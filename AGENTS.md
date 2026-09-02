@@ -203,6 +203,12 @@ SwiftLint settles formatting; these are the conventions it cannot check.
 - Branch off `master`; never commit to `master` directly.
 - Keep commits focused, with a message that explains the why in the body.
 - Fill in the pull request template (`.github/pull_request_template.md`).
+- **Do not hard-wrap the pull request description.** One paragraph is one long
+  line. GitHub reflows a description to the width of whoever is reading it, and
+  a body wrapped at 80 columns keeps those breaks instead — a narrow ragged
+  column on every window wider than the one it was written in. Commit messages
+  are the opposite: wrap those, as git expects. The two are different formats
+  and the habit does not carry across.
 - Do not commit `xcuserdata/`, `build/` or `.xcresult` bundles (see
   `.gitignore`). Do commit changes to the shared scheme.
 
