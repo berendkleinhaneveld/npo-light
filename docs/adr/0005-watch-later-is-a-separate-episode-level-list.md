@@ -34,8 +34,7 @@ entirely while the list is empty.
 
 The requirements are `FR-LATER-01` to `FR-LATER-12` in
 [`docs/requirements/watch-later.md`](../requirements/watch-later.md).
-`FR-HOME-01` (two rows, no others) is superseded by `FR-HOME-11`, and
-`FR-SET-04` (erase local data) by `FR-SET-05`, which adds the new list to what
+`FR-HOME-01` gains the third row, and `FR-SET-04` the new list among the data
 erasing removes.
 
 ## Alternatives considered

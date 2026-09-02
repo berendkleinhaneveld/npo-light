@@ -154,15 +154,15 @@ requirement defines, or when an `Implemented` requirement is named by no test.
 add or amend the requirement first and say so in the pull request — do not
 quietly widen the app. If a requirement is ambiguous, ask
 (@berendkleinhaneveld) rather than guessing; the answer belongs in the document
-either way. Identifiers are permanent: never renumber one, never reuse one.
+either way.
 
-**Until it is merged, a branch is still a draft.** The permanence rule protects
-what is on `master`: an identifier there has been read, reviewed and possibly
-referred to elsewhere. A requirement — or an ADR — that a branch adds and then
-has to correct before that branch merges is edited in place, not superseded by
-a second number in the same pull request. Retiring an identifier nobody has
-seen yet is ceremony, and it leaves the reviewer reading a history of a
-decision that was never made. Once it is on `master`, supersede.
+**Amend an unbuilt requirement; supersede an implemented one.** A requirement
+no test names yet is a draft: when it changes meaning, rewrite it in place,
+keep its identifier, and let git carry the history. Retiring a number nobody
+refers to only makes the next reader work through a decision that was never
+made. The same goes for an ADR the same pull request added. Once a requirement
+is `Implemented`, tests and commits point at it: then retire it (`Superseded`,
+with a pointer) and add a new number. A retired number is never reused.
 
 ## Code style
 

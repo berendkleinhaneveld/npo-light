@@ -48,7 +48,7 @@ the device, and no advertising identifier use.
 
 - **Status:** Accepted
 
-When the user erases local data (FR-SET-05), it is gone.
+When the user erases local data (FR-SET-04), it is gone.
 
 **Acceptance criteria**
 

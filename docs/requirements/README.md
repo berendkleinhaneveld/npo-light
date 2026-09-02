@@ -45,15 +45,12 @@ non-functional requirements describe *how well it has to do it*.
 
 `<PREFIX>-<AREA>-<NN>`, for example `FR-SEARCH-03` or `NFR-PERF-01`.
 
-An identifier is permanent. When a requirement changes meaning, retire the old
-one (status `Superseded`, with a pointer) and add a new number — never
-renumber, and never recycle a number, because tests, commits and pull requests
-refer to it.
+An identifier becomes permanent when something refers to it. Once a requirement
+is `Implemented` — a test names it — a change of meaning retires the old number
+(status `Superseded`, with a pointer) and adds a new one.
 
-That holds from the moment the requirement is on `master`. A requirement a
-branch adds and then corrects before that branch merges is edited in place
-instead: nothing outside the branch can refer to it yet, so a supersession
-would only make the reviewer read a decision that was never made.
+Until then it is a draft: rewrite it in place, keep its identifier, and let git
+carry the history. A retired number is never reused.
 
 ## Status values
 

@@ -31,10 +31,10 @@ watch stays seven days as a finished tile and then goes.
 The **playback positions outlive the row.** An entry pushed off the end by the
 cap keeps its position, so finding the item again through search resumes it. A
 position is discarded only when the user removes the item by hand
-(`FR-HOME-08`) or erases local data (`FR-SET-05`).
+(`FR-HOME-08`) or erases local data (`FR-SET-04`).
 
-The requirements are `FR-HOME-12` to `FR-HOME-14`. `FR-HOME-06` is superseded
-by `FR-HOME-12` and `FR-HOME-07` by `FR-HOME-13`.
+The requirements are `FR-HOME-06` (the cap), `FR-HOME-07` (what finishing does)
+and `FR-HOME-11` (positions).
 
 ## Alternatives considered
 
@@ -68,14 +68,14 @@ by `FR-HOME-12` and `FR-HOME-07` by `FR-HOME-13`.
 - **The position store grows without an upper bound.** It is the only local
   store in the app that does. A position is an identifier, a time offset and a
   timestamp — on the order of a hundred bytes, so a decade of family viewing is
-  megabytes, not gigabytes — and `FR-SET-05` still erases all of it on request,
+  megabytes, not gigabytes — and `FR-SET-04` still erases all of it on request,
   so `NFR-PRIV-04` holds. What it does mean is that queries against that store
   must stay indexed by item and mode rather than scanning it, and that
   `NFR-PERF-03`'s home-page timing has to be measured with a store far larger
   than the twenty rows on screen.
 - Finishing is now a fan-out of three: it advances a pinned tile
   (`FR-HOME-04`), removes a watch later entry at once (`FR-LATER-07`), and
-  marks a recently watched entry finished for seven days (`FR-HOME-13`). One
+  marks a recently watched entry finished for seven days (`FR-HOME-07`). One
   place should observe the threshold and drive all three.
 - The seven days are a property of the row, not a job: the row filters on the
   finish timestamp when it renders, so nothing has to run while the app is

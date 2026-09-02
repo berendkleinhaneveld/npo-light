@@ -30,7 +30,7 @@ Tokens and any credential material are stored in the Keychain, never in
 
 - No credential material appears in the app's container outside the Keychain.
 - No credential material appears in log output at any log level.
-- Erasing local data (FR-SET-05) does not leave orphaned Keychain items behind
+- Erasing local data (FR-SET-04) does not leave orphaned Keychain items behind
   after sign-out.
 
 ## FR-AUTH-03 — Sessions refresh silently
@@ -61,7 +61,7 @@ but keeps local data.
   Keychain.
 - Pins, recently watched and search history survive sign-out and are there
   again after signing back in.
-- Erasing local data is a separate, explicit action (FR-SET-05).
+- Erasing local data is a separate, explicit action (FR-SET-04).
 
 ## FR-AUTH-05 — No advertisements
 

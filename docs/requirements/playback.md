@@ -151,14 +151,14 @@ there: one hour in kids mode, three hours in normal mode, both configurable
 
 - **Status:** Accepted
 
-Playing something is what fills the recently watched row (FR-HOME-12).
+Playing something is what fills the recently watched row (FR-HOME-06).
 
 **Acceptance criteria**
 
 - Starting playback records the item as most recently watched, per mode.
 - A series records once, updated per episode, rather than one entry per
   episode.
-- Finishing an episode leaves the item pointing at the next one (FR-HOME-13).
+- Finishing an episode leaves the item pointing at the next one (FR-HOME-07).
 
 ## FR-PLAY-10 — Playback errors are recoverable
 

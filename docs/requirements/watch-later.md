@@ -10,16 +10,15 @@ can also be saved, and unpinning the series does not empty the list. Why the
 two lists are kept apart is
 [ADR 0005](../adr/0005-watch-later-is-a-separate-episode-level-list.md).
 
-The row and its action are called *Later kijken* in the working copy of these
-requirements; the wording that ships is a String Catalog entry (NFR-I18N-01),
-not something these requirements fix.
+The row and its action are called *Later kijken* here as a working label; the
+wording that ships is a String Catalog entry (NFR-I18N-01).
 
 ## FR-LATER-01 — Watch later is its own list
 
 - **Status:** Accepted
 
 The app keeps a watch later list per mode, separate from pinned items
-(FR-HOME-02) and from recently watched (FR-HOME-12). Saving, unsaving and
+(FR-HOME-02) and from recently watched (FR-HOME-06). Saving, unsaving and
 playing a saved item never change what is pinned.
 
 **Acceptance criteria**
@@ -27,7 +26,7 @@ playing a saved item never change what is pinned.
 - Saving an item does not pin it, and pinning an item does not save it.
 - Unpinning a series leaves any saved episode of that series on the list.
 - Erasing the list leaves pins, playback positions and history untouched
-  (FR-SET-05).
+  (FR-SET-04).
 - The list survives relaunch.
 
 ## FR-LATER-02 — Only films and single episodes can be saved
@@ -38,9 +37,8 @@ What can be saved is one playable thing: a **film**, a **standalone episode**,
 or **one episode of a series**. A series itself cannot be saved — a series is
 something you follow, so it is pinned instead (FR-HOME-03).
 
-**Rationale.** The inverse of pinning. Pinning is series-level and cannot hold
-a single episode; watch later is episode-level and cannot hold a series.
-Between them every "we want to watch that" has exactly one home.
+**Rationale.** The inverse of pinning: series-level there, episode-level here,
+so every "we want to watch that" has exactly one home.
 
 **Acceptance criteria**
 
@@ -69,7 +67,7 @@ navigating somewhere else first.
   detail page.
 - From a search result, without opening its detail page (FR-SEARCH-02).
 - From a recently watched tile, so something already started can be moved onto
-  the deliberate list (FR-HOME-12).
+  the deliberate list (FR-HOME-06).
 - In every one of those places the action toggles: it saves an unsaved item and
   removes a saved one, and its label says which it will do.
 - The action is reachable from the remote without a hidden gesture being the
@@ -94,12 +92,12 @@ convention as the pinned row (FR-HOME-02).
 - **Status:** Accepted
 
 Watch later is the third row of the home page, below recently watched
-(FR-HOME-11). When the list is empty the row is not shown at all.
+(FR-HOME-01). When the list is empty the row is not shown at all.
 
-**Rationale.** Continue-watching is what the family reaches for most, so it
-keeps its place near the top. A household that never saves anything sees the
-two rows it saw before, not an empty band explaining a feature it does not use
-— which is why this row is the one exception to FR-HOME-09.
+**Rationale.** Continue-watching is reached for most, so it keeps its place
+near the top. A household that never saves anything should see two rows, not an
+empty band explaining a feature it does not use — the one exception to
+FR-HOME-09.
 
 **Acceptance criteria**
 
@@ -119,10 +117,10 @@ two rows it saw before, not an empty band explaining a feature it does not use
 Watch later holds as many items as the family saves. Nothing is dropped to make
 room.
 
-**Rationale.** Recently watched is a by-product of watching and can be trimmed
-silently (FR-HOME-12); this list is a set of deliberate choices, and silently
-discarding one loses something the user asked the app to remember. A row that
-grows uncomfortably long is a sign to watch something, not a bug.
+**Rationale.** Recently watched is a by-product and can be trimmed silently
+(FR-HOME-06); this list is deliberate choices, and dropping one loses something
+the user asked the app to remember. A long row is a sign to watch something,
+not a bug.
 
 **Acceptance criteria**
 
@@ -144,9 +142,8 @@ through it.
   played from the watch later row or from anywhere else in the app.
 - Removal is immediate on return from playback (FR-HOME-10) and survives
   relaunch.
-- It leaves the watch later list at once, while the recently watched row keeps
-  it for seven days as a finished tile (FR-HOME-13) — the two lists answer
-  different questions, and only this one is a queue.
+- It leaves this list at once; the recently watched row keeps it seven days as
+  a finished tile (FR-HOME-07). This list is a queue, that row is a record.
 - What was watched stays marked watched, so next-episode logic is unaffected.
 - Finishing a saved episode of a series does not save the next episode; a
   saved episode is one thing, not a subscription.
@@ -200,7 +197,7 @@ way round.
   FR-LATER-03 reflects the current mode only.
 - Only items from the youth catalogue can be saved in kids mode, since only
   those are shown there (FR-MODE-04).
-- Erasing one mode's data empties that mode's list only (FR-SET-05).
+- Erasing one mode's data empties that mode's list only (FR-SET-04).
 
 ## FR-LATER-11 — A saved item that disappears
 
@@ -230,6 +227,6 @@ A tile in the watch later row plays that exact item.
   its series and never the series' detail page.
 - Playback resumes at the stored position when there is one (FR-PLAY-02).
 - Starting playback moves the item to the front of recently watched
-  (FR-HOME-12) while leaving it on the watch later list (FR-LATER-08).
+  (FR-HOME-06) while leaving it on the watch later list (FR-LATER-08).
 - Autoplay of the following episode behaves exactly as it does elsewhere
   (FR-PLAY-05); what autoplay then plays is not itself saved.
