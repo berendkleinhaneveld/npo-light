@@ -14,7 +14,8 @@ non-functional requirements describe *how well it has to do it*.
 | [content.md](content.md) | `FR-CONTENT` | Items, series, episodes and the catalogue behind them |
 | [account.md](account.md) | `FR-AUTH` | NPO Plus sign-in and session handling |
 | [modes.md](modes.md) | `FR-MODE` | Normal mode and kids mode |
-| [home.md](home.md) | `FR-HOME` | The home page: pinned and recently watched |
+| [home.md](home.md) | `FR-HOME` | The home page: pinned, recently watched and the rows' behaviour |
+| [watch-later.md](watch-later.md) | `FR-LATER` | Single films and episodes saved to watch once |
 | [search.md](search.md) | `FR-SEARCH` | Search and search history |
 | [playback.md](playback.md) | `FR-PLAY` | Playing, resuming, autoplay and still-watching |
 | [settings.md](settings.md) | `FR-SET` | Configuration and local data management |
@@ -37,15 +38,19 @@ non-functional requirements describe *how well it has to do it*.
 - **Pinned** — an item the user deliberately put on the home page.
 - **Recently watched** — items the user played, most recent first; the app's
   "continue watching" list.
+- **Saved** — a film or a single episode put on the watch later list, to be
+  watched once and then dropped from it (FR-LATER-01).
 
 ## Identifiers
 
 `<PREFIX>-<AREA>-<NN>`, for example `FR-SEARCH-03` or `NFR-PERF-01`.
 
-An identifier is permanent. When a requirement changes meaning, retire the old
-one (status `Superseded`, with a pointer) and add a new number — never
-renumber, and never recycle a number, because tests, commits and pull requests
-refer to it.
+An identifier becomes permanent when something refers to it. Once a requirement
+is `Implemented` — a test names it — a change of meaning retires the old number
+(status `Superseded`, with a pointer) and adds a new one.
+
+Until then it is a draft: rewrite it in place, keep its identifier, and let git
+carry the history. A retired number is never reused.
 
 ## Status values
 

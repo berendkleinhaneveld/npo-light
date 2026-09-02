@@ -51,11 +51,13 @@ Settings offers sign-out (FR-AUTH-04).
 - **Status:** Accepted
 
 Settings can erase locally stored data: pins, recently watched, playback
-positions and search history — for one mode or for both.
+positions, search history and the watch later list — for one mode or for both.
 
 **Acceptance criteria**
 
 - Erasing asks for confirmation and names what will be removed.
-- Erasing one mode leaves the other mode's data untouched (FR-MODE-05).
-- After erasing, the affected home page shows its empty states (FR-HOME-09).
+- Erasing one mode leaves the other mode's data untouched (FR-MODE-05,
+  FR-LATER-10).
+- After erasing, the affected home page shows its empty states (FR-HOME-09) and
+  its watch later row is gone (FR-LATER-05).
 - Erasing does not sign the user out.
