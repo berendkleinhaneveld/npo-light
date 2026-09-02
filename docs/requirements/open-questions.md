@@ -224,8 +224,8 @@ into the one already understood. A device-code token from the television client
 was afterwards confirmed to open the same door — the same backend, the same
 player token, the same licence gateway — so the answer holds for the flow
 actually chosen and not only for the iOS one it was captured from. The
-wire-level contract is in the companion recon repository (`npo-api`:
-`notes/app-api.md`).
+wire-level contract is written up with the proof-of-concept, outside this
+repository.
 
 ## Q-08 — What does an account without NPO Plus look like?
 
@@ -271,5 +271,5 @@ not hypothetical: a household's subscription genuinely does lapse and resume.
 and reading `/account` and `/subscription` would replace the assumption with a
 fact, and would also show whether a lapsed subscription is distinguishable from
 one that never existed — the two states this assumption cannot tell apart. It
-is recorded as a nice-to-have in the recon repository (`npo-api`:
-`notes/app-api.md`, and the capture backlog in `notes/app-capture.md`).
+is recorded as a nice-to-have on the proof-of-concept's capture backlog, outside
+this repository.
