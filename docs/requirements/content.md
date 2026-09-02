@@ -90,27 +90,33 @@ recently watched item that no longer exists must not break the home page.
 
 - **Status:** Accepted
 
-Every item says for whom and until when it can be watched: NPO publishes a set
-of availability windows per item, one per subscription type. The app reads them
+Every item says for whom and until when it can be watched. The app reads that
 and decides whether an item is playable *now, for this account*, before it asks
 for a stream.
 
 **Rationale.** NPO's backend refuses a stream the account is not entitled to,
-but entitlement is visible in the catalogue data long before that — a recent
-episode is typically free for about a week and behind NPO Plus afterwards. The
-app backend states it per item directly, as an indication of what this account
-may do with it; the website states it as a set of dated windows. Either way,
+but entitlement is visible in the catalogue data long before that. The app
+backend states it per item directly, as an indication of what this account may
+do with it; the website states it as a set of dated windows. Either way,
 reading it turns a failed request into a screen that explains itself and keeps
 the app from asking for streams it cannot have
 ([Q-02](open-questions.md#q-02--which-npo-endpoints-back-search-catalogue-and-streams)).
+
+**Subscription is not what this decides.** Every signed-in account has NPO Plus
+(FR-AUTH-08), so "playable by this account" is not a question about the
+subscription. What is left is still real: an item can be outside its window
+altogether, withdrawn, or geographically restricted, and a recent episode can
+be free now and behind Plus later without either state making it unplayable
+here.
 
 **Acceptance criteria**
 
 - An item the backend marks as not playable by this account is treated as
   unavailable
   (FR-CONTENT-05), and no stream is requested for it.
-- An item playable only with NPO Plus is playable when the signed-in account
-  has it, and is shown as unavailable, with the reason, when it does not.
+- An item playable only with NPO Plus is playable, since the signed-in account
+  always has it (FR-AUTH-08); it is not gated, hidden or marked differently
+  from a free one.
 - The decision uses the current time each time it is made, not a value cached
   from when the item was fetched.
 - A stream the backend nevertheless refuses is reported as a playback error

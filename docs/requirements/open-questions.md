@@ -226,3 +226,34 @@ player token, the same licence gateway — so the answer holds for the flow
 actually chosen and not only for the iOS one it was captured from. The
 wire-level contract is in the companion recon repository (`npo-api`:
 `notes/app-api.md`).
+
+## Q-08 — What does an account without NPO Plus look like?
+
+**Blocks:** FR-AUTH-08 — the exact check, not the decision behind it.
+
+NPO light requires an NPO Plus subscription and signs out an account that does
+not have one (FR-AUTH-08). Every capture and every prototype run so far used a
+**premium account**, so we know precisely what having Plus looks like and have
+never once seen what not having it looks like.
+
+What is known: `GET /account` returns `subscriptionType: "premium"` alongside an
+`activeSubscriptionGuid`, `GET /subscription` returns
+`{type: "premium", premiumType: "continuous", paymentMethod}`, and items carry a
+compound `contentIndication` naming both the content and the account, such as
+`premiumContent_premiumAccount`.
+
+What is not known is everything on the other side of that: which field is the
+authoritative one, what value it takes for a free account, whether
+`/subscription` answers at all without one or returns an error, whether
+`activeSubscriptionGuid` is simply absent, and how a lapsed or paused
+subscription differs from one that never existed. A check written against
+guessed values would fail in the worst possible direction — either signing out
+a paying subscriber, or letting a free account through into exactly the
+advertisement handling FR-AUTH-05 exists to avoid.
+
+**How to answer:** sign in once with an NPO account that has no Plus
+subscription and record what `/account` and `/subscription` return, plus the
+`contentIndication` on a premium item. That is one account and two requests. The
+check should then treat **only** an explicitly recognised Plus value as
+entitlement, so that an unrecognised or missing value fails towards the
+explanation rather than towards silent admission.

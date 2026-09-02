@@ -93,6 +93,12 @@ The app requests the advertisement-free stream variant that the NPO Plus
 subscription provides, and contains no advertisement playback or tracking code
 of its own.
 
+**This is held structurally, not by vigilance.** Every account the app will
+serve has NPO Plus, because an account without it is signed out before it
+reaches the catalogue (FR-AUTH-08). So the app is never in the state where NPO
+would supply an advertisement in the first place, and the criteria below are
+the second line rather than the first.
+
 **Acceptance criteria**
 
 - No pre-roll, mid-roll or post-roll is requested, scheduled or rendered.
@@ -164,8 +170,10 @@ away, or listening to it through VoiceOver (NFR-A11Y-02).
   rather than failing silently or waiting forever.
 - A sign-in the user abandons, and one that fails on the network, are
   distinguishable on screen, and each offers a way to try again.
-- Sign-in works for an account without an NPO Plus subscription: it succeeds,
-  and entitlement then decides what plays (FR-CONTENT-06).
+- An account without an NPO Plus subscription signs in successfully and is
+  then turned away by the subscription check, with its own explanation
+  (FR-AUTH-08) — the sign-in itself does not fail, and does not report a
+  password or network problem.
 
 ## FR-AUTH-07 — The session is kept alive without asking again
 
@@ -205,3 +213,49 @@ such as a new password.
 - A refresh NPO rejects returns to sign-in with local data intact.
 - The refresh token is the only credential kept, and it is kept in the Keychain
   (FR-AUTH-02).
+
+## FR-AUTH-08 — NPO Plus is required, and the app says so plainly
+
+- **Status:** Accepted — the exact check awaits
+  [Q-08](open-questions.md#q-08--what-does-an-account-without-npo-plus-look-like)
+
+Immediately after signing in, the app checks that the account has an NPO Plus
+subscription. If it does not, the app explains that NPO light needs one, that
+this account does not have it, and that it is signing the account out again —
+and then signs out.
+
+**Rationale.** This app never shows advertisements (FR-AUTH-05), and the
+cleanest way to keep that promise is to never be in the situation where NPO
+would supply one. A signed-in Plus account is served streams with the
+advertisement fields empty; the same programme fetched anonymously carries a
+pre-roll. What a signed-in account *without* Plus is served has not been
+established, and the honest options are to find out and handle it, or to
+decline the case. This requirement declines it: NPO light is a better way to
+watch a subscription the household already pays for, not a way to watch NPO
+for free.
+
+Turning the account away costs little, because it is a state the user can do
+something about — and it is far better than the alternative of a signed-in app
+whose every tile says the item cannot be played.
+
+**Acceptance criteria**
+
+- The subscription is checked as part of completing sign-in, before the home
+  page is shown, so an account without Plus never reaches the catalogue.
+- An account with Plus proceeds to the home page with nothing shown and nothing
+  to dismiss (FR-AUTH-01).
+- An account without Plus is told three things in plain Dutch: that NPO light
+  requires NPO Plus, that this account does not have it, and that it is being
+  signed out.
+- The message stays until the user acknowledges it. Sign-out follows the
+  acknowledgement rather than racing it, so the explanation cannot be missed.
+- Signing out this way is an ordinary sign-out (FR-AUTH-04): the token is
+  removed from the Keychain, and local data is kept.
+- Signing in again with the same account gives the same explanation again,
+  rather than a different error or a loop that hides the reason.
+- A subscription check that fails because the network failed is reported as a
+  network problem with a retry, and does **not** sign the account out — an
+  unreachable backend is not evidence that the account lacks a subscription.
+- The check is repeated whenever the account is refreshed, not only at sign-in,
+  so a subscription that lapses while the app is signed in is caught rather
+  than quietly reintroducing advertisements.
