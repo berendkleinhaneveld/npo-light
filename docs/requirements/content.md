@@ -112,8 +112,7 @@ here.
 **Acceptance criteria**
 
 - An item the backend marks as not playable by this account is treated as
-  unavailable
-  (FR-CONTENT-05), and no stream is requested for it.
+  unavailable (FR-CONTENT-05), and no stream is requested for it.
 - An item playable only with NPO Plus is playable, since the signed-in account
   always has it (FR-AUTH-08); it is not gated, hidden or marked differently
   from a free one.
