@@ -30,8 +30,8 @@ watch stays seven days as a finished tile and then goes.
 
 The **playback positions outlive the row.** An entry pushed off the end by the
 cap keeps its position, so finding the item again through search resumes it. A
-position is discarded only when the user removes the item by hand
-(`FR-HOME-08`) or erases local data (`FR-SET-04`).
+position is discarded only when the user erases local data (`FR-SET-04`);
+removing an item from the row hides it and keeps its position (`FR-HOME-08`).
 
 The requirements are `FR-HOME-06` (the cap), `FR-HOME-07` (what finishing does)
 and `FR-HOME-11` (positions).

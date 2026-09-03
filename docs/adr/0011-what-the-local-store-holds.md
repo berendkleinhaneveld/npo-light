@@ -44,6 +44,11 @@ Every record carries the **cached title** its tile needs: FR-CONTENT-05 and
 FR-LATER-11 require a tile to render, and be removable, for an item the backend
 no longer returns.
 
+`RecentlyWatchedEntry` also carries a **hidden** flag. FR-HOME-08 is a change to
+the row and to nothing else: a hidden entry keeps its place in the store and its
+positions, is filtered out of the row and out of the cap, and is unhidden by
+playing the item again (FR-PLAY-09).
+
 ### `mode` is a column, not a container per mode
 
 Stores take it as an argument (ADR 0010) and never read an ambient one, so
@@ -54,6 +59,10 @@ FR-MODE-05's scoping is visible in every signature and provable per store.
 An `offset` (absent means from the beginning) and a `finishedAt` (absent means
 unfinished): ADR 0006's "watched and has a position are separate facts", held in
 one record rather than two that can disagree.
+
+FR-PLAY-02 is what needs them independent: a finished item keeps its finish, and
+is played from the beginning rather than resumed from the offset it still
+carries.
 
 ### Identifiers are the app's own
 
@@ -75,26 +84,6 @@ makes that a playback detail, and it is the likeliest to change under us.
 Before it, a schema change resets local data, and NFR-REL-05 already requires
 surviving that and saying so. After it, schema changes are versioned and this
 record gets a successor.
-
-## FR-HOME-08 needs your answer, twice
-
-It says removing an item from recently watched "discards its stored playback
-position". Positions are per playable thing; the row is per item.
-
-**1. For a series, which position?** The episode in progress, or every episode of
-the series?
-
-> **Recommended: the episode in progress only.**
-
-**2. Does removal clear the watched flag with it?** FR-HOME-07 says episodes stay
-marked watched. Read the other way, removing a series rewinds the pinned tile
-FR-HOME-04 renders.
-
-> **Recommended: no.** Removal clears the `offset` and leaves `finishedAt` —
-> which is what the two-facts decision above exists for.
-
-Either answer belongs in FR-HOME-08. It is `Accepted` and named by no test, so it
-is amended in place, keeping its identifier.
 
 ## Alternatives considered
 
