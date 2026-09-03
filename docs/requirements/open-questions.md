@@ -273,3 +273,55 @@ fact, and would also show whether a lapsed subscription is distinguishable from
 one that never existed — the two states this assumption cannot tell apart. It
 is recorded as a nice-to-have on the proof-of-concept's capture backlog, outside
 this repository.
+
+## Q-09 — Where does local data actually live on an Apple TV?
+
+**Blocks:** NFR-REL-04, and with it every criterion that reads "survives
+relaunch" — FR-HOME-02, FR-LATER-01, FR-MODE-01, FR-PLAY-03, FR-SEARCH-04.
+
+**This repository already knows the hard part and has not drawn the
+consequence.** Getting the refresh token into the Keychain
+([ADR 0007](../adr/0007-sign-in-with-the-device-code-grant.md), FR-AUTH-02)
+established on hardware that a real Apple TV gives an app no writable durable
+storage: `Documents` and `Application Support` are read-only — writing there
+fails with `NSCocoaErrorDomain 513` — and only `Caches` and `tmp` are writable,
+both evictable. The tvOS Simulator writes to Application Support happily, which
+is why this had to be found on a device.
+
+That was recorded as a fact about the *token*. It is a fact about the whole
+local store. NFR-PRIV-01 says "the SwiftData store is local; no CloudKit
+container is configured", AGENTS.md names SwiftData as the persistence
+technology, and a default `ModelConfiguration` puts its store in Application
+Support. If the finding holds for this app, `ModelContainer(for:)` throws on a
+real Apple TV before a single pin is saved — and the template's `fatalError`
+turns that into a crash on launch, which is what NFR-REL-05 exists to forbid.
+Nothing has tested this, because nothing has yet run this app on the television.
+
+**What is not known.**
+
+- Whether a `ModelConfiguration` pointed into `Caches` works, and how often tvOS
+  actually evicts it in a household that uses the app weekly. "Evictable" is a
+  licence the system holds, not a schedule it publishes.
+- Whether `UserDefaults` is durable on tvOS and what its real ceiling is. The
+  limit is commonly cited at around a megabyte, which the deliberately unbounded
+  progress store from
+  [ADR 0006](../adr/0006-recently-watched-holds-unfinished-items.md) would
+  eventually exceed even at a hundred bytes an entry.
+- Whether any durable writable location exists at all besides the Keychain.
+
+**Why it is more than a storage detail.** Pins, watch later and search history
+are things the family chose, and NFR-REL-04 promises they survive a hard stop.
+If the only writable location is one the system may empty, that promise cannot
+be kept as written: either the mechanism changes or the requirement does. The
+options are all unattractive and none is chosen here — a store in `Caches` with
+the durability requirements reworded; `UserDefaults` for the small lists,
+against a ceiling ADR 0006 would have to give up; CloudKit, which NFR-PRIV-01
+forbids outright; or the Keychain, which is durable and is not a database.
+
+**How to answer:** an hour on the Apple TV that already ran the
+[Q-01](#q-01--how-does-npo-plus-sign-in-work-on-tvos) spike. A throwaway target
+that opens a default `ModelContainer` and reports what it throws; opens one
+configured into `Caches`, writes, and reads it back after a relaunch and after a
+reboot; and writes a megabyte to `UserDefaults` and reads it back. That settles
+which option is real before the first store is written, rather than after the
+family loses their pins.
