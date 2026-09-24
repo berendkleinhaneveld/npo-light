@@ -18,6 +18,7 @@ project, the rule here wins.
 | UI tests | `NPO lightUITests/` — XCTest (`XCUIApplication`) |
 | Decisions | `docs/adr/` |
 | Requirements | `docs/requirements/` |
+| Wireframe | `wireframe/` — published to GitHub Pages ([ADR 0010](docs/adr/0010-publish-an-interactive-wireframe.md)) |
 
 The app and test targets use Xcode's synchronised file groups: a `.swift` file
 placed in one of those directories is part of the target automatically, and
@@ -41,6 +42,12 @@ jobs. It does not run
 the same warnings-as-errors settings, so a separate build job would only repeat
 that work. Locally `build.sh` is still the quicker check while iterating —
 it fails on a warning without waiting for the simulator.
+
+A second workflow, `wireframe.yml`, assembles the interactive wireframe with
+`./scripts/build-wireframe.sh` and publishes it to GitHub Pages from `master`.
+It is not a check on the app. The wireframe follows the requirements, never the
+other way round: when a change alters behaviour it illustrates, update it in the
+same pull request if you can, and say so if you cannot.
 
 `build.sh` and `test.sh` need macOS with Xcode. `lint.sh` and
 `requirements-coverage.sh` do not: run them from a Linux container too.
