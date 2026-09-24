@@ -152,6 +152,9 @@ a { color: var(--accent); }
   color: var(--s-text);
   font: 30px/1.35 var(--ui);
   overflow: hidden;
+  /* tvOS safe area (HIG, Layout): 60 pt top and bottom, 80 pt at the sides. */
+  --safe-x: 80px;
+  --safe-y: 60px;
 }
 
 .tv-caption {
@@ -365,7 +368,7 @@ kbd {
 .screen {
   position: absolute;
   inset: 0;
-  padding: 50px 90px 0;
+  padding: var(--safe-y) var(--safe-x) 0;
   display: flex;
   flex-direction: column;
 }
@@ -375,15 +378,16 @@ kbd {
   min-height: 0;
   overflow-y: auto;
   scrollbar-width: none;
-  margin: 0 -90px;
-  padding: 0 90px 100px;
+  margin: 0 calc(-1 * var(--safe-x));
+  padding: 0 var(--safe-x) 100px;
 }
 
 .vscroll::-webkit-scrollbar, .scroller::-webkit-scrollbar, .recent-search::-webkit-scrollbar { display: none; }
 
 .row-title {
   margin: 0;
-  font-size: 32px;
+  font-size: 29px;
+  line-height: 1.2;
   font-weight: 700;
   color: var(--s-muted);
 }
@@ -401,12 +405,12 @@ kbd {
 .topbar {
   display: flex;
   align-items: center;
-  gap: 32px;
-  min-height: 96px;
+  gap: 28px;
+  min-height: 60px;
 }
 
 .brand {
-  font-size: 44px;
+  font-size: 38px;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
@@ -416,36 +420,36 @@ kbd {
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
-  height: 76px;
-  padding: 0 32px;
-  border-radius: 38px;
+  gap: 12px;
+  height: 56px;
+  padding: 0 26px;
+  border-radius: 28px;
   background: var(--s-surface);
-  font-size: 28px;
+  font-size: 25px;
   transition: transform 0.15s ease, background 0.15s ease;
 }
 
-.pill .icon { font-size: 32px; }
+.pill .icon { font-size: 28px; }
 
 .mode-badge {
   position: absolute;
-  top: 44px;
-  right: 90px;
+  top: var(--safe-y);
+  right: var(--safe-x);
   z-index: 2;
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  height: 64px;
-  padding: 0 28px;
+  gap: 10px;
+  height: 56px;
+  padding: 0 24px;
   border: 4px dashed var(--s-text);
-  border-radius: 32px;
+  border-radius: 28px;
   font-family: var(--kids);
-  font-size: 30px;
+  font-size: 26px;
   font-weight: 600;
   letter-spacing: 0.02em;
 }
 
-.mode-badge .icon { font-size: 34px; fill: currentColor; }
+.mode-badge .icon { font-size: 30px; fill: currentColor; }
 .topbar .mode-badge { position: static; }
 
 .offline {
@@ -459,7 +463,8 @@ kbd {
 
 /* Rows and tiles */
 
-.row { display: grid; gap: 0; padding-top: 30px; }
+.row { display: grid; gap: 0; padding-top: 4px; }
+.home .row:first-child { padding-top: 16px; }
 .home .row-title { padding: 0; }
 
 .scroller {
@@ -467,17 +472,18 @@ kbd {
   gap: 40px;
   overflow-x: auto;
   scrollbar-width: none;
-  margin: 0 -90px;
-  padding: 24px 90px 30px;
+  margin: 0 calc(-1 * var(--safe-x));
+  padding: 14px var(--safe-x) 12px;
 }
 
 .tile {
-  --tile-w: 380px;
+  /* HIG five-column grid: 320 pt unfocused, 40 pt apart. */
+  --tile-w: 320px;
   flex: none;
   width: var(--tile-w);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
   transition: transform 0.15s ease;
   transform-origin: 50% 40%;
 }
@@ -500,7 +506,7 @@ kbd {
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: 76px;
+  font-size: 58px;
   font-weight: 700;
   color: var(--s-muted);
   text-shadow: 0 0 18px var(--s-bg);
@@ -508,12 +514,12 @@ kbd {
 
 .art-kind {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  padding: 4px 10px;
+  top: 10px;
+  left: 10px;
+  padding: 3px 8px;
   border-radius: 6px;
   background: var(--s-bg);
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -531,26 +537,27 @@ kbd {
 .badge {
   position: absolute;
   z-index: 1;
-  left: 12px;
-  bottom: 12px;
+  left: 10px;
+  bottom: 10px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
+  gap: 6px;
+  padding: 4px 10px;
   border-radius: 8px;
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 700;
   background: var(--s-bg);
   color: var(--s-text);
 }
 
 .badge-gone { border: 2px dashed var(--s-text); }
-.badge .icon { font-size: 22px; }
+.badge .icon { font-size: 19px; }
 
-.tile-meta { display: grid; gap: 4px; min-width: 0; }
+.tile-meta { display: grid; gap: 2px; min-width: 0; line-height: 1.2; }
 
+/* Caption sizes near tvOS's own: 26 pt title, 23 pt (Caption 2) detail. */
 .tile-title {
-  font-size: 30px;
+  font-size: 26px;
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
@@ -558,7 +565,7 @@ kbd {
 }
 
 .tile-line {
-  font-size: 24px;
+  font-size: 23px;
   color: var(--s-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -576,9 +583,23 @@ kbd {
 
 .bar i { display: block; height: 100%; background: var(--s-text); border-radius: 4px; }
 
+/* On a tile the progress bar sits on the artwork, as in the TV app. */
+.art .bar {
+  position: absolute;
+  z-index: 1;
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
+  height: 6px;
+  margin: 0;
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
+}
+
 .tile.is-focused { transform: scale(1.08); position: relative; z-index: 1; }
+.tile.is-focused .art { outline-offset: -1px; }
 .tile.is-focused .art { outline: 6px solid var(--s-focus); box-shadow: 0 26px 50px rgba(0, 0, 0, 0.65); }
-.tile.is-focused .tile-title { color: var(--s-focus); text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 6px; }
+.tile.is-focused .tile-title { color: var(--s-focus); text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 5px; }
 
 .tile.skeleton .art { opacity: 0.4; }
 .tile.skeleton .art-initials { display: none; }
@@ -589,20 +610,15 @@ kbd {
   gap: 40px;
   width: 1400px;
   max-width: 100%;
-  min-height: 214px;
-  padding: 36px 44px;
+  min-height: 180px;
+  padding: 28px 40px;
   border: 3px dashed var(--s-line);
   border-radius: 16px;
 }
 
-.empty p { margin: 0; flex: 1; font-size: 30px; color: var(--s-muted); }
+.empty p { margin: 0; flex: 1; font-size: 28px; color: var(--s-muted); }
 .empty b { color: var(--s-text); }
 
-.hint {
-  padding: 14px 0 28px;
-  font-size: 22px;
-  color: var(--s-muted);
-}
 
 /* Buttons */
 
@@ -786,7 +802,7 @@ kbd {
 
 /* Detail */
 
-.home .vscroll { padding-bottom: 20px; }
+.home .vscroll { padding-bottom: var(--safe-y); }
 .detail .vscroll { padding-top: 70px; }
 
 .detail-head {
@@ -911,8 +927,8 @@ kbd {
   gap: 24px;
   overflow-x: auto;
   scrollbar-width: none;
-  margin: 0 -90px;
-  padding: 14px 90px;
+  margin: 0 calc(-1 * var(--safe-x));
+  padding: 14px var(--safe-x);
 }
 
 .term {
@@ -935,7 +951,7 @@ kbd {
 
 .pick {
   flex: none;
-  width: 240px;
+  width: 260px;
   display: grid;
   gap: 8px;
   font-size: 22px;
@@ -943,7 +959,6 @@ kbd {
 }
 
 .pick .art-initials { font-size: 48px; }
-.pick .art-kind { font-size: 14px; }
 .pick > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--s-muted); }
 .pick.is-focused { transform: scale(1.08); }
 .pick.is-focused .art { outline: 5px solid var(--s-focus); }
@@ -972,15 +987,15 @@ kbd {
 .player-note {
   position: absolute;
   top: 44px;
-  left: 90px;
+  left: var(--safe-x);
   font: 20px/1.3 var(--mono);
   color: rgba(255, 255, 255, 0.45);
 }
 
 .transport {
   position: absolute;
-  left: 90px;
-  right: 90px;
+  left: var(--safe-x);
+  right: var(--safe-x);
   bottom: 60px;
   display: grid;
   gap: 16px;
@@ -1010,7 +1025,7 @@ kbd {
 .next-card {
   position: absolute;
   z-index: 3;
-  right: 90px;
+  right: var(--safe-x);
   bottom: 260px;
   width: 680px;
   padding: 32px 36px;
@@ -1081,8 +1096,8 @@ kbd {
 
 /* ------------------------------------------------------------ kids mode
  * Its own identity without leaning on colour (FR-MODE-03, NFR-A11Y-04):
- * a rounded typeface, rounder and larger shapes, a stitched frame and a
- * named badge on every screen. */
+ * a rounded typeface, rounder shapes, a stitched frame and a named badge on
+ * every screen. Tiles stay on the same grid, so three rows still fit. */
 
 .tv.is-kids .tv-screen {
   --s-bg: #121722;
@@ -1099,9 +1114,7 @@ kbd {
   pointer-events: none;
 }
 
-.tv.is-kids .tile { --tile-w: 430px; }
-.tv.is-kids .results .tile { --tile-w: 330px; }
-.tv.is-kids .art { border-radius: 36px; }
+.tv.is-kids .art { border-radius: 28px; }
 .tv.is-kids .btn, .tv.is-kids .term, .tv.is-kids .ep { border-radius: 40px; }
 .tv.is-kids .tile-title, .tv.is-kids .brand, .tv.is-kids h1 { font-weight: 600; }
 .tv.is-kids .dialog, .tv.is-kids .menu { border-radius: 48px; }

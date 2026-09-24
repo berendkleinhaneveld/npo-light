@@ -393,11 +393,10 @@
     const stateBadge = state ? `<span class="badge badge-${state.kind}">${state.text}</span>` : '';
     const bar = progress && progress.pos > 0 && !progress.watched ? progressBar(progress, duration) : '';
     return focusable(id, { cls: 'tile', onSelect, menu, req, label },
-      `${art(item, stateBadge)}
+      `${art(item, stateBadge + bar)}
       <span class="tile-meta">
         <span class="tile-title">${esc(title)}</span>
         <span class="tile-line">${line ? esc(line) : '&nbsp;'}</span>
-        ${bar}
       </span>`);
   }
 
@@ -521,7 +520,6 @@
         ${row('Recent bekeken', 'recent', recent.map(recentTile), emptyRecent)}
         ${later.length ? row('Later kijken', 'later', later.map(laterTile), '') : ''}
       </div>
-      <footer class="hint">OK: kiezen · OK ingedrukt houden: meer opties · Menu: terug</footer>
     </div>`;
   }
 

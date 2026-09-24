@@ -23,7 +23,13 @@ identifiers instead of their titles and statuses.
 
 ## Using it
 
-The television is laid out at 1920×1080, as tvOS is, and scaled to fit.
+The television is laid out at 1920×1080, as tvOS is, and scaled to fit. Sizes
+follow Apple's
+[Human Interface Guidelines for tvOS layout](https://developer.apple.com/design/human-interface-guidelines/layout#tvOS):
+content inside the 60 pt top and bottom and 80 pt side safe area, and tiles on
+the five-column grid (320 pt wide, 40 pt apart), the same five-across layout
+the tvOS home screen uses. That leaves room for all three home rows on one
+screen.
 
 | Input | Does |
 | --- | --- |
@@ -59,9 +65,10 @@ requirement settles it; if one is right, the requirement should say so.
 - **The context menu** on a long press of OK is the "discoverable" route for
   unpin, remove and save on a tile (NFR-A11Y-01); the detail page is the
   second route.
-- **Kids mode's identity**: a rounded typeface, rounder and larger tiles, a
+- **Kids mode's identity**: a rounded typeface, rounder tiles and buttons, a
   stitched frame around the screen and a *Kindermodus* badge on every screen
-  (FR-MODE-03, NFR-A11Y-04).
+  (FR-MODE-03, NFR-A11Y-04). Tiles keep the same size as in normal mode, so
+  both modes show three rows.
 - **Timings**: the still-watching grace period is 30 seconds (FR-PLAY-08 says
   "a defined grace period"); the next-episode overlay in normal mode shows for
   8 seconds (FR-PLAY-05, "long enough to be used").
