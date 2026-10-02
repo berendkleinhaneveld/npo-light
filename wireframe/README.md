@@ -79,6 +79,10 @@ requirement settles it; if one is right, the requirement should say so.
   sensible choices").
 - **Recent searches** are capped at ten terms (FR-SEARCH-04 asks for "a fixed
   number").
+- **Settings in two columns**: playback timings on the left, account and
+  local data on the right, so the page fits without scrolling. The account
+  group says the television is signed in with NPO Plus, which the app knows
+  from the subscription check (FR-AUTH-08); no requirement asks for that line.
 - **A fully watched series** has no play button on its detail page; the page
   says so and offers the episode list. No requirement says what the primary
   action is in that case.

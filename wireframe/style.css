@@ -1071,9 +1071,21 @@ kbd {
 
 /* Settings */
 
-.settings .vscroll { padding-top: 40px; }
-.settings h1 { margin: 0 0 20px; font-size: 64px; }
-.settings-group { display: grid; gap: 22px; margin-bottom: 50px; }
+.settings .vscroll { padding-top: 0; padding-bottom: var(--safe-y); }
+.settings h1 { margin: 0 0 20px; font-size: 64px; line-height: 1.1; }
+
+.settings-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 120px;
+  align-items: start;
+}
+
+.settings-side { display: grid; gap: 56px; }
+.settings-group { display: grid; gap: 22px; align-content: start; }
+.settings-columns > .settings-group { gap: 30px; }
+.setting-note b { color: var(--s-text); }
+.button-stack { display: grid; justify-items: start; gap: 18px; padding: 6px 0; }
 .setting { display: grid; gap: 12px; }
 .setting-label { font-size: 30px; }
 .setting-note { margin: 0; font-size: 26px; color: var(--s-muted); max-width: 60ch; }

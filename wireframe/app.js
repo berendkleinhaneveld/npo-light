@@ -978,31 +978,38 @@
     }, `${selected ? icon('check') : ''}${durationSetting(value)}`);
   }).join('')}</div>
       </div>`;
+    // Two columns, so the whole page fits on one screen: what playback does on
+    // the left, the account and what is stored on the right.
     return `<div class="screen settings">
       ${offlineBanner()}
       <div class="vscroll">
         <h1>Instellingen</h1>
-        <section class="settings-group">
-          <h2 class="row-title">Afspelen</h2>
-          ${choices('kidsPause', 'Pauze tussen afleveringen in kindermodus', 'FR-SET-02 FR-PLAY-06')}
-          ${choices('kidsStill', '“Kijk je nog?” in kindermodus, na', 'FR-SET-02 FR-PLAY-08')}
-          ${choices('normalStill', '“Kijk je nog?” in gewone modus, na', 'FR-SET-02 FR-PLAY-08')}
-        </section>
-        <section class="settings-group">
-          <h2 class="row-title">Gegevens op deze Apple TV</h2>
-          <p class="setting-note">Vastgezet, recent bekeken, later kijken, kijkposities en zoekgeschiedenis staan alleen op deze Apple TV. Er wordt niets gesynchroniseerd.</p>
-          <div class="button-row" data-row="erase">
-            ${focusable('set:erase:normal', { cls: 'btn', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['normal']) }, 'Wis gewone modus')}
-            ${focusable('set:erase:kids', { cls: 'btn', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['kids']) }, 'Wis kindermodus')}
-            ${focusable('set:erase:both', { cls: 'btn', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['normal', 'kids']) }, 'Wis beide modi')}
+        <div class="settings-columns">
+          <section class="settings-group" aria-label="Afspelen">
+            <h2 class="row-title">Afspelen</h2>
+            ${choices('kidsPause', 'Pauze tussen afleveringen in kindermodus', 'FR-SET-02 FR-PLAY-06')}
+            ${choices('kidsStill', '“Kijk je nog?” in kindermodus, na', 'FR-SET-02 FR-PLAY-08')}
+            ${choices('normalStill', '“Kijk je nog?” in gewone modus, na', 'FR-SET-02 FR-PLAY-08')}
+          </section>
+          <div class="settings-side">
+            <section class="settings-group" aria-label="Account">
+              <h2 class="row-title">Account</h2>
+              <p class="setting-note"><b>Ingelogd met NPO Plus.</b> Afmelden gebeurt alleen op deze Apple TV.</p>
+              <div class="button-row" data-row="account">
+                ${focusable('set:signout', { cls: 'btn', req: 'FR-SET-03 FR-AUTH-04', onSelect: confirmSignOut }, 'Afmelden')}
+              </div>
+            </section>
+            <section class="settings-group" aria-label="Gegevens op deze Apple TV">
+              <h2 class="row-title">Gegevens op deze Apple TV</h2>
+              <p class="setting-note">Vastgezet, recent bekeken, later kijken, kijkposities en zoekgeschiedenis staan alleen hier. Er wordt niets gesynchroniseerd.</p>
+              <div class="button-stack" data-row="erase">
+                ${focusable('set:erase:normal', { cls: 'btn', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['normal']) }, 'Wis gewone modus')}
+                ${focusable('set:erase:kids', { cls: 'btn', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['kids']) }, 'Wis kindermodus')}
+                ${focusable('set:erase:both', { cls: 'btn', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['normal', 'kids']) }, 'Wis beide modi')}
+              </div>
+            </section>
           </div>
-        </section>
-        <section class="settings-group">
-          <h2 class="row-title">Account</h2>
-          <div class="button-row" data-row="account">
-            ${focusable('set:signout', { cls: 'btn', req: 'FR-SET-03 FR-AUTH-04', onSelect: confirmSignOut }, 'Afmelden')}
-          </div>
-        </section>
+        </div>
       </div>
     </div>`;
   }
@@ -1615,6 +1622,11 @@
     // with its neighbours; a candidate has to be clearly in the direction.
     const minX = from.width * 0.3;
     const minY = from.height * 0.3;
+    // In a scrolling row of tiles, left and right stay in the row: at its end
+    // focus stays put, as on tvOS, rather than jumping to a further-right
+    // tile in another row. Elsewhere (settings columns, dialogs) they may
+    // reach the nearest element that is not exactly level.
+    const inRow = Boolean(current.closest('.scroller'));
     let best = null;
     let bestScore = Infinity;
     scope.forEach((el) => {
@@ -1627,11 +1639,13 @@
       if (direction === 'left' || direction === 'right') {
         primary = direction === 'right' ? r.left - from.right : from.left - r.right;
         if ((direction === 'right' ? x - cx : cx - x) <= minX) return;
-        // Left and right stay in the row: at its end, focus stays put, as
-        // on tvOS, rather than jumping to a further-right tile in another row.
+        // It has to start past the focused element's edge too, so a wider
+        // button underneath never counts as "to the right".
+        const tolerance = Math.max(12, from.width * 0.15);
+        if (direction === 'right' ? r.left < from.right - tolerance : r.right > from.left + tolerance) return;
         const overlap = Math.min(r.bottom, from.bottom) - Math.max(r.top, from.top);
-        if (overlap <= 0) return;
-        secondary = 0;
+        if (overlap <= 0 && inRow) return;
+        secondary = overlap > 0 ? 0 : Math.abs(y - cy);
       } else {
         primary = direction === 'down' ? r.top - from.bottom : from.top - r.bottom;
         if ((direction === 'down' ? y - cy : cy - y) <= minY) return;
