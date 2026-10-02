@@ -12,7 +12,10 @@
   const CAT = window.CATALOGUE;
   const REQS = window.REQUIREMENTS || {};
   const REPO = 'https://github.com/berendkleinhaneveld/npo-light/blob/master/docs/requirements/';
-  const STORAGE_KEY = 'npo-light-wireframe-v1';
+  const STORAGE_KEY = 'npo-light-wireframe';
+  // Bumped whenever the example data changes, so a stale saved state is
+  // replaced by the new example instead of hiding it.
+  const STATE_VERSION = 2;
 
   // The constants the requirements name.
   const RECENT_CAP = 20; // FR-HOME-06
@@ -54,10 +57,17 @@
     const now = Date.now();
     const h = 60 * 60 * 1000;
     const normal = emptyMode();
+    // More pins and history than fit across the screen, so the rows scroll.
     normal.pins = [
       { id: 'polderpost', at: now - DAY },
+      { id: 'dijkwachters', at: now - 2 * DAY },
       { id: 'storm', at: now - 3 * DAY },
+      { id: 'grachten', at: now - 4 * DAY },
       { id: 'wadden', at: now - 5 * DAY },
+      { id: 'tulpen', at: now - 6 * DAY },
+      { id: 'treinreis', at: now - 8 * DAY },
+      { id: 'elfsteden', at: now - 9 * DAY },
+      { id: 'kantoor', at: now - 10 * DAY },
       { id: 'zeeland', at: now - 12 * DAY },
     ];
     normal.progress = {
@@ -72,14 +82,40 @@
       'kaas-s1e1': { pos: 1500, watched: true, finishedAt: now - 2 * DAY },
       'kaas-s1e2': { pos: 300, watched: false, finishedAt: null },
       veerpont: { pos: 5880, watched: true, finishedAt: now - 2 * DAY },
+      'dijkwachters-s1e1': { pos: 3000, watched: true, finishedAt: now - DAY },
+      'dijkwachters-s1e2': { pos: 3000, watched: true, finishedAt: now - DAY },
+      'dijkwachters-s1e3': { pos: 1800, watched: false, finishedAt: null },
+      'grachten-s1e1': { pos: 1800, watched: true, finishedAt: now - DAY },
+      'kantoor-s1e1': { pos: 1500, watched: true, finishedAt: now - 5 * DAY },
+      'kantoor-s1e2': { pos: 1500, watched: true, finishedAt: now - 4 * DAY },
+      'kantoor-s1e3': { pos: 1500, watched: true, finishedAt: now - 3 * DAY },
+      'kantoor-s1e4': { pos: 600, watched: false, finishedAt: null },
+      peelland: { pos: 2400, watched: false, finishedAt: null },
+      'treinreis-s1e1': { pos: 2700, watched: true, finishedAt: now - 6 * DAY },
+      'treinreis-s1e2': { pos: 1200, watched: false, finishedAt: null },
+      elfsteden: { pos: 3000, watched: false, finishedAt: null },
     };
-    normal.current = { polderpost: 'polderpost-s1e3', wadden: 'wadden-s1e4', kaas: 'kaas-s1e2' };
+    normal.current = {
+      polderpost: 'polderpost-s1e3',
+      wadden: 'wadden-s1e4',
+      kaas: 'kaas-s1e2',
+      dijkwachters: 'dijkwachters-s1e3',
+      grachten: 'grachten-s1e1',
+      kantoor: 'kantoor-s1e4',
+      treinreis: 'treinreis-s1e2',
+    };
     normal.recent = [
       { id: 'polderpost', at: now - 2 * h },
+      { id: 'dijkwachters', at: now - 5 * h },
       { id: 'storm', at: now - DAY },
+      { id: 'grachten', at: now - DAY - 3 * h },
       { id: 'kaas', at: now - 2 * DAY },
       { id: 'veerpont', at: now - 2 * DAY - h },
       { id: 'wadden', at: now - 2 * DAY - 2 * h },
+      { id: 'kantoor', at: now - 3 * DAY },
+      { id: 'peelland', at: now - 4 * DAY },
+      { id: 'treinreis', at: now - 5 * DAY },
+      { id: 'elfsteden', at: now - 6 * DAY },
     ];
     normal.later = [
       { id: 'afsluitdijk', at: now - DAY },
@@ -113,7 +149,7 @@
 
   function baseState(modes) {
     return {
-      version: 1,
+      version: STATE_VERSION,
       signedIn: true,
       mode: 'normal',
       modes,
@@ -129,7 +165,7 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed && parsed.version === 1) return parsed;
+        if (parsed && parsed.version === STATE_VERSION) return parsed;
       }
     } catch (error) {
       // Storage is a convenience here; without it the wireframe starts fresh.
@@ -1591,8 +1627,11 @@
       if (direction === 'left' || direction === 'right') {
         primary = direction === 'right' ? r.left - from.right : from.left - r.right;
         if ((direction === 'right' ? x - cx : cx - x) <= minX) return;
+        // Left and right stay in the row: at its end, focus stays put, as
+        // on tvOS, rather than jumping to a further-right tile in another row.
         const overlap = Math.min(r.bottom, from.bottom) - Math.max(r.top, from.top);
-        secondary = overlap > 0 ? 0 : Math.abs(y - cy);
+        if (overlap <= 0) return;
+        secondary = 0;
       } else {
         primary = direction === 'down' ? r.top - from.bottom : from.top - r.bottom;
         if ((direction === 'down' ? y - cy : cy - y) <= minY) return;

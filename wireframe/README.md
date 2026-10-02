@@ -49,7 +49,9 @@ watched after seven days. State is kept in the browser's local storage;
 *Restore the example data* and *Start empty* reset it.
 
 The catalogue in `data.js` is invented. It includes one expired film and one
-expired episode, so the unavailable states can be seen.
+expired episode, so the unavailable states can be seen. In normal mode the
+example has ten pinned and eleven recently watched items, more than the five a
+row shows, so the rows scroll sideways as they will on a television.
 
 ## What the wireframe decides that the requirements do not
 
