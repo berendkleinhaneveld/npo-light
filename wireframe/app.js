@@ -319,11 +319,8 @@
   }
 
   function removeFromRecent(item) {
+    // FR-HOME-08: removing hides the tile and keeps the stored position.
     md().recent = md().recent.filter((entry) => entry.id !== item.id);
-    // FR-HOME-08: removing discards the stored position.
-    const playable = item.kind === 'series'
-      ? get(md().current[item.id] || '') : item;
-    if (playable) setProgress(playable.id, { pos: 0 });
     toast(`${item.title} is uit Recent bekeken gehaald`);
     commit();
   }

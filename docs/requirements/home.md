@@ -171,8 +171,8 @@ would be throwing away exactly what the row exists to protect.
 - Playing the item again — for a series, any episode of it — puts it back on the
   row at the front with its progress intact (FR-PLAY-09).
 - A hidden item does not occupy one of the twenty slots (FR-HOME-06).
-- Removing does not unpin the item (FR-HOME-03) and does not take it off the
-  watch later list (FR-LATER-08).
+- Removing a series does not unpin it (FR-HOME-03), and removing a film or an
+  episode does not take it off the watch later list (FR-LATER-08).
 
 ## FR-HOME-09 — Empty states say what to do
 

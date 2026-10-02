@@ -28,15 +28,17 @@ as written.
 
 | Model | Grain | Serves |
 | --- | --- | --- |
-| `PinnedItem` | item | FR-HOME-02, -03, -05 |
+| `PinnedSeries` | item, a series only | FR-HOME-02, -03, -05 |
 | `RecentlyWatchedEntry` | item | FR-HOME-06, -07, -08 |
 | `PlaybackProgress` | playable | FR-PLAY-02, -03, -04, FR-HOME-11 |
 | `WatchLaterEntry` | playable | FR-LATER-01 to -12 |
 | `SearchTerm` | term | FR-SEARCH-04, -05, -07 |
 | `PickedItem` | item, under a term | FR-SEARCH-05, -06 |
 
-**Item** is a series, a film or a standalone episode: what is pinned
-(FR-HOME-03), and what holds one row slot across a dozen episodes (FR-HOME-06).
+**Item** is a series, a film or a standalone episode: what holds one row slot
+across a dozen episodes (FR-HOME-06) and what a search pick is (FR-SEARCH-05).
+Only a series is pinned (FR-HOME-03), so the pin record is item-keyed and holds
+series alone; a film or a standalone episode is saved instead.
 **Playable** is a film or a single episode: what carries a position (FR-MODE-05)
 and the only thing that can be saved (FR-LATER-02). Both rows *display* an
 episode; only the record is series-keyed.

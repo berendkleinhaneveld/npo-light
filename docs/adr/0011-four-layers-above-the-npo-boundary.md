@@ -15,7 +15,7 @@ template: a `NavigationSplitView` (an iPad shape), an `@Model` called `Item`
 standalone episode), and a `fatalError` on a failed `ModelContainer` (the crash
 loop NFR-REL-05 forbids).
 
-Of ninety-four requirements, ninety-two are `Accepted`, one is `Implemented`
+Of ninety-six requirements, ninety-four are `Accepted`, one is `Implemented`
 and one is `Superseded`. They say what
 the app does, not what a view may know or where a decision lives — and that
 cannot be read off them: NFR-MAINT-03 wants decisions testable without a view,
