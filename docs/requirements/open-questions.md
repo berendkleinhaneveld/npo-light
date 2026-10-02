@@ -178,15 +178,21 @@ is produced — so it became its own requirement area
 
 ## Q-06 — Is there a design wireframe to follow?
 
-**Blocks:** nothing yet, but it shapes every view.
+- **Answered:** 2026-10-02
 
-The owner mentioned a wireframe made with Claude. It is not in this repository,
-and it was not shared with this session. Until it turns up, the layout
-requirements here are described in words only.
+**Was blocking:** nothing, but it shapes every view.
 
-**How to answer:** the owner shares the wireframe — as an artifact link, an
-export committed under `docs/design/`, or a fresh one — and the layout
-requirements are checked against it.
+The owner mentioned a wireframe made with Claude. It was not in this
+repository, and the layout requirements were described in words only.
+
+**Answer: yes, and it lives here.** An interactive wireframe is kept under
+[`wireframe/`](../../wireframe/README.md) and published to GitHub Pages from
+`master` — [ADR 0010](../adr/0010-publish-an-interactive-wireframe.md). It is
+drawn from the requirements rather than the other way round: where the sketch
+and a requirement disagree, the sketch is wrong, and anything it settles that
+no requirement does is a proposal, listed in its README, not a specification.
+So a view is built against the requirements and checked against the wireframe,
+and a layout choice taken from the wireframe alone needs a requirement first.
 
 ## Q-07 — Does NPO's app API serve playback?
 

@@ -9,7 +9,7 @@ import Foundation
 ///
 /// It lives *below* the NPO boundary. Nothing above the boundary sees a token
 /// (ADR 0008): a screen is given an ``Account``.
-nonisolated struct Session: Sendable, Equatable {
+nonisolated struct Session: Sendable, Equatable, Codable {
     /// The bearer for the app backend. Counter-intuitively this is the
     /// `id_token` and not the ``accessToken``: with the access token
     /// `/profiles` answers 200 while `/account` answers 401, a half-accepted
@@ -26,6 +26,12 @@ nonisolated struct Session: Sendable, Equatable {
     /// When ``accessToken`` lapses. Known up front, so the session is renewed
     /// before a request has to fail first (FR-AUTH-07).
     let accessTokenExpiresAt: Date
+
+    /// The `party-id` the app backend wants on every call. It names a device
+    /// and authorises nothing: any plausible value is accepted, but a request
+    /// without one is refused. Made once at sign-in and kept across renewals,
+    /// so the television looks like one device rather than a new one each hour.
+    let deviceIdentifier: String
 }
 
 /// Where the session is kept between launches.

@@ -18,9 +18,10 @@ the old one as superseded instead of rewriting it.
 | [0007](0007-sign-in-with-the-device-code-grant.md) | Sign in with the device-code grant, approved on a phone | Accepted |
 | [0008](0008-one-boundary-around-the-npo-backend.md) | One boundary around the NPO backend | Accepted |
 | [0009](0009-test-doubles-at-two-seams.md) | Test doubles at two seams, with captured fixtures for the shapes | Accepted |
-| [0010](0010-publish-an-interactive-wireframe.md) | Publish an interactive wireframe, drawn from the requirements | Proposed |
+| [0010](0010-publish-an-interactive-wireframe.md) | Publish an interactive wireframe, drawn from the requirements | Accepted |
 | [0011](0011-four-layers-above-the-npo-boundary.md) | Four layers above the NPO boundary | Accepted |
 | [0012](0012-what-the-local-store-holds.md) | What the local store holds, and what it does not | Accepted |
+| [0013](0013-sign-simulator-builds-ad-hoc.md) | Sign simulator builds ad hoc, so the tests can reach the Keychain | Accepted |
 
 ## How to add one
 
