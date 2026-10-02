@@ -20,11 +20,16 @@ WARNINGS_AS_ERRORS=(
   "GCC_TREAT_WARNINGS_AS_ERRORS=YES"
 )
 
-# The simulator does not need a signed binary, and CI has no signing identity.
+# Simulator builds are signed ad hoc: the identity "-" needs no certificate, so
+# CI can do it, and without a signature the app has no Keychain at all — every
+# call fails with errSecMissingEntitlement (ADR 0013). The team and the
+# automatic style are cleared so that nothing here reaches for an account.
 SIMULATOR_SIGNING=(
-  "CODE_SIGNING_ALLOWED=NO"
+  "CODE_SIGN_IDENTITY=-"
+  "CODE_SIGN_STYLE=Manual"
   "CODE_SIGNING_REQUIRED=NO"
-  "CODE_SIGN_IDENTITY="
+  "DEVELOPMENT_TEAM="
+  "PROVISIONING_PROFILE_SPECIFIER="
 )
 
 # Runs xcodebuild, piping through xcbeautify when it is installed. `pipefail`

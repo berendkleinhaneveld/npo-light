@@ -21,6 +21,7 @@ the old one as superseded instead of rewriting it.
 | [0010](0010-publish-an-interactive-wireframe.md) | Publish an interactive wireframe, drawn from the requirements | Accepted |
 | [0011](0011-four-layers-above-the-npo-boundary.md) | Four layers above the NPO boundary | Accepted |
 | [0012](0012-what-the-local-store-holds.md) | What the local store holds, and what it does not | Accepted |
+| [0013](0013-sign-simulator-builds-ad-hoc.md) | Sign simulator builds ad hoc, so the tests can reach the Keychain | Accepted |
 
 ## How to add one
 
