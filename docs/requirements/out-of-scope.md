@@ -24,6 +24,9 @@ probably an ADR.
   pinned (FR-HOME-03); watch later holds one playable thing at a time
   (FR-LATER-02). Wanting both for the same series means pinning it and saving
   the one episode.
+- **Pinning a film or a single episode.** Pinning follows a series
+  (FR-HOME-03); one thing to watch once is saved for later (FR-LATER-02). A
+  film has nothing to follow, so it has one home, not two.
 - **A watch later list that survives being watched.** Finishing a saved item
   takes it off the list (FR-LATER-07). There is no "watched, but keep it" flag
   and no archive of what was once saved.

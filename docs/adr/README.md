@@ -20,6 +20,7 @@ the old one as superseded instead of rewriting it.
 | [0009](0009-test-doubles-at-two-seams.md) | Test doubles at two seams, with captured fixtures for the shapes | Accepted |
 | [0011](0011-four-layers-above-the-npo-boundary.md) | Four layers above the NPO boundary | Accepted |
 | [0012](0012-what-the-local-store-holds.md) | What the local store holds, and what it does not | Accepted |
+| [0010](0010-publish-an-interactive-wireframe.md) | Publish an interactive wireframe, drawn from the requirements | Proposed |
 
 ## How to add one
 
