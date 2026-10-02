@@ -13,12 +13,20 @@ final class NPOLightUITests: XCTestCase {
         continueAfterFailure = false
     }
 
+    // Requirement: FR-AUTH-01, FR-AUTH-06
     @MainActor
-    func testApplicationLaunches() throws {
+    func testLaunchWithoutSessionShowsSignIn() throws {
         let app = XCUIApplication()
+        // The app's own double, named by the launch environment: a UI test
+        // cannot inject one, and must not start a real sign-in at NPO.
+        app.launchEnvironment["NPO_LIGHT_SCENARIO"] = "awaiting-approval"
 
         app.launch()
 
-        XCTAssertEqual(app.state, .runningForeground)
+        let code = app.staticTexts["sign-in-code"]
+        XCTAssertTrue(code.waitForExistence(timeout: 10))
+        XCTAssertEqual(code.label, "51411921")
+        XCTAssertTrue(app.descendants(matching: .any)["sign-in-qr-code"].exists)
+        XCTAssertEqual(app.textFields.count + app.secureTextFields.count, 0)
     }
 }

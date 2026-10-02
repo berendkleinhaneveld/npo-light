@@ -5,23 +5,54 @@
 
 import SwiftUI
 
-/// The app's only screen until there is one.
-///
-/// ADR 0011 makes this the point where the session decides between sign-in and
-/// home (FR-AUTH-01). Neither exists yet, so this is scaffolding: the first
-/// feature pull request replaces the body outright rather than building on it.
-///
-/// The one string on screen is a proper noun, which no language translates.
-/// That is deliberate while the String Catalog NFR-I18N-01 asks for does not
-/// exist yet — a placeholder sentence here would be the first entry in a
-/// catalogue nobody wants.
+/// The point where the session decides what is on screen (ADR 0011,
+/// FR-AUTH-01): without one, sign-in and nothing else.
 struct RootView: View {
+    let appModel: AppModel
+    let signInModel: SignInModel
+
     var body: some View {
-        Text(verbatim: "NPO light")
-            .font(.largeTitle)
+        content
+            .task { await appModel.restore() }
+    }
+
+    @ViewBuilder private var content: some View {
+        switch appModel.session {
+        case .restoring:
+            ProgressView()
+        case .signedOut:
+            SignInView(model: signInModel)
+        case .signedIn:
+            // The home page arrives with FR-HOME. Until then a signed-in app
+            // shows its name, which is a proper noun and no translation's job.
+            Text(verbatim: "NPO light")
+                .font(.largeTitle)
+        case .plusRequired:
+            PlusRequiredView { appModel.acknowledgePlusRequired() }
+        case .unreachable:
+            SignInProblemView(problem: .unreachable) {
+                Task { await appModel.restore() }
+            }
+        }
     }
 }
 
-#Preview {
-    RootView()
+#if DEBUG
+#Preview("Signed out") {
+    let authenticator = ScriptedAuthenticator(.awaitingApproval)
+    let appModel = AppModel(authenticator: authenticator)
+    RootView(appModel: appModel,
+             signInModel: SignInModel(authenticator: authenticator,
+                                      clock: SystemClock(),
+                                      onSignedIn: { appModel.admit($0) }))
 }
+
+#Preview("Signed in") {
+    let authenticator = ScriptedAuthenticator(.signedIn)
+    let appModel = AppModel(authenticator: authenticator)
+    RootView(appModel: appModel,
+             signInModel: SignInModel(authenticator: authenticator,
+                                      clock: SystemClock(),
+                                      onSignedIn: { appModel.admit($0) }))
+}
+#endif

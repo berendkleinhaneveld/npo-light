@@ -19,10 +19,8 @@ final class NPOLightUITestsLaunchTests: XCTestCase {
     @MainActor
     func testLaunch() throws {
         let app = XCUIApplication()
+        app.launchEnvironment["NPO_LIGHT_SCENARIO"] = "awaiting-approval"
         app.launch()
-
-        // Insert steps here to perform after app launch but before taking a
-        // screenshot, such as logging into a test account or navigating somewhere.
 
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = "Launch Screen"
