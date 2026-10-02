@@ -15,7 +15,7 @@
   const STORAGE_KEY = 'npo-light-wireframe';
   // Bumped whenever the example data changes, so a stale saved state is
   // replaced by the new example instead of hiding it.
-  const STATE_VERSION = 3;
+  const STATE_VERSION = 4;
 
   // The constants the requirements name.
   const RECENT_CAP = 20; // FR-HOME-06
@@ -69,6 +69,7 @@
       { id: 'kaas', at: now - 11 * DAY },
       { id: 'fleurwild', at: now - 14 * DAY },
       { id: 'kustwacht', at: now - 20 * DAY },
+      { id: 'watziterin', at: now - 21 * DAY },
     ];
     normal.progress = {
       'polderpost-s1e1': { pos: 2700, watched: true, finishedAt: now - 3 * DAY },
@@ -94,6 +95,11 @@
       'treinreis-s1e1': { pos: 2700, watched: true, finishedAt: now - 6 * DAY },
       'treinreis-s1e2': { pos: 1200, watched: false, finishedAt: null },
       elfsteden: { pos: 3000, watched: false, finishedAt: null },
+      'watziterin-s24e1': { pos: 1500, watched: true, finishedAt: now - 9 * DAY },
+      'watziterin-s24e2': { pos: 1500, watched: true, finishedAt: now - 8 * DAY },
+      'watziterin-s24e3': { pos: 1500, watched: true, finishedAt: now - 8 * DAY },
+      'watziterin-s24e4': { pos: 1500, watched: true, finishedAt: now - 7 * DAY },
+      'watziterin-s24e5': { pos: 540, watched: false, finishedAt: null },
     };
     normal.current = {
       polderpost: 'polderpost-s1e3',
@@ -103,6 +109,7 @@
       grachten: 'grachten-s1e1',
       kantoor: 'kantoor-s1e4',
       treinreis: 'treinreis-s1e2',
+      watziterin: 'watziterin-s24e5',
     };
     normal.recent = [
       { id: 'polderpost', at: now - 2 * h },
@@ -116,6 +123,7 @@
       { id: 'peelland', at: now - 4 * DAY },
       { id: 'treinreis', at: now - 5 * DAY },
       { id: 'elfsteden', at: now - 6 * DAY },
+      { id: 'watziterin', at: now - 7 * DAY },
     ];
     normal.later = [
       { id: 'afsluitdijk', at: now - DAY },
@@ -403,12 +411,14 @@
   let handlers = new Map();
   let menus = new Map();
   let reqs = new Map();
+  let focusHandlers = new Map();
   let screenReqs = '';
 
   function focusable(id, options, inner) {
     handlers.set(id, options.onSelect || null);
     if (options.menu) menus.set(id, options.menu);
     reqs.set(id, options.req || '');
+    if (options.onFocus) focusHandlers.set(id, options.onFocus);
     const label = options.label ? ` aria-label="${esc(options.label)}"` : '';
     return `<button type="button" tabindex="-1" class="f ${options.cls || ''}" data-f="${esc(id)}"${label}>${inner}</button>`;
   }
@@ -720,7 +730,7 @@
 
   function detailScreen(params) {
     const item = get(params.id);
-    screenReqs = 'FR-CONTENT-03 FR-MODE-03';
+    screenReqs = 'FR-CONTENT-03 FR-CONTENT-08 FR-MODE-03';
     const actions = [];
     const playable = playableFor(item);
     if (!item.available) {
@@ -754,62 +764,126 @@
     return `<div class="screen detail">
       ${modeBadge()}
       ${offlineBanner()}
-      <div class="vscroll">
-        <div class="detail-head">
-          ${art(item, item.available ? '' : `<span class="badge badge-gone">Niet meer beschikbaar</span>`)}
-          <div class="detail-info">
+      <div class="vscroll" data-scroll-key="detail:${esc(item.id)}">
+        <header class="hero">
+          <div class="hero-art" aria-hidden="true">${art(item)}</div>
+          <div class="hero-info">
             <p class="eyebrow">${esc(meta)}</p>
             <h1>${esc(item.title)}</h1>
             <p class="desc">${esc(item.description)}</p>
             ${notice}
             <div class="actions">${actions.join('')}</div>
           </div>
-        </div>
-        ${item.kind === 'series' ? episodeList(item) : ''}
+        </header>
+        ${item.kind === 'series' ? seasonBrowser(item, params) : ''}
       </div>
     </div>`;
   }
 
-  function saveButton(id, playable, cls, req) {
+  // FR-CONTENT-07: one season at a time. It opens on the season of the
+  // episode the primary action would play.
+  function shownSeason(item, params) {
+    if (!params.season) {
+      const next = nextEpisode(item);
+      params.season = next ? next.season : 1;
+    }
+    return item.seasons.find((season) => season.number === params.season) || item.seasons[0];
+  }
+
+  function seasonBrowser(item, params) {
+    const season = shownSeason(item, params);
+    screenReqs += ' FR-CONTENT-07';
+    const picker = item.seasons.length > 1
+      ? `<div class="scroller season-picker" data-entry data-row="seasons" data-scroll-key="seasons:${esc(item.id)}" role="tablist" aria-label="Seizoenen">
+          ${item.seasons.map((entry) => {
+    const current = entry.number === season.number;
+    return focusable(`season:${entry.number}`, {
+      cls: `chip season-chip${current ? ' is-current is-selected' : ''}`,
+      req: 'FR-CONTENT-07 NFR-A11Y-04',
+      label: `Seizoen ${entry.number}, ${plural(entry.episodes.length, 'aflevering', 'afleveringen')}${current ? ', getoond' : ''}`,
+      onFocus: () => showSeason(item, params, entry.number),
+      onSelect: () => {
+        const first = entry.episodes[0];
+        T.focus = `ep:${first.id}`;
+        render();
+      },
+    }, `Seizoen ${entry.number}`);
+  }).join('')}
+        </div>`
+      : '';
+    const preview = get(params.preview || '');
+    const shown = preview && preview.seriesId === item.id && preview.season === season.number
+      ? preview
+      : (season.episodes.find((episode) => episode === nextEpisode(item)) || season.episodes[0]);
+    return `<section class="season-browser${picker ? '' : ' is-single'}" aria-label="Afleveringen">
+      ${picker || '<h2 class="row-title season-title">Afleveringen</h2>'}
+      <div class="season-body">
+        <div class="list-scroll" data-scroll-key="episodes:${esc(item.id)}:${season.number}">
+          <div class="episodes" data-entry>${season.episodes.map((episode) => episodeRow(item, params, episode, episode === shown)).join('')}</div>
+        </div>
+        <aside class="ep-preview" aria-live="polite">${episodePreview(shown)}</aside>
+      </div>
+    </section>`;
+  }
+
+  function showSeason(item, params, number) {
+    if (params.season === number) return;
+    params.season = number;
+    params.preview = null;
+    render();
+  }
+
+  // FR-CONTENT-08: the focused episode's image and description, beside the
+  // list, so the list itself can stay one line per episode.
+  function episodePreview(episode) {
+    const progress = progressOf(episode.id);
+    const state = episodeState(episode);
+    const extra = progress.pos > 0 && !progress.watched ? progressBar(progress, episode.duration) : '';
+    return `${art(episode, (episode.available ? '' : '<span class="badge badge-gone">Niet meer beschikbaar</span>') + extra)}
+      <p class="eyebrow">${episodeCode(episode)} · ${minutesText(episode.duration)}</p>
+      <h3 class="preview-title">${esc(episode.title)}</h3>
+      <p class="preview-state">${state.html}</p>
+      ${episode.description ? `<p class="preview-desc">${esc(episode.description)}</p>` : ''}`;
+  }
+
+  function episodeState(episode) {
+    const progress = progressOf(episode.id);
+    if (!episode.available) return { html: '<span class="ep-state is-gone">⊘ Niet beschikbaar</span>', text: 'Niet beschikbaar' };
+    if (progress.watched) return { html: `<span class="ep-state is-done">${icon('check')}Gezien</span>`, text: 'Gezien' };
+    if (progress.pos > 0) {
+      const left = minutesText(episode.duration - progress.pos);
+      return { html: `<span class="ep-state is-part">◐ nog ${left}</span>`, text: `Half gezien, nog ${left}` };
+    }
+    return { html: '<span class="ep-state">○ Niet gezien</span>', text: 'Niet gezien' };
+  }
+
+  function saveButton(id, playable, cls, req, onFocus) {
     const saved = isSaved(playable);
-    return focusable(id, { cls, req, onSelect: () => toggleSaved(playable), label: saved ? `${displayTitle(playable)} uit Later kijken halen` : `${displayTitle(playable)} later kijken` },
+    return focusable(id, { cls, req, onFocus, onSelect: () => toggleSaved(playable), label: saved ? `${displayTitle(playable)} uit Later kijken halen` : `${displayTitle(playable)} later kijken` },
       saved ? `${icon('check')}<span>Bij Later kijken<small>Kies om te verwijderen</small></span>` : `${icon('plus')}<span>Later kijken</span>`);
   }
 
-  function episodeList(item) {
-    return item.seasons.map((season) => `
-      <section class="season" aria-label="Seizoen ${season.number}">
-        <h2 class="row-title">Seizoen ${season.number}</h2>
-        <div class="episodes">${season.episodes.map((episode) => episodeRow(episode)).join('')}</div>
-      </section>`).join('');
-  }
-
-  function episodeRow(episode) {
+  // Entering the list from the picker lands on the episode being previewed,
+  // which on opening is the one the primary action would play.
+  function episodeRow(item, params, episode, isCurrent) {
     const progress = progressOf(episode.id);
-    let state = '';
-    let stateText = 'Niet gezien';
-    if (!episode.available) {
-      state = '<span class="ep-state is-gone">⊘ Niet beschikbaar</span>';
-      stateText = 'Niet beschikbaar';
-    } else if (progress.watched) {
-      state = `<span class="ep-state is-done">${icon('check')}Gezien</span>`;
-      stateText = 'Gezien';
-    } else if (progress.pos > 0) {
-      state = `<span class="ep-state is-part">◐ nog ${minutesText(episode.duration - progress.pos)}</span>`;
-      stateText = `Half gezien, nog ${minutesText(episode.duration - progress.pos)}`;
-    } else {
-      state = '<span class="ep-state">○ Niet gezien</span>';
-    }
+    const state = episodeState(episode);
+    const preview = () => {
+      params.preview = episode.id;
+      const pane = screenEl.querySelector('.ep-preview');
+      if (pane) pane.innerHTML = episodePreview(episode);
+    };
     const main = focusable(`ep:${episode.id}`, {
-      cls: `ep${episode.available ? '' : ' ep-gone'}`,
-      req: episode.available ? 'FR-CONTENT-02 FR-CONTENT-03 NFR-A11Y-04' : 'FR-CONTENT-02 FR-CONTENT-05',
-      label: `Aflevering ${episode.number}, ${episode.title}, ${minutesText(episode.duration)}, ${stateText}`,
+      cls: `ep${episode.available ? '' : ' ep-gone'}${isCurrent ? ' is-current' : ''}`,
+      req: episode.available ? 'FR-CONTENT-02 FR-CONTENT-03 FR-CONTENT-08 NFR-A11Y-04' : 'FR-CONTENT-02 FR-CONTENT-05',
+      label: `Aflevering ${episode.number}, ${episode.title}, ${minutesText(episode.duration)}, ${state.text}${episode.description ? `. ${episode.description}` : ''}`,
+      onFocus: preview,
       onSelect: () => play(episode),
     }, `<span class="ep-num">${episode.number}</span>
       <span class="ep-title">${esc(episode.title)}${progress.pos > 0 && !progress.watched ? progressBar(progress, episode.duration) : ''}</span>
-      <span class="ep-dur">${minutesText(episode.duration)}</span>${state}`);
+      ${state.html}`);
     const saver = episode.available || isSaved(episode)
-      ? saveButton(`epsave:${episode.id}`, episode, 'btn btn-small', 'FR-LATER-02 FR-LATER-03')
+      ? saveButton(`epsave:${episode.id}`, episode, 'btn btn-small', 'FR-LATER-02 FR-LATER-03', preview)
       : '<span class="btn-spacer"></span>';
     return `<div class="ep-row">${main}${saver}</div>`;
   }
@@ -1513,14 +1587,28 @@
     handlers = new Map();
     menus = new Map();
     reqs = new Map();
+    focusHandlers = new Map();
     const current = top();
     let html = SCREENS[current.screen](current.params);
     html += menuLayer() + dialogLayer();
     if (T.toast) html += `<div class="toast" role="status">${esc(T.toast)}</div>`;
+    // Re-rendering replaces the scrolling elements; put each one back where
+    // it was, so a toggle does not throw a long list back to its top.
+    const kept = new Map([...screenEl.querySelectorAll('[data-scroll-key]')]
+      .map((el) => [el.dataset.scrollKey, [el.scrollLeft, el.scrollTop]]));
     screenEl.innerHTML = html;
+    screenEl.querySelectorAll('[data-scroll-key]').forEach((el) => {
+      const position = kept.get(el.dataset.scrollKey);
+      if (!position) return;
+      el.style.scrollBehavior = 'auto';
+      [el.scrollLeft, el.scrollTop] = position;
+      el.style.scrollBehavior = '';
+    });
     tv.classList.toggle('is-kids', isKids() && current.screen !== 'signin');
     drawQr();
+    screenEl.classList.add('is-rendering');
     applyFocus();
+    screenEl.classList.remove('is-rendering');
     updatePanel();
   }
 
@@ -1559,6 +1647,9 @@
     if (!el) el = defaultFocus();
     screenEl.querySelectorAll('.is-focused').forEach((node) => node.classList.remove('is-focused'));
     T.focus = el ? el.dataset.f : null;
+    screenEl.querySelectorAll('[data-entry] .is-current').forEach((current) => {
+      if (current !== el) revealInRow(current);
+    });
     if (el) {
       el.classList.add('is-focused');
       reveal(el);
@@ -1573,17 +1664,14 @@
 
   // Scroll rows and pages by hand, so the browser page itself never jumps.
   function reveal(el) {
-    const scroller = el.closest('.scroller, .keyboard, .recent-search');
-    if (scroller && scroller.scrollWidth > scroller.clientWidth) {
-      const box = scroller.getBoundingClientRect();
-      const rect = el.getBoundingClientRect();
-      const scale = box.width / scroller.offsetWidth || 1;
-      const leftGap = (rect.left - box.left) / scale;
-      const rightGap = (rect.right - box.right) / scale;
-      if (leftGap < 60) scroller.scrollLeft += leftGap - 60;
-      else if (rightGap > -60) scroller.scrollLeft += rightGap + 60;
-    }
+    revealInRow(el);
     const page = el.closest('.vscroll');
+    const list = el.closest('.list-scroll');
+    if (page && page.closest('.detail')) {
+      revealOnDetail(page, el);
+      if (list) revealInList(list, el);
+      return;
+    }
     const homeRow = el.closest('.home .row');
     if (page && homeRow) {
       revealRow(page, homeRow);
@@ -1593,10 +1681,45 @@
       const scale = pageRect.height / page.clientHeight || 1;
       const topGap = (rect.top - pageRect.top) / scale;
       const bottomGap = (rect.bottom - pageRect.bottom) / scale;
-      const block = el.closest('.row, .season, .setting, .recent-search, .result') || el;
+      const block = el.closest('.row, .setting, .recent-search, .result') || el;
       const blockTop = (block.getBoundingClientRect().top - pageRect.top) / scale;
       if (topGap < 0 || blockTop < 0) page.scrollTop += Math.min(topGap, blockTop) - 30;
       else if (bottomGap > 0) page.scrollTop += bottomGap + 40;
+    }
+  }
+
+  // A series page has two resting positions: the header with its actions, or
+  // the season browser filling the screen below the top safe area.
+  function revealOnDetail(page, el) {
+    const browser = el.closest('.season-browser');
+    if (!browser) {
+      page.scrollTop = 0;
+      return;
+    }
+    const safeTop = parseFloat(getComputedStyle(screenEl).getPropertyValue('--safe-y')) || 60;
+    page.scrollTop = browser.offsetTop - safeTop - (isKids() ? 76 : 0);
+  }
+
+  function revealInList(list, el) {
+    const box = list.getBoundingClientRect();
+    const rect = el.getBoundingClientRect();
+    const scale = box.height / list.clientHeight || 1;
+    const topGap = (rect.top - box.top) / scale;
+    const bottomGap = (rect.bottom - box.bottom) / scale;
+    if (topGap < 20) list.scrollTop += topGap - 20;
+    else if (bottomGap > -20) list.scrollTop += bottomGap + 20;
+  }
+
+  function revealInRow(el) {
+    const scroller = el.closest('.scroller, .keyboard, .recent-search');
+    if (scroller && scroller.scrollWidth > scroller.clientWidth) {
+      const box = scroller.getBoundingClientRect();
+      const rect = el.getBoundingClientRect();
+      const scale = box.width / scroller.offsetWidth || 1;
+      const leftGap = (rect.left - box.left) / scale;
+      const rightGap = (rect.right - box.right) / scale;
+      if (leftGap < 60) scroller.scrollLeft += leftGap - 60;
+      else if (rightGap > -60) scroller.scrollLeft += rightGap + 60;
     }
   }
 
@@ -1620,6 +1743,8 @@
     T.fallback = [];
     applyFocus();
     updatePanel();
+    const onFocus = focusHandlers.get(T.focus);
+    if (onFocus) onFocus();
   }
 
   // Spatial navigation: the nearest element in the pressed direction, with
@@ -1661,7 +1786,8 @@
         const tolerance = Math.max(12, from.width * 0.15);
         if (direction === 'right' ? r.left < from.right - tolerance : r.right > from.left + tolerance) return;
         const overlap = Math.min(r.bottom, from.bottom) - Math.max(r.top, from.top);
-        if (overlap <= 0 && inRow) return;
+        // Nor may a sideways move jump into a row that is not level with it.
+        if (overlap <= 0 && (inRow || el.closest('.scroller'))) return;
         secondary = overlap > 0 ? 0 : Math.abs(y - cy);
       } else {
         primary = direction === 'down' ? r.top - from.bottom : from.top - r.bottom;
@@ -1672,6 +1798,13 @@
       const score = Math.max(0, primary) + secondary * 3;
       if (score < bestScore) { bestScore = score; best = el; }
     });
+    // A group such as the season picker is entered at its current element,
+    // not at whichever entry happens to be nearest (FR-CONTENT-07).
+    const group = best && best.closest('[data-entry]');
+    if (group && !group.contains(current)) {
+      const entry = group.querySelector('[data-f].is-current');
+      if (entry) best = entry;
+    }
     if (best) setFocus(best);
   }
 

@@ -88,6 +88,15 @@ requirement settles it; if one is right, the requirement should say so.
   local data on the right, so the page fits without scrolling. The account
   group says the television is signed in with NPO Plus, which the app knows
   from the subscription check (FR-AUTH-08); no requirement asks for that line.
+- **The series page** (FR-CONTENT-07, FR-CONTENT-08): the header image runs
+  edge to edge behind the title and actions; below it, the season picker is
+  one scrolling row of *Seizoen n* chips, and the season changes as focus
+  moves along it, as tvOS tabs do. The episodes are a one-line list with the
+  focused episode's image and description beside it, and coming down from the
+  picker lands on the episode being previewed. Once focus is in the list, the
+  page scrolls so the picker and list fill the screen. The example has a
+  27-season programme, *Wat Zit Erin?*, to try the picker on; *Kaas &
+  Klompen* has no episode descriptions, to show that case.
 - **A fully watched series** has no play button on its detail page; the page
   says so and offers the episode list. No requirement says what the primary
   action is in that case.
