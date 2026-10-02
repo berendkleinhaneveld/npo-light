@@ -50,7 +50,8 @@ struct TestSupportTests {
         let session = Session(idToken: "id",
                               accessToken: "access",
                               refreshToken: "refresh",
-                              accessTokenExpiresAt: Date(timeIntervalSince1970: 3600))
+                              accessTokenExpiresAt: Date(timeIntervalSince1970: 3600),
+                              deviceIdentifier: "device")
 
         try store.save(session)
         try store.save(session)
