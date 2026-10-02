@@ -28,8 +28,11 @@ follow Apple's
 [Human Interface Guidelines for tvOS layout](https://developer.apple.com/design/human-interface-guidelines/layout#tvOS):
 content inside the 60 pt top and bottom and 80 pt side safe area, and tiles on
 the five-column grid (320 pt wide, 40 pt apart), the same five-across layout
-the tvOS home screen uses. That leaves room for all three home rows on one
-screen.
+the tvOS home screen uses. Rows sit about 180 pt apart, artwork to artwork,
+well above the HIG's 100 pt minimum, so two rows and the top of the third
+show at once. Focusing a row that is partly off screen scrolls the page until
+the whole row, captions included, sits inside the bottom safe area; going
+back to the first row returns to the top.
 
 | Input | Does |
 | --- | --- |

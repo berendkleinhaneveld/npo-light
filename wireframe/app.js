@@ -1585,7 +1585,10 @@
       else if (rightGap > -60) scroller.scrollLeft += rightGap + 60;
     }
     const page = el.closest('.vscroll');
-    if (page) {
+    const homeRow = el.closest('.home .row');
+    if (page && homeRow) {
+      revealRow(page, homeRow);
+    } else if (page) {
       const pageRect = page.getBoundingClientRect();
       const rect = el.getBoundingClientRect();
       const scale = pageRect.height / page.clientHeight || 1;
@@ -1596,6 +1599,21 @@
       if (topGap < 0 || blockTop < 0) page.scrollTop += Math.min(topGap, blockTop) - 30;
       else if (bottomGap > 0) page.scrollTop += bottomGap + 40;
     }
+  }
+
+  // Home scrolls a row at a time, as on tvOS: a focused row is shown whole,
+  // captions included, clear of the bottom safe area; the first row brings
+  // the page back to the top.
+  function revealRow(page, row) {
+    const pageRect = page.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+    const scale = pageRect.height / page.clientHeight || 1;
+    const safeBottom = parseFloat(getComputedStyle(screenEl).getPropertyValue('--safe-y')) || 60;
+    const topGap = (rowRect.top - pageRect.top) / scale;
+    const bottomGap = (rowRect.bottom - pageRect.bottom) / scale;
+    if (!row.previousElementSibling) page.scrollTop = 0;
+    else if (topGap < 0) page.scrollTop += topGap;
+    else if (bottomGap > -safeBottom) page.scrollTop += bottomGap + safeBottom;
   }
 
   function setFocus(el) {

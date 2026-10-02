@@ -377,6 +377,7 @@ kbd {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  scroll-behavior: smooth;
   scrollbar-width: none;
   margin: 0 calc(-1 * var(--safe-x));
   padding: 0 var(--safe-x) 100px;
@@ -463,7 +464,7 @@ kbd {
 
 /* Rows and tiles */
 
-.row { display: grid; gap: 0; padding-top: 4px; }
+.row { display: grid; gap: 0; padding-top: 44px; }
 .home .row:first-child { padding-top: 16px; }
 .home .row-title { padding: 0; }
 
@@ -471,6 +472,7 @@ kbd {
   display: flex;
   gap: 40px;
   overflow-x: auto;
+  scroll-behavior: smooth;
   scrollbar-width: none;
   margin: 0 calc(-1 * var(--safe-x));
   padding: 14px var(--safe-x) 12px;
@@ -1136,5 +1138,6 @@ kbd {
   .tv-screen *, .tv-screen *::before, .tv-screen *::after {
     transition: none !important;
     animation: none !important;
+    scroll-behavior: auto !important;
   }
 }
