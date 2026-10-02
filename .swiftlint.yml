@@ -15,6 +15,7 @@ included:
   - NPO light
   - NPO lightTests
   - NPO lightUITests
+  - tools/storage-probe/Sources
 
 # Rules that are not on by default but that we want enforced.
 opt_in_rules:

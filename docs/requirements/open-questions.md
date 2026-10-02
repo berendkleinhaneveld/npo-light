@@ -302,12 +302,23 @@ Nothing has tested this, because nothing has yet run this app on the television.
 - Whether a `ModelConfiguration` pointed into `Caches` works, and how often tvOS
   actually evicts it in a household that uses the app weekly. "Evictable" is a
   licence the system holds, not a schedule it publishes.
-- Whether `UserDefaults` is durable on tvOS and what its real ceiling is. The
-  limit is commonly cited at around a megabyte, which the deliberately unbounded
-  progress store from
-  [ADR 0006](../adr/0006-recently-watched-holds-unfinished-items.md) would
-  eventually exceed even at a hundred bytes an entry.
-- Whether any durable writable location exists at all besides the Keychain.
+- Whether the proposed SwiftData configurations work on our hardware, and
+  whether their saved records survive abrupt termination and reboot.
+- Which storage policy can satisfy the unbounded progress retention in
+  [ADR 0006](../adr/0006-recently-watched-holds-unfinished-items.md) without
+  weakening local-only privacy or durability. A successful cache-store reboot
+  test cannot answer that policy question.
+
+**Documentation checked on 2026-09-20.** Apple's
+[tvOS storage guide](https://developer.apple.com/library/archive/documentation/General/Conceptual/AppleTV_PG/index.html)
+identifies `UserDefaults` as limited persistent local storage and says cache
+data may be purged while the app is not running. Its current
+[size-limit documentation](https://developer.apple.com/documentation/foundation/userdefaults/sizelimitexceededmessage)
+specifies a warning at 512 KB and process termination at or above 1 MB. Thus
+the earlier statement about having no durable storage applies to general files,
+not to small preferences. Defaults can hold the four settings values from ADR
+0011, but cannot hold an unbounded progress history. Do not test by writing a
+megabyte: that deliberately reaches the documented termination threshold.
 
 **Why it is more than a storage detail.** Pins, watch later and search history
 are things the family chose, and NFR-REL-04 promises they survive a hard stop.
@@ -318,10 +329,16 @@ the durability requirements reworded; `UserDefaults` for the small lists,
 against a ceiling ADR 0006 would have to give up; CloudKit, which NFR-PRIV-01
 forbids outright; or the Keychain, which is durable and is not a database.
 
-**How to answer:** an hour on the Apple TV that already ran the
-[Q-01](#q-01--how-does-npo-plus-sign-in-work-on-tvos) spike. A throwaway target
-that opens a default `ModelContainer` and reports what it throws; opens one
-configured into `Caches`, writes, and reads it back after a relaunch and after a
-reboot; and writes a megabyte to `UserDefaults` and reads it back. That settles
-which option is real before the first store is written, rather than after the
-family loses their pins.
+**Next experiment:** the isolated [storage probe](../../tools/storage-probe/README.md)
+opens a default `ModelContainer` and one in `Caches`, saves a marker in each,
+and writes a 256 KiB defaults payload. Separate read-only launches detect loss
+without silently replacing the evidence. Run it after termination and after a
+reboot on the Apple TV that ran the Q-01 spike; record the results using the
+probe's checklist. Hardware testing was deferred by the owner on 2026-09-20;
+there is no new device result yet.
+
+**Still open:** the storage location and retention/durability policy. The probe
+can establish compatibility and observed persistence, not guarantee that caches
+will never be evicted. Choosing a cache-backed store, bounded defaults or remote
+storage changes existing promises and needs an explicit decision and the
+corresponding requirement amendments before implementing the stores.

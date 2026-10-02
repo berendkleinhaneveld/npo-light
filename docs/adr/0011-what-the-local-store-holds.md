@@ -1,6 +1,7 @@
 # 0011. What the local store holds, and what it does not
 
-- **Status:** Proposed
+- **Status:** Accepted
+- **Accepted:** 2026-09-20 (schema only; storage location remains blocked by Q-09)
 - **Date:** 2026-09-03
 - **Deciders:** @berendkleinhaneveld
 
@@ -110,7 +111,17 @@ record gets a successor.
   the home page's pull request.
 - **Cached titles mean a stale copy of NPO's data by design**, refreshed whenever
   an item is fetched anyway. It is what FR-CONTENT-05 renders.
-- **Erasing is one coordinator's job**: a delete across five models filtered by
-  mode, plus both caches, or NFR-PRIV-04 does not hold.
+- **Erasing is one coordinator's job**: delete from all six models for the
+  selected mode, plus the associated cache data, or NFR-PRIV-04 does not hold.
+  This includes `PickedItem` records belonging to deleted `SearchTerm` records;
+  no orphaned picks may remain. Erasing one mode must preserve the other mode's
+  records (FR-SET-04). Store tests must verify both the absence of all six kinds
+  of erased records and the preservation of the other mode.
 - **If Q-09 finds nowhere durable, this schema survives and its promises do not.**
   NFR-REL-04 and every "survives relaunch" criterion would need rewording.
+- **Q-09 has a separate diagnostic app**, with synthetic data and its own
+  container, under `tools/storage-probe`. XcodeGen generates its disposable
+  project outside the repository; it is a development-only tool and introduces
+  no app dependency. The probe uses the repository's strict lint rules and
+  warnings-as-errors settings. Simulator results validate the probe, while
+  device observations and the storage-policy decision remain separate work.

@@ -1,6 +1,7 @@
 # 0010. Four layers above the NPO boundary
 
-- **Status:** Proposed
+- **Status:** Accepted
+- **Accepted:** 2026-09-20
 - **Date:** 2026-09-03
 - **Deciders:** @berendkleinhaneveld
 
@@ -14,7 +15,8 @@ template: a `NavigationSplitView` (an iPad shape), an `@Model` called `Item`
 standalone episode), and a `fatalError` on a failed `ModelContainer` (the crash
 loop NFR-REL-05 forbids).
 
-Ninety-four requirements are `Accepted` and none is `Implemented`. They say what
+Of ninety-four requirements, ninety-two are `Accepted`, one is `Implemented`
+and one is `Superseded`. They say what
 the app does, not what a view may know or where a decision lives — and that
 cannot be read off them: NFR-MAINT-03 wants decisions testable without a view,
 NFR-PERF-05 wants persistence off the main actor, and FR-MODE-02 and FR-AUTH-03
@@ -58,7 +60,7 @@ since FR-PLAY-05 continues into the next episode within one playback session.
 ## Alternatives considered
 
 - **`@Query` and `@Environment(\.modelContext)` in views** — the template's
-  shape, and what AGENTS.md currently says. Rejected: persistence on the main
+  shape, and what AGENTS.md prescribed before this decision. Rejected: persistence on the main
   actor (NFR-PERF-05), decisions in an untestable place (NFR-MAINT-03), and it
   does not reach — FR-HOME-04 resolves a pinned series to its next unwatched
   episode through the *backend*, and FR-HOME-06 filters on a computed threshold
@@ -72,9 +74,9 @@ since FR-PLAY-05 continues into the next episode within one playback session.
 
 ## Consequences
 
-- **Accepting this means amending AGENTS.md's SwiftData bullet**, which tells
-  agents to reach for `@Environment(\.modelContext)` in a view. Until then the two
-  disagree, and AGENTS.md is what an agent reads first.
+- **AGENTS.md's SwiftData guidance now follows this decision**: stores own the
+  contexts and views receive screen models. The architecture and the instructions
+  agents read first must stay in agreement.
 - **FR-HOME-10 becomes explicit work.** No `@Query` means no automatic change
   tracking: a screen model re-reads when it becomes active and when a coordinator
   says something changed. That is the price of this decision, paid in the home
