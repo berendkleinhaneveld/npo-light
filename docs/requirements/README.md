@@ -30,12 +30,13 @@ non-functional requirements describe *how well it has to do it*.
 
 ## Vocabulary
 
-- **Item** — anything the user can pin, find or watch: a **series**, a **film**
-  or a **standalone episode**. Where a rule holds for all three, it says
+- **Item** — anything the user can find or watch: a **series**, a **film** or
+  a **standalone episode**. Where a rule holds for all three, it says
   "item".
 - **Episode** — one playable instalment of a series.
 - **Mode** — *normal mode* or *kids mode*. The app is always in exactly one.
-- **Pinned** — an item the user deliberately put on the home page.
+- **Pinned** — a series the user deliberately put on the home page to follow
+  (FR-HOME-03). Only series are pinned.
 - **Recently watched** — items the user played, most recent first; the app's
   "continue watching" list.
 - **Saved** — a film or a single episode put on the watch later list, to be

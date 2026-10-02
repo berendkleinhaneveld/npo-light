@@ -33,19 +33,27 @@ The pinned row shows pinned items with the most recently pinned first.
 - Re-pinning an item that was unpinned moves it to the front.
 - The order survives relaunch.
 
-## FR-HOME-03 — Pin a series or a film
+## FR-HOME-03 — Pin a series, and only a series
 
 - **Status:** Accepted
 
-A series or a film can be pinned from its detail page (FR-CONTENT-03).
-Individual episodes cannot be pinned; the series is pinned instead.
+A series can be pinned from its detail page (FR-CONTENT-03). Nothing else can:
+an episode of a series pins its series, and a film or a standalone episode is
+saved for later instead (FR-LATER-02).
+
+**Rationale.** A pin says "we follow this, keep giving us the next episode"
+([ADR 0005](../adr/0005-watch-later-is-a-separate-episode-level-list.md)). A
+film has no next episode, so a pinned film would be a watch later entry that
+never empties itself — and a film that could go on either list would have two
+homes. Series are pinned, single things are saved, and every "we want to watch
+that" has exactly one place.
 
 **Acceptance criteria**
 
 - Pinning a series from an episode's context pins the series, not the episode.
-- A film pins as itself.
-- A standalone episode — one belonging to no series — pins as itself.
-- Pinning an already pinned item does not create a duplicate tile.
+- The pin action is absent — not merely inert — on the detail page of a film or
+  a standalone episode, which offers the save action instead (FR-LATER-03).
+- Pinning an already pinned series does not create a duplicate tile.
 
 ## FR-HOME-04 — A pinned series tile is the next episode
 
@@ -63,7 +71,6 @@ the next unwatched one — and playing it starts that episode.
   (FR-PLAY-02).
 - With every episode watched, the tile says so and offers the series detail
   page instead of playing.
-- A pinned film's tile plays the film, resuming if there is a stored position.
 
 ## FR-HOME-05 — Unpin
 

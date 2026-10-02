@@ -42,8 +42,10 @@ order, so that "the next episode" is well defined.
 - **Status:** Accepted
 
 Selecting an item anywhere in the app opens its detail page: title,
-description, artwork, a play or resume action, a pin or unpin action, and — for
-a series — its episode list with watched state per episode.
+description, artwork and a play or resume action. A series adds a pin or unpin
+action and its episode list with watched state per episode, browsed a season at
+a time (FR-CONTENT-07) with a preview of each episode (FR-CONTENT-08); a film or
+a standalone episode adds a save action instead (FR-HOME-03, FR-LATER-03).
 
 **Acceptance criteria**
 
@@ -51,8 +53,8 @@ a series — its episode list with watched state per episode.
   for one with a stored position (FR-PLAY-02).
 - For a series, the primary action plays the next unwatched episode
   (FR-HOME-04).
-- The pin action reflects the current pinned state and toggles it
-  (FR-HOME-03, FR-HOME-05).
+- On a series, the pin action reflects the current pinned state and toggles
+  it (FR-HOME-03, FR-HOME-05).
 
 ## FR-CONTENT-04 — Catalogue data comes from NPO and is cached
 
@@ -120,3 +122,61 @@ here.
   from when the item was fetched.
 - A stream the backend nevertheless refuses is reported as a playback error
   (FR-PLAY-10), not as a crash or a blank screen.
+
+## FR-CONTENT-07 — A series is browsed one season at a time
+
+- **Status:** Accepted
+
+A series' detail page shows the episodes of one season at a time, with a season
+picker above them that lists every season. Moving through the picker changes
+the season shown.
+
+**Rationale.** Some series run for decades: one programme on NPO has 27
+seasons. One list of every episode makes the season you want hundreds of
+presses away, and a page of every season's heading is not much better. A
+picker makes any season a few presses away and keeps the list short enough to
+read.
+
+**Acceptance criteria**
+
+- The page opens on the season that holds the episode the primary action would
+  play (FR-HOME-04); for a fully watched series, on the first season.
+- The picker shows one entry per season, in broadcast order, and the season
+  being shown is distinguishable without colour (NFR-A11Y-04).
+- Moving focus along the picker shows that season's episodes without a further
+  press, and coming back up from the episode list lands on the season being
+  shown, not on the first one (NFR-A11Y-01).
+- With 27 seasons, every season is reachable from the picker without scrolling
+  through another season's episodes.
+- A series with a single season shows no picker.
+- An unavailable episode keeps its place in its season's list (FR-CONTENT-02).
+
+## FR-CONTENT-08 — An episode can be judged before it is played
+
+- **Status:** Accepted
+
+A series' detail page shows the series' header image, and the episode that has
+focus in the list is previewed beside it with its own image and description.
+The list itself stays compact — one line per episode — so a season can be
+scanned at a glance.
+
+**Rationale.** For a series that tells one story, the next episode is all that
+matters and the list is a progress bar. For a series that is a collection —
+episodes about one subject each, watched in any order — the title alone is
+often not enough to choose by. NPO supplies an image and a description for
+every episode; showing them for the focused episode helps choose without
+turning the list into a wall of thumbnails.
+
+**Acceptance criteria**
+
+- The top of a series' page shows the series' header image; a film's or a
+  standalone episode's page shows its own.
+- Focusing an episode in the list shows its image, title, duration, watched
+  state and description beside the list, without a press and without leaving
+  the list.
+- Each episode takes one line in the list: number, title and watched state
+  (NFR-A11Y-04).
+- A missing image is drawn as a placeholder (FR-CONTENT-01), and a missing
+  description leaves no empty box.
+- The preview is announced with the focused episode, so VoiceOver reads the
+  description too (NFR-A11Y-02).

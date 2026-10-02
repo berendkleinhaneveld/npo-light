@@ -1,0 +1,64 @@
+name: Wireframe
+
+# Publishes the interactive wireframe in wireframe/ to GitHub Pages
+# (docs/adr/0010-publish-an-interactive-wireframe.md). Pull requests only
+# assemble it, so a broken build script shows up before it reaches master.
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "wireframe/**"
+      - "docs/requirements/**"
+      - "scripts/build-wireframe.sh"
+      - ".github/workflows/wireframe.yml"
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "wireframe/**"
+      - "docs/requirements/**"
+      - "scripts/build-wireframe.sh"
+      - ".github/workflows/wireframe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Assemble the wireframe
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Assemble the site
+        run: ./scripts/build-wireframe.sh build/wireframe
+
+      - name: Upload the site for Pages
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: build/wireframe
+
+  deploy:
+    name: Publish to GitHub Pages
+    if: ${{ github.event_name != 'pull_request' }}
+    needs: build
+    runs-on: ubuntu-latest
+    # Only one deployment at a time, and never cancel one halfway.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>NPO light wireframe</title>
+  <meta name="description" content="A clickable wireframe of NPO light, the tvOS app, built from its requirements.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Fredoka:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+    <header class="page-head">
+      <div>
+        <p class="kicker">Interactive wireframe · tvOS 26</p>
+        <h1>NPO light</h1>
+      </div>
+      <p class="lede">A clickable sketch of the Apple TV app, drawn from the requirements in
+        <a href="https://github.com/berendkleinhaneveld/npo-light/tree/master/docs/requirements" target="_blank" rel="noopener">docs/requirements</a>.
+        The television speaks Dutch, as the app will. Titles are invented and nothing here talks to NPO.
+        Where this sketch and the requirements disagree, the requirements win.</p>
+    </header>
+
+    <main class="stage">
+      <div class="tv-wrap">
+        <div class="tv" id="tv" lang="nl">
+          <div class="tv-screen" id="tv-screen"></div>
+        </div>
+        <p class="tv-caption"><b id="screen-name">Home</b><span aria-hidden="true"> · </span><span id="mode-name">normal mode</span><span aria-hidden="true"> · </span>simulated date <span id="sim-date"></span></p>
+      </div>
+
+      <aside class="panel" aria-label="Wireframe controls">
+        <section class="card remote-card" aria-label="Remote">
+          <div class="remote">
+            <div class="clickpad">
+              <button type="button" class="pad pad-up" data-remote="up" aria-label="Up"><span aria-hidden="true">▲</span></button>
+              <button type="button" class="pad pad-left" data-remote="left" aria-label="Left"><span aria-hidden="true">◀</span></button>
+              <button type="button" class="pad pad-select" data-remote="select" aria-label="Select, hold for options">OK</button>
+              <button type="button" class="pad pad-right" data-remote="right" aria-label="Right"><span aria-hidden="true">▶</span></button>
+              <button type="button" class="pad pad-down" data-remote="down" aria-label="Down"><span aria-hidden="true">▼</span></button>
+            </div>
+            <div class="remote-buttons">
+              <button type="button" class="round" data-remote="menu" aria-label="Menu (back)">Menu</button>
+              <button type="button" class="round" data-remote="playpause" aria-label="Play or pause"><span aria-hidden="true">▶︎❚❚</span></button>
+            </div>
+          </div>
+          <dl class="keys">
+            <div><dt><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd></dt><dd>Move focus</dd></div>
+            <div><dt><kbd>Enter</kbd></dt><dd>OK. Hold it for more options</dd></div>
+            <div><dt><kbd>Esc</kbd></dt><dd>Menu: one level back</dd></div>
+            <div><dt><kbd>Space</kbd></dt><dd>Play / pause</dd></div>
+            <div><dt>Mouse</dt><dd>Click to choose, right-click or long-press for options</dd></div>
+            <div><dt>Search</dt><dd>Just type; Backspace deletes</dd></div>
+          </dl>
+        </section>
+
+        <section class="card" aria-labelledby="req-heading">
+          <h2 id="req-heading">Requirements</h2>
+          <p class="card-label">Focused element</p>
+          <ul class="reqs" id="req-focus"></ul>
+          <p class="card-label">Also on this screen</p>
+          <ul class="reqs" id="req-list"></ul>
+        </section>
+
+        <section class="card" id="scenario-signin" aria-labelledby="signin-heading" hidden>
+          <h2 id="signin-heading">On the phone</h2>
+          <p class="card-note">What happens at id.npo.nl/koppel. The television waits by itself.</p>
+          <div class="button-grid">
+            <button type="button" id="sc-approve">Approve, account has NPO Plus</button>
+            <button type="button" id="sc-approve-free">Approve, account without Plus</button>
+            <button type="button" id="sc-deny">Cancel on the phone</button>
+            <button type="button" id="sc-expire">Let the code expire</button>
+            <button type="button" id="sc-neterror">Network fails</button>
+          </div>
+        </section>
+
+        <section class="card" id="scenario-player" aria-labelledby="player-heading" hidden>
+          <h2 id="player-heading">Playback</h2>
+          <div class="button-grid">
+            <button type="button" id="sc-near-end">Skip to the credits</button>
+            <button type="button" id="sc-end">Skip to the very end</button>
+            <button type="button" id="sc-still">Trigger “Kijk je nog?” now</button>
+          </div>
+          <label class="field" for="opt-speed">Playback speed
+            <select id="opt-speed">
+              <option value="1">1× (real time)</option>
+              <option value="10">10×</option>
+              <option value="30">30×</option>
+              <option value="120">120×</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="card" aria-labelledby="conditions-heading">
+          <h2 id="conditions-heading">Conditions</h2>
+          <label class="check" for="opt-offline"><input type="checkbox" id="opt-offline"> No network</label>
+          <label class="check" for="opt-slow"><input type="checkbox" id="opt-slow"> Slow backend (2.5 s per search)</label>
+          <label class="check" for="opt-fails"><input type="checkbox" id="opt-fails"> Playback fails to start</label>
+          <div class="button-grid">
+            <button type="button" id="sc-day">Move the clock one day on</button>
+            <button type="button" id="sc-signout">Sign out</button>
+            <button type="button" id="sc-reset">Restore the example data</button>
+            <button type="button" id="sc-empty">Start empty</button>
+          </div>
+          <p class="card-note">State is kept in this browser only.</p>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="requirements.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
