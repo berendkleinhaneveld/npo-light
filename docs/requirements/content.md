@@ -42,8 +42,9 @@ order, so that "the next episode" is well defined.
 - **Status:** Accepted
 
 Selecting an item anywhere in the app opens its detail page: title,
-description, artwork, a play or resume action, a pin or unpin action, and — for
-a series — its episode list with watched state per episode.
+description, artwork and a play or resume action. A series adds a pin or unpin
+action and its episode list with watched state per episode; a film or a
+standalone episode adds a save action instead (FR-HOME-03, FR-LATER-03).
 
 **Acceptance criteria**
 
@@ -51,8 +52,8 @@ a series — its episode list with watched state per episode.
   for one with a stored position (FR-PLAY-02).
 - For a series, the primary action plays the next unwatched episode
   (FR-HOME-04).
-- The pin action reflects the current pinned state and toggles it
-  (FR-HOME-03, FR-HOME-05).
+- On a series, the pin action reflects the current pinned state and toggles
+  it (FR-HOME-03, FR-HOME-05).
 
 ## FR-CONTENT-04 — Catalogue data comes from NPO and is cached
 
