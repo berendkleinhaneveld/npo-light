@@ -13,7 +13,7 @@
       title,
       description,
       youth: Boolean(options.youth),
-      available: true,
+      available: !options.gone,
       seasons: options.seasons.map((titles, seasonIndex) => ({
         number: seasonIndex + 1,
         episodes: titles.map((episodeTitle, episodeIndex) => {
@@ -27,7 +27,7 @@
             number,
             title: episodeTitle,
             duration: options.minutes * MIN,
-            available: !unavailable.includes(`${season}.${number}`),
+            available: !options.gone && !unavailable.includes(`${season}.${number}`),
           };
         }),
       })),
@@ -123,6 +123,9 @@
     series('treinreis', 'Met de Trein naar Tromsø',
       'Vier weken, vierentwintig treinen en geen enkel vliegtuig: van Utrecht naar het noorden.',
       { minutes: 45, seasons: [['Utrecht–Hamburg', 'Hamburg–Stockholm', 'Stockholm–Narvik', 'Narvik–Tromsø']] }),
+    series('kustwacht', 'De Kustwacht',
+      'Een jaar mee met de reddingsboten van Terschelling.',
+      { minutes: 40, seasons: [['Storm op komst', 'Vermist', 'De oefening']], gone: true }),
     film('peelland', 'Mist over de Peel',
       'Een boswachter vindt een verlaten auto in het veen, en niemand in het dorp mist iemand.', 101),
     film('tulpen', 'Het Tulpenbedrijf',

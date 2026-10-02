@@ -15,7 +15,7 @@
   const STORAGE_KEY = 'npo-light-wireframe';
   // Bumped whenever the example data changes, so a stale saved state is
   // replaced by the new example instead of hiding it.
-  const STATE_VERSION = 2;
+  const STATE_VERSION = 3;
 
   // The constants the requirements name.
   const RECENT_CAP = 20; // FR-HOME-06
@@ -58,17 +58,17 @@
     const h = 60 * 60 * 1000;
     const normal = emptyMode();
     // More pins and history than fit across the screen, so the rows scroll.
+    // Only series are pinned (FR-HOME-03); films wait in watch later.
     normal.pins = [
       { id: 'polderpost', at: now - DAY },
       { id: 'dijkwachters', at: now - 2 * DAY },
-      { id: 'storm', at: now - 3 * DAY },
       { id: 'grachten', at: now - 4 * DAY },
       { id: 'wadden', at: now - 5 * DAY },
-      { id: 'tulpen', at: now - 6 * DAY },
       { id: 'treinreis', at: now - 8 * DAY },
-      { id: 'elfsteden', at: now - 9 * DAY },
       { id: 'kantoor', at: now - 10 * DAY },
-      { id: 'zeeland', at: now - 12 * DAY },
+      { id: 'kaas', at: now - 11 * DAY },
+      { id: 'fleurwild', at: now - 14 * DAY },
+      { id: 'kustwacht', at: now - 20 * DAY },
     ];
     normal.progress = {
       'polderpost-s1e1': { pos: 2700, watched: true, finishedAt: now - 3 * DAY },
@@ -120,7 +120,11 @@
     normal.later = [
       { id: 'afsluitdijk', at: now - DAY },
       { id: 'bakfiets-s1e3', at: now - 2 * DAY },
+      { id: 'storm', at: now - 3 * DAY },
       { id: 'sterren', at: now - 4 * DAY },
+      { id: 'tulpen', at: now - 6 * DAY },
+      { id: 'elfsteden', at: now - 9 * DAY },
+      { id: 'zeeland', at: now - 12 * DAY },
     ];
     normal.searches = [
       { term: 'Fl', picks: ['fleurwild'], at: now - h },
@@ -535,7 +539,7 @@
     const later = mode.later.map((entry) => get(entry.id)).filter(Boolean);
 
     const emptyPinned = emptyState('pinned', 'Nog niets vastgezet.',
-      'Zoek een serie of film en zet hem vast. Dan staat hij hier, met de volgende aflevering klaar.', 'FR-HOME-09');
+      'Zoek een serie en zet hem vast. Dan staat hij hier, met de volgende aflevering klaar.', 'FR-HOME-09');
     const emptyRecent = emptyState('recent', 'Nog niets bekeken.',
       'Wat je gaat kijken, komt hier te staan. Zoek iets om te beginnen.', 'FR-HOME-09');
 
@@ -591,30 +595,23 @@
         onSelect: () => openDetail(item),
       }));
     }
-    if (item.kind === 'series') {
-      const next = nextEpisode(item);
-      if (!next) {
-        return tile(id, Object.assign(common, {
-          line: 'Alle afleveringen gezien', state: { kind: 'done', text: `${icon('check')}Uitgekeken` },
-          label: `${item.title}, serie, alle afleveringen gezien`,
-          onSelect: () => openDetail(item),
-        }));
-      }
-      const progress = progressOf(next.id);
-      const left = next.duration - progress.pos;
+    // Only a series can be pinned (FR-HOME-03), so a pinned tile always
+    // names the series' next episode.
+    const next = nextEpisode(item);
+    if (!next) {
       return tile(id, Object.assign(common, {
-        line: `${episodeCode(next)} · ${next.title}${progress.pos > 0 ? ` · nog ${minutesText(left)}` : ''}`,
-        progress, duration: next.duration,
-        label: `${item.title}, serie. ${playLabel(next)}: seizoen ${next.season}, aflevering ${next.number}, ${next.title}${progress.pos > 0 ? `, nog ${minutesText(left)}` : ''}`,
-        onSelect: () => play(next),
+        line: 'Alle afleveringen gezien', state: { kind: 'done', text: `${icon('check')}Uitgekeken` },
+        label: `${item.title}, serie, alle afleveringen gezien`,
+        onSelect: () => openDetail(item),
       }));
     }
-    const progress = progressOf(item.id);
+    const progress = progressOf(next.id);
+    const left = next.duration - progress.pos;
     return tile(id, Object.assign(common, {
-      line: progress.pos > 0 && !progress.watched ? `${KIND[item.kind]} · nog ${minutesText(item.duration - progress.pos)}` : `${KIND[item.kind]} · ${minutesText(item.duration)}`,
-      progress, duration: item.duration,
-      label: `${item.title}, ${KIND[item.kind].toLowerCase()}`,
-      onSelect: () => play(item),
+      line: `${episodeCode(next)} · ${next.title}${progress.pos > 0 ? ` · nog ${minutesText(left)}` : ''}`,
+      progress, duration: next.duration,
+      label: `${item.title}, serie. ${playLabel(next)}: seizoen ${next.season}, aflevering ${next.number}, ${next.title}${progress.pos > 0 ? `, nog ${minutesText(left)}` : ''}`,
+      onSelect: () => play(next),
     }));
   }
 
@@ -734,7 +731,9 @@
       actions.push(focusable('detail:play', { cls: 'btn btn-primary', req: 'FR-CONTENT-03 FR-PLAY-02 FR-HOME-04', onSelect: () => play(playable) },
         `${icon('play')}<span>${playLabel(playable)}${sub}</span>${progress.pos > 0 && !progress.watched ? progressBar(progress, playable.duration) : ''}`));
     }
-    if (item.kind !== 'episode' || !item.seriesId) {
+    // FR-HOME-03: only a series has a pin action; a film or a standalone
+    // episode has the save action instead.
+    if (item.kind === 'series') {
       const pinned = isPinned(item);
       actions.push(focusable('detail:pin', { cls: 'btn', req: 'FR-HOME-03 FR-HOME-05 FR-CONTENT-03', onSelect: () => togglePin(item) },
         pinned ? `${icon('check')}<span>Vastgezet<small>Kies om los te maken</small></span>` : `${icon('pin')}<span>Vastzetten</span>`));
