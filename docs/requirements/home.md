@@ -152,15 +152,27 @@ asked days later, and whoever was not in the room never sees it.
 
 - **Status:** Accepted
 
-An item can be removed from the recently watched row.
+An item can be removed from the recently watched row. It is hidden from the row
+and nothing else: playback positions and watched marks are untouched, and
+playing the item again brings it back.
+
+**Rationale.** "I do not want to see this here" is all the gesture means. It is
+not "forget where we were" — erasing local data is for that (FR-SET-04) — and an
+app that quietly discarded a half-watched film because somebody tidied the row
+would be throwing away exactly what the row exists to protect.
 
 **Acceptance criteria**
 
-- Removing takes the tile away immediately and it does not come back on
-  relaunch.
-- Removing an item discards its stored playback position, so playing it again
-  starts from the beginning.
-- Removing does not unpin the item if it is also pinned.
+- Removing takes the tile away immediately, without leaving the home page, and
+  it stays away across relaunches.
+- Playback positions and watched marks are unchanged, so the item's detail page
+  still reads *Verder kijken* and resumes where it stopped (FR-CONTENT-03,
+  FR-PLAY-02).
+- Playing the item again — for a series, any episode of it — puts it back on the
+  row at the front with its progress intact (FR-PLAY-09).
+- A hidden item does not occupy one of the twenty slots (FR-HOME-06).
+- Removing a series does not unpin it (FR-HOME-03), and removing a film or an
+  episode does not take it off the watch later list (FR-LATER-08).
 
 ## FR-HOME-09 — Empty states say what to do
 
@@ -197,8 +209,8 @@ An entry pushed off the end of the row by the cap keeps its stored playback
 position. Finding the item again resumes it.
 
 **Rationale.** The cap is about how long a row is worth travelling, not about
-forgetting. Removing an item by hand (FR-HOME-08) is the deliberate act that
-throws the position away; being crowded out by twenty newer things is not.
+forgetting. Neither is removing an item by hand, which hides a tile and keeps
+the position behind it (FR-HOME-08).
 
 **Acceptance criteria**
 
@@ -207,6 +219,7 @@ throws the position away; being crowded out by twenty newer things is not.
   *Verder kijken* (FR-CONTENT-03).
 - Playing an evicted item puts it back on the row at the front, with its
   progress intact.
-- Positions outlive the row: only removal by hand (FR-HOME-08) or erasing local
-  data (FR-SET-04) discards one
-  ([ADR 0006](../adr/0006-recently-watched-holds-unfinished-items.md)).
+- Positions outlive the row: erasing local data (FR-SET-04) is the only thing
+  that discards one, and removing an item by hand hides it and keeps its
+  position (FR-HOME-08,
+  [ADR 0006](../adr/0006-recently-watched-holds-unfinished-items.md)).

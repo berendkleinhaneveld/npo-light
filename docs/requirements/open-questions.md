@@ -273,3 +273,72 @@ fact, and would also show whether a lapsed subscription is distinguishable from
 one that never existed — the two states this assumption cannot tell apart. It
 is recorded as a nice-to-have on the proof-of-concept's capture backlog, outside
 this repository.
+
+## Q-09 — Where does local data actually live on an Apple TV?
+
+**Blocks:** NFR-REL-04, and with it every criterion that reads "survives
+relaunch" — FR-HOME-02, FR-LATER-01, FR-MODE-01, FR-PLAY-03, FR-SEARCH-04.
+
+**This repository already knows the hard part and has not drawn the
+consequence.** Getting the refresh token into the Keychain
+([ADR 0007](../adr/0007-sign-in-with-the-device-code-grant.md), FR-AUTH-02)
+established on hardware that a real Apple TV gives an app no writable durable
+storage: `Documents` and `Application Support` are read-only — writing there
+fails with `NSCocoaErrorDomain 513` — and only `Caches` and `tmp` are writable,
+both evictable. The tvOS Simulator writes to Application Support happily, which
+is why this had to be found on a device.
+
+That was recorded as a fact about the *token*. It is a fact about the whole
+local store. NFR-PRIV-01 says "the SwiftData store is local; no CloudKit
+container is configured", AGENTS.md names SwiftData as the persistence
+technology, and a default `ModelConfiguration` puts its store in Application
+Support. If the finding holds for this app, `ModelContainer(for:)` throws on a
+real Apple TV before a single pin is saved — and the template's `fatalError`
+turns that into a crash on launch, which is what NFR-REL-05 exists to forbid.
+Nothing has tested this, because nothing has yet run this app on the television.
+
+**What is not known.**
+
+- Whether a `ModelConfiguration` pointed into `Caches` works, and how often tvOS
+  actually evicts it in a household that uses the app weekly. "Evictable" is a
+  licence the system holds, not a schedule it publishes.
+- Whether the proposed SwiftData configurations work on our hardware, and
+  whether their saved records survive abrupt termination and reboot.
+- Which storage policy can satisfy the unbounded progress retention in
+  [ADR 0006](../adr/0006-recently-watched-holds-unfinished-items.md) without
+  weakening local-only privacy or durability. A successful cache-store reboot
+  test cannot answer that policy question.
+
+**Documentation checked on 2026-09-20.** Apple's
+[tvOS storage guide](https://developer.apple.com/library/archive/documentation/General/Conceptual/AppleTV_PG/index.html)
+identifies `UserDefaults` as limited persistent local storage and says cache
+data may be purged while the app is not running. Its current
+[size-limit documentation](https://developer.apple.com/documentation/foundation/userdefaults/sizelimitexceededmessage)
+specifies a warning at 512 KB and process termination at or above 1 MB. Thus
+the earlier statement about having no durable storage applies to general files,
+not to small preferences. Defaults can hold the four settings values from ADR
+0012, but cannot hold an unbounded progress history. Do not test by writing a
+megabyte: that deliberately reaches the documented termination threshold.
+
+**Why it is more than a storage detail.** Pins, watch later and search history
+are things the family chose, and NFR-REL-04 promises they survive a hard stop.
+If the only writable location is one the system may empty, that promise cannot
+be kept as written: either the mechanism changes or the requirement does. The
+options are all unattractive and none is chosen here — a store in `Caches` with
+the durability requirements reworded; `UserDefaults` for the small lists,
+against a ceiling ADR 0006 would have to give up; CloudKit, which NFR-PRIV-01
+forbids outright; or the Keychain, which is durable and is not a database.
+
+**Next experiment:** the isolated [storage probe](../../tools/storage-probe/README.md)
+opens a default `ModelContainer` and one in `Caches`, saves a marker in each,
+and writes a 256 KiB defaults payload. Separate read-only launches detect loss
+without silently replacing the evidence. Run it after termination and after a
+reboot on the Apple TV that ran the Q-01 spike; record the results using the
+probe's checklist. Hardware testing was deferred by the owner on 2026-09-20;
+there is no new device result yet.
+
+**Still open:** the storage location and retention/durability policy. The probe
+can establish compatibility and observed persistence, not guarantee that caches
+will never be evicted. Choosing a cache-backed store, bounded defaults or remote
+storage changes existing promises and needs an explicit decision and the
+corresponding requirement amendments before implementing the stores.

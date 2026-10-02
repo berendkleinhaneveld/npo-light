@@ -164,8 +164,8 @@ its progress, until it passes the completion threshold or is removed by hand.
 - Playing it again from either row resumes at the stored position
   (FR-PLAY-02).
 - Removing it from recently watched (FR-HOME-08) leaves it on the watch later
-  list — but, since that discards the stored position, its tile then shows no
-  progress.
+  list, still showing its progress: that removal hides a row tile and discards
+  nothing.
 
 ## FR-LATER-09 — Remove by hand
 

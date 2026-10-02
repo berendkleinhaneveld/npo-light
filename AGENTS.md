@@ -182,9 +182,12 @@ SwiftLint settles formatting; these are the conventions it cannot check.
 - **SwiftUI.** Keep `body` small; extract a subview or a computed property
   instead of nesting a large view tree. Views hold no business logic beyond
   presentation. Every view gets a `#Preview`.
-- **SwiftData.** `@Model` types live in `NPO light/`, one type per file. Access
-  the context through `@Environment(\.modelContext)`; do not reach for the
-  shared container from a view.
+- **SwiftData.** `@Model` types live in `NPO light/`, one type per file. As
+  decided in ADR 0011, actor-isolated stores own their `ModelContext`, perform
+  persistence off the main actor, and return `Sendable` value types. Store
+  methods take the mode explicitly. Views use injected screen models, never
+  `@Query` or `@Environment(\.modelContext)`. Compose dependencies in
+  `NPOLightApp`; do not reach for a shared container from a view.
 - **Concurrency.** UI state is `@MainActor`. Do not add `@unchecked Sendable`
   or `nonisolated(unsafe)` to silence the compiler — model the isolation
   properly.
