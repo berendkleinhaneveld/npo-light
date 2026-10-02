@@ -317,7 +317,7 @@ data may be purged while the app is not running. Its current
 specifies a warning at 512 KB and process termination at or above 1 MB. Thus
 the earlier statement about having no durable storage applies to general files,
 not to small preferences. Defaults can hold the four settings values from ADR
-0011, but cannot hold an unbounded progress history. Do not test by writing a
+0012, but cannot hold an unbounded progress history. Do not test by writing a
 megabyte: that deliberately reaches the documented termination threshold.
 
 **Why it is more than a storage detail.** Pins, watch later and search history

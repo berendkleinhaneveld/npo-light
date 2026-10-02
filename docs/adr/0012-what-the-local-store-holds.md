@@ -1,4 +1,4 @@
-# 0011. What the local store holds, and what it does not
+# 0012. What the local store holds, and what it does not
 
 - **Status:** Accepted
 - **Accepted:** 2026-09-20 (schema only; storage location remains blocked by Q-09)
@@ -14,7 +14,7 @@ NFR-PRIV-04, NFR-REL-04).
 rules and one structural fact — positions outlive the row — but not what the
 records are, how mode scopes them, or where the catalogue cache sits. Five
 feature areas are about to be built on that gap in parallel
-([ADR 0010](0010-four-layers-above-the-npo-boundary.md)).
+([ADR 0011](0011-four-layers-above-the-npo-boundary.md)).
 
 **This decides the shape of the store, not its location.**
 [Q-09](../requirements/open-questions.md#q-09--where-does-local-data-actually-live-on-an-apple-tv)
@@ -52,7 +52,7 @@ playing the item again (FR-PLAY-09).
 
 ### `mode` is a column, not a container per mode
 
-Stores take it as an argument (ADR 0010) and never read an ambient one, so
+Stores take it as an argument (ADR 0011) and never read an ambient one, so
 FR-MODE-05's scoping is visible in every signature and provable per store.
 
 ### Progress carries two independent facts

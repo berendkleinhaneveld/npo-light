@@ -1,4 +1,4 @@
-# 0010. Four layers above the NPO boundary
+# 0011. Four layers above the NPO boundary
 
 - **Status:** Accepted
 - **Accepted:** 2026-09-20
@@ -33,7 +33,7 @@ no `.shared`, no global mutable state.
 **Stores** — one per local concern: pins, recently watched, progress, watch
 later, search history. Actors with their own `ModelContext`, so persistence is
 off the main actor (NFR-PERF-05), and the only types that know the schema exists
-([ADR 0011](0011-what-the-local-store-holds.md)). They return value types, never
+([ADR 0012](0012-what-the-local-store-holds.md)). They return value types, never
 a `@Model` instance, which is not `Sendable`.
 
 **Every store method takes the mode as an argument**, and no store reads an

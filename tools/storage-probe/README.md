@@ -3,7 +3,7 @@
 A diagnostic app with its own bundle identifier and container. It does not read
 NPO credentials, contact the backend, or change NPO light's data. It checks a
 default SwiftData store, a SwiftData store in `Caches`, and 256 KiB of
-`UserDefaults`. Its schema is a single synthetic marker, not ADR 0011's schema.
+`UserDefaults`. Its schema is a single synthetic marker, not ADR 0012's schema.
 
 This is a disposable experiment for [Q-09](../../docs/requirements/open-questions.md#q-09--where-does-local-data-actually-live-on-an-apple-tv),
 not a production persistence implementation or a requirement coverage test.

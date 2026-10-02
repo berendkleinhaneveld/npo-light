@@ -176,7 +176,7 @@ SwiftLint settles formatting; these are the conventions it cannot check.
   instead of nesting a large view tree. Views hold no business logic beyond
   presentation. Every view gets a `#Preview`.
 - **SwiftData.** `@Model` types live in `NPO light/`, one type per file. As
-  decided in ADR 0010, actor-isolated stores own their `ModelContext`, perform
+  decided in ADR 0011, actor-isolated stores own their `ModelContext`, perform
   persistence off the main actor, and return `Sendable` value types. Store
   methods take the mode explicitly. Views use injected screen models, never
   `@Query` or `@Environment(\.modelContext)`. Compose dependencies in

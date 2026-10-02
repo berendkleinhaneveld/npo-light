@@ -7,7 +7,7 @@ import SwiftUI
 
 /// The app's only screen until there is one.
 ///
-/// ADR 0010 makes this the point where the session decides between sign-in and
+/// ADR 0011 makes this the point where the session decides between sign-in and
 /// home (FR-AUTH-01). Neither exists yet, so this is scaffolding: the first
 /// feature pull request replaces the body outright rather than building on it.
 ///
