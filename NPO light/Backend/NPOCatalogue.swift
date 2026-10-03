@@ -13,6 +13,9 @@ import Synchronization
 /// catalogue to whatever the profile asks for (ADR 0014). Nothing here filters
 /// on an age rating, which would be the wrong rule — NPO gates on the series,
 /// not on the episode.
+///
+/// Its entrances are `@concurrent`, so that a search typed on the main actor is
+/// fetched and decoded off it (FR-SEARCH-03, NFR-PERF-05).
 nonisolated final class NPOCatalogue: Catalogue {
     private struct KnownProfiles {
         /// The sign-in these profiles belong to. Another account has others.
@@ -31,10 +34,12 @@ nonisolated final class NPOCatalogue: Catalogue {
 
     /// Always asks NPO: a kids profile made on a phone a minute ago should be
     /// found without signing in again.
+    @concurrent
     func availableModes() async throws -> Set<Mode> {
         Set(try await fetchProfiles().keys)
     }
 
+    @concurrent
     func search(for query: String, in mode: Mode) async throws -> SearchResults {
         let call = BackendCall(path: NPOWire.searchPath,
                                query: [URLQueryItem(name: "query", value: query),
@@ -43,11 +48,13 @@ nonisolated final class NPOCatalogue: Catalogue {
         return try await body(SearchBody.self, from: call).results
     }
 
+    @concurrent
     func series(_ id: ItemID, in mode: Mode) async throws -> SeriesDetail {
         let call = BackendCall(path: NPOWire.seriesPath(id), profile: try await profile(for: mode))
         return try await body(SeriesPageBody.self, from: call).detail
     }
 
+    @concurrent
     func episodes(of season: SeasonID, in mode: Mode) async throws -> [Playable] {
         // `asc` is broadcast order, and what NPO's own app asks for.
         let call = BackendCall(path: NPOWire.episodesPath(season),
