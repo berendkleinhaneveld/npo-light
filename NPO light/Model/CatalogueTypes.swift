@@ -6,7 +6,7 @@
 import Foundation
 
 /// A series as a list shows it: enough to recognise it and to open it.
-nonisolated struct SeriesSummary: Sendable, Equatable, Identifiable {
+nonisolated struct SeriesSummary: Sendable, Hashable, Identifiable {
     let id: ItemID
     let title: String
     /// May be missing; a tile then draws a placeholder (FR-CONTENT-01).
