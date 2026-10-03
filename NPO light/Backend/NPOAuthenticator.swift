@@ -218,20 +218,8 @@ nonisolated final class NPOAuthenticator: Authenticating {
 
     // MARK: the wire
 
-    /// Everything a transport can throw that is not already the app's own error
-    /// means the request or its reply got lost on the way.
     private func send(_ request: URLRequest) async throws -> HTTPResponse {
-        do {
-            return try await transport.send(request)
-        } catch let error as BackendError {
-            throw error
-        } catch let error as CancellationError {
-            throw error
-        } catch {
-            // `URLSession` reports a cancelled task as a failed request.
-            try Task.checkCancellation()
-            throw BackendError.unreachable
-        }
+        try await transport.reaching(request)
     }
 
     private static func decoded<Body: Decodable>(_ type: Body.Type,

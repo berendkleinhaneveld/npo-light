@@ -1,0 +1,34 @@
+{
+  "stream": {
+    "streamURL": "https://npo.prd.cdn.bcms.kpn.com/sanitised/playlist.m3u8",
+    "streamProfile": "hls",
+    "drmType": "fairplay",
+    "drmExpirationInSeconds": 1788209420,
+    "drm": {
+      "token": "sanitised.licence.token",
+      "certificateUrl": "https://fairplay.npo.nl/certificate/fairplay.cer",
+      "licenseUrl": "https://npo-drm-gateway.samgcloud.nepworldwide.nl/authentication",
+      "type": "fairplay",
+      "expirationInSeconds": 1788209420,
+      "httpHeaders": {
+        "X-Custom-Data": "sanitised.licence.token"
+      }
+    },
+    "avType": "vod",
+    "isLiveStream": false
+  },
+  "assets": {
+    "subtitles": null,
+    "scrubbingThumbnail": null,
+    "preroll": null
+  },
+  "metadata": {
+    "prid": "POW_04274500",
+    "hasPreroll": "false",
+    "duration": 2538540,
+    "title": "Wisting"
+  },
+  "user": {
+    "type": "plus"
+  }
+}
