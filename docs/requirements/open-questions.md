@@ -389,27 +389,61 @@ one thing it could have shown — that the store opens and survives a reboot —
 says nothing about eviction, which is what the decision turns on. It was removed
 from the repository with this answer; git keeps it.
 
-## Q-10 — What kind of thing is a programme in a list?
+## Q-10 — Does a programme in a list belong to a series?
 
-**Blocks:** FR-CONTENT-01 for films and standalone episodes, and with it
-FR-LATER-02 (what may be saved) and the label FR-SEARCH-02 asks for.
+- **Narrowed:** 2026-10-03 — from "what kind of thing is it?"
+
+**Blocks:** telling a single programme from an episode of a series in search
+results and on the home page — and with it the detail page of a single
+programme (FR-CONTENT-03), what may be saved (FR-LATER-02) and the label
+FR-SEARCH-02 asks for. It does not block playing either of them.
 
 A search or a home row returns two kinds of item that matter: a `series`, and a
-`program`. A `program` is anything playable, and **nothing in it says whether
-it is a film, a standalone episode or an episode of a series**, nor which
-series it belongs to. A film and an episode differ only in a display line
-(`1u 23m` against `42m • Afl. 1`), which is text for a person and not a field
-to decide on.
+`program`. A `program` is anything playable, and on the app backend nothing in
+it says whether it stands alone or is an episode of a series, nor which series.
 
-The only place a series link has been seen is the answer to the player call,
-which names the series and the season — but that call mints a playback token,
-and asking it for every tile is not an option.
+**What this question used to ask, and why it no longer does.** It asked how to
+tell a film, a standalone episode and an episode of a series apart. Reading the
+related projects showed that the first two are not a distinction NPO makes:
 
-**How to answer:** a capture of NPO's app opening a film's detail page, and an
-episode picked from search results. The app shows a detail screen for both, so
-some call tells it what it is looking at. **Planned by the owner for later**;
-until then the catalogue returns a series or a "playable" that does not claim
-to know its kind, and nothing is built that has to tell them apart.
+- **NPO's website backend marks series membership and nothing else.** There a
+  programme carries a `series` — with a type of its own — together with a
+  season key and an episode number, or it carries no series at all. The Kodi
+  addon Retrospect reads a missing series as "a single video not belonging to a
+  series" and addresses it at `npo.nl/start/video/…`, where an episode lives at
+  `npo.nl/start/serie/…/…/…`.
+- **There is no "film" kind.** The series types seen are `timeless_series`,
+  `timebound_series` and `timebound_daily`. Films exist as curated rows on the
+  home page, not as a type.
+- **Only POMS, NPO's metadata API, tells a film from a broadcast**, and it
+  needs partner credentials ([ADR 0008](../adr/0008-one-boundary-around-the-npo-backend.md)
+  already set it aside).
+
+The requirements never treated a film and a standalone episode differently
+either — both play directly, both are saved rather than pinned, neither
+autoplays — so FR-CONTENT-01 now has two kinds, a **series** and a **single
+programme**, and this question is the one that is left.
+
+**Two leads on the app backend, neither proven.**
+
+- A programme item carries a `target` of `detail` or `player`. On the captured
+  home page it lines up with series membership: in the two film rows 36 of 40
+  items are `detail` with no episode number in their caption, and the other
+  four are `player` with one — episodes of a series, such as a Christmas
+  special. But the proof-of-concept's notes call `target` a hint for which
+  screen to open, and it does not name the series.
+- The answer to the player call names a series and a season for the one
+  programme it was captured for, which was an episode. Whether those are absent
+  for a single programme has not been seen. That call mints a playback token, so
+  it cannot be asked for every tile.
+
+**How to answer, when it is needed:** one player call for a film from the home
+page, to see whether the series is absent — the proof-of-concept's client can
+make it, with no proxy. A capture of NPO's app opening a film is needed only if
+the single programme's detail page needs an endpoint of its own. **Deferred by
+the owner on 2026-10-03 until something cannot be built without it.** Until
+then the catalogue returns a series or a "playable" that does not claim to know
+whether it belongs to one, and a playable search result plays straight away.
 
 ## Q-11 — What does an item that cannot be played look like?
 
