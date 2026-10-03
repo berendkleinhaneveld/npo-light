@@ -22,6 +22,10 @@ in when it was last used.
 Switching modes is a single, always-visible action on the home page. It asks
 for no PIN, password or confirmation in either direction.
 
+Kids mode needs an NPO kids profile on the account to browse as (FR-MODE-04).
+An account without one has no kids mode to switch to, and the home page says so
+in place of the switch rather than offering one that fails.
+
 **Rationale.** This is a family device, not a kiosk. The owner chose
 convenience over enforcement; if that changes, it becomes a new requirement,
 not a change to this one.
@@ -33,6 +37,10 @@ not a change to this one.
 - Switching takes effect immediately: the home page reloads with the other
   mode's pins and history.
 - The switch is not offered during playback.
+- On an account without an NPO kids profile, the place of the switch explains
+  that kids mode needs a kids profile and that one is made in NPO's own app or
+  on npo.nl. The app does not create one itself.
+- A kids profile made after signing in is found without signing in again.
 
 ## FR-MODE-03 — The current mode is unmistakable
 
@@ -56,15 +64,26 @@ In kids mode, every item the app offers — home page, search results, next
 episodes — comes from NPO's youth catalogue. Browsing within that catalogue is
 unrestricted; no per-item parental curation is needed.
 
+**How.** The youth catalogue is NPO's own, and NPO applies it: kids mode browses
+as the account's NPO kids profile, and normal mode as its general profile
+([Q-03](open-questions.md#q-03--how-is-the-youth-catalogue-identified),
+[ADR 0014](../adr/0014-each-mode-browses-as-an-npo-profile.md)). The app does
+no filtering of its own, because the rule NPO applies — a whole series is in or
+out — cannot be rebuilt from the ratings on single items.
+
 **Acceptance criteria**
 
 - A search in kids mode never returns an item outside the youth catalogue
   (FR-SEARCH-08).
 - An item pinned in normal mode is not shown in kids mode (FR-MODE-05 makes
   this automatic).
-- How the youth catalogue is identified is settled by
-  [Q-03](open-questions.md#q-03--how-is-the-youth-catalogue-identified); until
-  then the filter sits behind one boundary so it can be replaced in one place.
+- Every catalogue request in kids mode is made as the account's NPO kids
+  profile; none is made as the general profile and filtered afterwards.
+- Without a kids profile on the account, kids mode is unavailable (FR-MODE-02),
+  and a stored kids mode (FR-MODE-01) falls back to normal mode rather than
+  showing the general catalogue under a kids-mode heading.
+- With more than one kids profile on the account, the first one NPO lists is
+  used.
 
 ## FR-MODE-05 — Each mode has its own pins, history and search history
 
