@@ -96,6 +96,11 @@ last seven days (FR-HOME-07), most recently played first, each showing how far
 in it is. It holds at most **twenty** items **per mode**; starting a
 twenty-first drops the oldest. Nothing else expires by age.
 
+On screen the row is titled ***Kijk verder***: it is where the family picks a
+thread back up, which is why a tile shows the episode to watch next rather than
+the one just finished (FR-HOME-07). These documents keep calling it recently
+watched.
+
 **Rationale.** Twenty is long enough that nothing genuinely mid-way through
 falls off, short enough to travel with a remote. A half-watched film from a
 year ago is still what somebody means to find, so age is the wrong axis for
@@ -105,7 +110,9 @@ meant to be adjusted once the family has lived with it.
 **Acceptance criteria**
 
 - Starting playback moves the item to the front of the row (FR-PLAY-09).
-- A series appears once, not once per episode.
+- A series appears once, not once per episode: its tile is the episode to
+  continue with, and no finished episode has a tile of its own.
+- The row's title reads *Kijk verder*.
 - The cap is one named constant, not a number repeated across the code.
 - The twenty-first item pushes out the twentieth, and only that one.
 - A finished item still on its seven days occupies a slot like any other.
@@ -219,7 +226,9 @@ the position behind it (FR-HOME-08).
   *Verder kijken* (FR-CONTENT-03).
 - Playing an evicted item puts it back on the row at the front, with its
   progress intact.
-- Positions outlive the row: erasing local data (FR-SET-04) is the only thing
-  that discards one, and removing an item by hand hides it and keeps its
+- Positions outlive the row: the app discards one only when local data is
+  erased (FR-SET-04), and removing an item by hand hides it and keeps its
   position (FR-HOME-08,
   [ADR 0006](../adr/0006-recently-watched-holds-unfinished-items.md)).
+- tvOS may still take an old one: only the most recent positions are kept where
+  the system cannot evict them (NFR-REL-04).

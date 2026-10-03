@@ -304,72 +304,90 @@ this repository.
 
 ## Q-09 — Where does local data actually live on an Apple TV?
 
-**Blocks:** NFR-REL-04, and with it every criterion that reads "survives
+- **Answered:** 2026-10-03 — by decision, from published sources; not verified
+  on an Apple TV
+
+**Was blocking:** NFR-REL-04, and with it every criterion that reads "survives
 relaunch" — FR-HOME-02, FR-LATER-01, FR-MODE-01, FR-PLAY-03, FR-SEARCH-04.
 
-**This repository already knows the hard part and has not drawn the
-consequence.** Getting the refresh token into the Keychain
+**The question.** Getting the refresh token into the Keychain
 ([ADR 0007](../adr/0007-sign-in-with-the-device-code-grant.md), FR-AUTH-02)
 established on hardware that a real Apple TV gives an app no writable durable
-storage: `Documents` and `Application Support` are read-only — writing there
+directory: `Documents` and `Application Support` are read-only — writing there
 fails with `NSCocoaErrorDomain 513` — and only `Caches` and `tmp` are writable,
 both evictable. The tvOS Simulator writes to Application Support happily, which
 is why this had to be found on a device.
 
 That was recorded as a fact about the *token*. It is a fact about the whole
-local store. NFR-PRIV-01 says "the SwiftData store is local; no CloudKit
-container is configured", AGENTS.md names SwiftData as the persistence
-technology, and a default `ModelConfiguration` puts its store in Application
-Support. If the finding holds for this app, `ModelContainer(for:)` throws on a
-real Apple TV before a single pin is saved — and the template's `fatalError`
-turns that into a crash on launch, which is what NFR-REL-05 exists to forbid.
-Nothing has tested this, because nothing has yet run this app on the television.
+local store. A default `ModelConfiguration` puts its store in Application
+Support, so the store ADR 0012 describes had nowhere to go, and NFR-REL-04
+promised a durability that the only writable location does not offer.
 
-**What is not known.**
+**Answer: two places, split by what losing the data would cost.** What the
+family chose — pins, watch later, search history — and the entries the recently
+watched row is drawn from live in `UserDefaults`, which tvOS keeps. So does a
+copy of the playback positions: the ones that row needs, then the most recent,
+as many as fit under a fixed ceiling below the 512 KB at which tvOS starts to
+object. Every position, including the ones that no longer fit, lives
+in a SwiftData store at an explicit location in `Caches`, which tvOS may empty
+while the app is not running; when it has, the store is rebuilt from the copy in
+`UserDefaults` and only the older positions are gone.
+[ADR 0015](../adr/0015-local-data-in-two-places.md) records the decision and
+what it costs; NFR-REL-04, NFR-PRIV-01 and FR-HOME-11 are reworded to match.
 
-- Whether a `ModelConfiguration` pointed into `Caches` works, and how often tvOS
-  actually evicts it in a household that uses the app weekly. "Evictable" is a
-  licence the system holds, not a schedule it publishes.
-- Whether the proposed SwiftData configurations work on our hardware, and
-  whether their saved records survive abrupt termination and reboot.
-- Which storage policy can satisfy the unbounded progress retention in
-  [ADR 0006](../adr/0006-recently-watched-holds-unfinished-items.md) without
-  weakening local-only privacy or durability. A successful cache-store reboot
-  test cannot answer that policy question.
+**What the published sources settle.** Checked on 2026-09-20 and 2026-10-03.
 
-**Documentation checked on 2026-09-20.** Apple's
-[tvOS storage guide](https://developer.apple.com/library/archive/documentation/General/Conceptual/AppleTV_PG/index.html)
-identifies `UserDefaults` as limited persistent local storage and says cache
-data may be purged while the app is not running. Its current
-[size-limit documentation](https://developer.apple.com/documentation/foundation/userdefaults/sizelimitexceededmessage)
-specifies a warning at 512 KB and process termination at or above 1 MB. Thus
-the earlier statement about having no durable storage applies to general files,
-not to small preferences. Defaults can hold the four settings values from ADR
-0012, but cannot hold an unbounded progress history. Do not test by writing a
-megabyte: that deliberately reaches the documented termination threshold.
+- *What is durable.* Apple's
+  [tvOS programming guide](https://developer.apple.com/library/archive/documentation/General/Conceptual/AppleTV_PG/index.html)
+  gives an app 500 KB of persistent local storage through `UserDefaults` and
+  requires everything else to be purgeable. The current
+  [size-limit documentation](https://developer.apple.com/documentation/foundation/userdefaults/sizelimitexceededmessage)
+  puts the warning at 512 KB and termination of the process at 1 MB. Apple
+  staff [confirmed in 2015](https://developer.apple.com/forums/thread/16967)
+  that defaults and the Keychain persist until the app is deleted. Nothing
+  found says tvOS 26 changed any of this.
+- *What is writable.* An Apple engineer
+  [confirmed](https://developer.apple.com/forums/thread/89008) that the 513 is
+  a sandbox denial for anything created under `Library`, and named `Caches`,
+  `tmp` and the Keychain as what remains. A Core Data store in `Caches` is the
+  established pattern: Realm defaults to it on tvOS, and
+  [Firestore moved there](https://github.com/firebase/firebase-ios-sdk/issues/2735)
+  after failing at startup in `Documents`.
+- *When `Caches` is emptied.* Never under a running app. Otherwise, in Apple
+  staff's words, [all local storage can be purged before the next launch](https://developer.apple.com/forums/thread/18465),
+  generally at a reboot or when space is short. No threshold, order or schedule
+  is published.
+- *Whether it happens to real households.* It does. Infuse has a
+  [forum thread running for years](https://community.firecore.com/t/metadata-cache-keeps-clearing/23689)
+  of metadata caches cleared anywhere from once in years to every few days,
+  worst on small devices with many apps and video screensavers. Swiftfin's
+  users were [signed out](https://github.com/jellyfin/Swiftfin/issues/776)
+  "after an extended period or storage becomes low", and it moved its tvOS
+  build to defaults alone in April 2026.
+  [Kinosail](https://github.com/Kinosail/kinosail/pull/392) keeps its progress
+  journal in `Caches` and treats the server as the authority — which
+  NFR-PRIV-01 denies this app.
 
-**Why it is more than a storage detail.** Pins, watch later and search history
-are things the family chose, and NFR-REL-04 promises they survive a hard stop.
-If the only writable location is one the system may empty, that promise cannot
-be kept as written: either the mechanism changes or the requirement does. The
-options are all unattractive and none is chosen here — a store in `Caches` with
-the durability requirements reworded; `UserDefaults` for the small lists,
-against a ceiling ADR 0006 would have to give up; CloudKit, which NFR-PRIV-01
-forbids outright; or the Keychain, which is durable and is not a database.
+**What stays unknown, and why it no longer blocks.**
 
-**Next experiment:** the isolated [storage probe](../../tools/storage-probe/README.md)
-opens a default `ModelContainer` and one in `Caches`, saves a marker in each,
-and writes a 256 KiB defaults payload. Separate read-only launches detect loss
-without silently replacing the evidence. Run it after termination and after a
-reboot on the Apple TV that ran the Q-01 spike; record the results using the
-probe's checklist. Hardware testing was deferred by the owner on 2026-09-20;
-there is no new device result yet.
+- *What a default `ModelContainer` does on a device* — throws, crashes, or
+  quietly resolves somewhere writable. Nothing documents it. The app never asks:
+  it always names the location.
+- *Whether a SwiftData store in `Caches` opens on our hardware.* Nothing says
+  so for SwiftData by name; everything says so for the Core Data store beneath
+  it. The first build on the television is the test, and a container that does
+  not open is the case NFR-REL-05 already has to survive.
+- *How often tvOS evicts a store this small.* The reports are of caches far
+  larger than a table of positions, and nothing describes the purge order. Only
+  living with the app will tell, and the split is chosen so that the answer
+  costs little either way.
 
-**Still open:** the storage location and retention/durability policy. The probe
-can establish compatibility and observed persistence, not guarantee that caches
-will never be evicted. Choosing a cache-backed store, bounded defaults or remote
-storage changes existing promises and needs an explicit decision and the
-corresponding requirement amendments before implementing the stores.
+**The probe was not run.** A separate diagnostic app was written for this
+question on 2026-09-20 and validated in the Simulator; hardware testing was
+deferred and then judged unnecessary by the owner on 2026-10-03, because the
+one thing it could have shown — that the store opens and survives a reboot —
+says nothing about eviction, which is what the decision turns on. It was removed
+from the repository with this answer; git keeps it.
 
 ## Q-10 — What kind of thing is a programme in a list?
 

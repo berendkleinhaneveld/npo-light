@@ -188,6 +188,12 @@ SwiftLint settles formatting; these are the conventions it cannot check.
   methods take the mode explicitly. Views use injected screen models, never
   `@Query` or `@Environment(\.modelContext)`. Compose dependencies in
   `NPOLightApp`; do not reach for a shared container from a view.
+- **Where data lives.** An Apple TV keeps `UserDefaults` and the Keychain and
+  may empty everything else. As decided in ADR 0015, the lists and the most
+  recent positions live in `UserDefaults` under a fixed ceiling, and the
+  SwiftData store holds positions at an explicit URL in `Caches` — never a
+  default `ModelConfiguration`, which only works in the Simulator. A store over
+  `UserDefaults` follows the same rules as one over SwiftData.
 - **Concurrency.** UI state is `@MainActor`. Do not add `@unchecked Sendable`
   or `nonisolated(unsafe)` to silence the compiler — model the isolation
   properly.
