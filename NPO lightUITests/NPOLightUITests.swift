@@ -53,4 +53,49 @@ final class NPOLightUITests: XCTestCase {
         attachment.lifetime = .keepAlways
         add(attachment)
     }
+
+    // Requirement: FR-CONTENT-03, FR-CONTENT-07, FR-CONTENT-08
+    @MainActor
+    func testSeriesIsBrowsedOneSeasonAtATime() throws {
+        let app = XCUIApplication()
+        let remote = XCUIRemote.shared
+        app.launchEnvironment["NPO_LIGHT_SCENARIO"] = "signed-in"
+        app.launch()
+        XCTAssertTrue(app.buttons["home-search"].waitForExistence(timeout: 10))
+        remote.press(.select)
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 10))
+        field.typeText("fr")
+        XCTAssertTrue(app.buttons["Freeks wilde wereld, serie"].waitForExistence(timeout: 10))
+
+        // From the keyboard down to the first result, and into it.
+        remote.press(.down)
+        remote.press(.select)
+
+        // The page opens on the first season, with its episodes and a preview.
+        let firstSeason = app.buttons["season-season-1"]
+        let secondSeason = app.buttons["season-season-2"]
+        XCTAssertTrue(firstSeason.waitForExistence(timeout: 10))
+        XCTAssertTrue(firstSeason.isSelected)
+        XCTAssertTrue(app.buttons["episode-season-1-episode-1"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["episode-preview"].exists)
+
+        // Moving along the picker shows the next season without a press.
+        remote.press(.right)
+        XCTAssertTrue(app.buttons["episode-season-2-episode-1"].waitForExistence(timeout: 10))
+        XCTAssertTrue(secondSeason.isSelected)
+        XCTAssertFalse(app.buttons["episode-season-1-episode-1"].exists)
+
+        // Down into the list and back up lands on the season being shown.
+        remote.press(.down)
+        XCTAssertTrue(app.buttons["episode-season-2-episode-1"].hasFocus)
+        remote.press(.up)
+        XCTAssertTrue(secondSeason.hasFocus)
+        XCTAssertTrue(app.buttons["episode-season-2-episode-1"].exists)
+
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = "Series detail"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
 }
