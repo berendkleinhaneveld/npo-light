@@ -1,0 +1,119 @@
+{
+  "guid": "0806bc3a-3ad1-403c-aa4a-feac30c86ac4",
+  "header": {
+    "guid": "0806bc3a-3ad1-403c-aa4a-feac30c86ac4",
+    "slug": "freeks-wilde-wereld",
+    "title": "Freeks wilde wereld",
+    "subtitle": "Nederlands bekendste bioloog Freek Vonk reist de wereld over, op zoek naar unieke diersoorten. Ondertussen geeft hij tips over hoe je kunt overleven in de meest afgelegen, ruige en onherbergzame plekken op de wereld.",
+    "type": "series",
+    "seriesType": "timeless_series",
+    "images": [
+      {
+        "url": "https://assets-start.npo.nl/resources/2025/01/21/1c87dca6-6425-4a53-a58b-cee58b41c791.png",
+        "role": "title",
+        "mimeType": "image/png",
+        "description": "Title Treatment Logo freeks wilde wereld"
+      },
+      {
+        "url": "https://assets-start.npo.nl/resources/2023/10/31/343ffaa5-fbb0-4358-bd3a-39b017a8e5d7.jpg",
+        "role": "default",
+        "mimeType": "image/jpeg",
+        "description": "SU Header Freeks wilde wereld seizoen 10"
+      }
+    ]
+  },
+  "tabs": [
+    {
+      "type": "seasons",
+      "slug": "afleveringen",
+      "defaultSeasonGuid": "078e0a22-afac-41ec-939d-a6191b45b1be",
+      "programSort": "asc",
+      "seasons": [
+        {
+          "guid": "d30dc7aa-6611-4431-9940-daa75841edea",
+          "seasonKey": "1",
+          "slug": "seizoen-1",
+          "title": "Seizoen 1"
+        },
+        {
+          "guid": "14f4a708-dc5d-4a3c-9685-4b8e7597e827",
+          "seasonKey": "2",
+          "slug": "seizoen-2",
+          "title": "Seizoen 2"
+        },
+        {
+          "guid": "d12211e6-a9fa-42b7-a113-cad818b887f5",
+          "seasonKey": "3",
+          "slug": "seizoen-3",
+          "title": "Seizoen 3"
+        },
+        {
+          "guid": "77629b8f-c7d9-4141-97e0-da10183c9726",
+          "seasonKey": "4",
+          "slug": "seizoen-4",
+          "title": "Seizoen 4"
+        },
+        {
+          "guid": "2d5e8361-0341-4ee5-afb0-5a8945c9f92a",
+          "seasonKey": "5",
+          "slug": "seizoen-5",
+          "title": "Seizoen 5"
+        },
+        {
+          "guid": "eadbbda8-87af-41cd-9cea-f9b90db04c10",
+          "seasonKey": "6",
+          "slug": "seizoen-6",
+          "title": "Seizoen 6"
+        },
+        {
+          "guid": "b5b625bf-d1ce-4bd5-aa4d-e76d0caaac8f",
+          "seasonKey": "7",
+          "slug": "seizoen-7",
+          "title": "Seizoen 7"
+        },
+        {
+          "guid": "8a33465d-a268-4871-92cf-8cdcc02d93bf",
+          "seasonKey": "8",
+          "slug": "seizoen-8",
+          "title": "Seizoen 8"
+        },
+        {
+          "guid": "8df440f1-ddbb-4d08-9b67-e2d8e58ed587",
+          "seasonKey": "9",
+          "slug": "seizoen-9",
+          "title": "Seizoen 9"
+        },
+        {
+          "guid": "7df5d4a2-a2e2-4a39-8766-ee718487006f",
+          "seasonKey": "10",
+          "slug": "seizoen-10",
+          "title": "Seizoen 10"
+        },
+        {
+          "guid": "4e3dcfa0-b8b8-40e2-a794-91b20951414f",
+          "seasonKey": "11",
+          "slug": "seizoen-11",
+          "title": "Seizoen 11"
+        },
+        {
+          "guid": "4eb4b467-2c3e-4080-a3e9-be649e6ba4a4",
+          "seasonKey": "12",
+          "slug": "seizoen-12",
+          "title": "Kort"
+        },
+        {
+          "guid": "078e0a22-afac-41ec-939d-a6191b45b1be",
+          "seasonKey": "13",
+          "slug": "seizoen-13",
+          "title": "Seizoen 12"
+        }
+      ]
+    },
+    {
+      "type": "moreSeries",
+      "slug": "info",
+      "title": "Freeks wilde wereld",
+      "synopsis": "Nederlands bekendste bioloog Freek Vonk reist de wereld over, op zoek naar unieke diersoorten. Ondertussen geeft hij tips over hoe je kunt overleven in de meest afgelegen, ruige en onherbergzame plekken op de wereld."
+    }
+  ]
+}

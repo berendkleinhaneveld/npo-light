@@ -1,0 +1,26 @@
+[
+  {
+    "account": {
+      "guid": "00000000-0000-0000-0000-000000000001"
+    },
+    "guid": "00000000-0000-0000-0000-000000000011",
+    "name": "Profiel 1",
+    "targetGroup": "GENERAL",
+    "type": "GENERAL",
+    "uiType": "NORMAL",
+    "useParentalControlKey": false
+  },
+  {
+    "account": {
+      "guid": "00000000-0000-0000-0000-000000000001"
+    },
+    "ageRestriction": "6",
+    "birthYear": 2020,
+    "guid": "00000000-0000-0000-0000-000000000012",
+    "name": "Profiel 2",
+    "targetGroup": "KIDS_9",
+    "type": "KIDS",
+    "uiType": "NORMAL",
+    "useParentalControlKey": false
+  }
+]

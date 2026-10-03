@@ -20,6 +20,10 @@ is here is extracted and rewritten, not copied.
 | `token-authorization-pending-400.json` | `POST id.npo.nl/connect/token`, poll before approval | 2026-09-01 |
 | `token-success-200.json` | `POST id.npo.nl/connect/token`, poll after approval | 2026-09-01 |
 | `account-premium-200.json` | `GET ios.bff.start.npox.nl/account` | 2026-09-01 |
+| `profiles-200.json` | `GET ios.bff.start.npox.nl/profiles`, an account with a general and a kids profile | 2026-09-03 |
+| `search-200.json` | `GET ios.bff.start.npox.nl/search?query=fr&page=1`, as the general profile; two items kept per collection | 2026-09-03 |
+| `series-page-200.json` | `GET ios.bff.start.npox.nl/series/page/{guid}`, as the kids profile | 2026-09-03 |
+| `season-programs-200.json` | `GET ios.bff.start.npox.nl/series/seasons/{guid}/programs?sort=asc`, as the kids profile; three episodes kept | 2026-09-03 |
 
 ## The rules
 
@@ -29,6 +33,11 @@ sequential rather than real. The one exception is the `user_code` in
 `device-authorization-200.json`, which is the eight-digit code from the recon
 run: it is one-time, it lapsed five minutes after it was issued, and keeping it
 matches the note it came from.
+
+**Catalogue data is left as it is.** Titles, synopses, image addresses and the
+identifiers of series and episodes are NPO's public catalogue, not anything
+about an account, so the catalogue fixtures keep them. The profiles fixture is
+the exception among the newer ones: its identifiers and names are placeholders.
 
 **Minimised, but shape-preserving.** Fields the app never reads are dropped;
 the nesting, the names and the types are left exactly as they came. The point is

@@ -1,0 +1,65 @@
+[
+  {
+    "guid": "10c84845-36e5-400d-9ac0-1e68109cef8e",
+    "prid": "VPWON_1362124",
+    "slug": "freeks-wilde-wereld_46",
+    "title": "Freek tussen de wolven",
+    "subtitle": "Afl. 1 • 10m",
+    "synopsis": "De bekendste bioloog van Nederland op zoek naar de meest bijzondere dieren. Van chagrijnige struisvogels op de Afrikaanse savanne tot de spinnenkoningin van Madagaskar en rivierhaaien in Australië.",
+    "contentIndication": "freeContent_premiumAccount",
+    "contentClassification": {
+      "ageRestriction": "all",
+      "contentWarnings": []
+    },
+    "images": [
+      {
+        "url": "https://assets-start.npo.nl/resources/2025/11/13/a20c1869-70ab-4ae1-ab11-820738049676.jpg",
+        "role": "default",
+        "mimeType": "image/jpeg",
+        "description": "Freek tussen de wolven"
+      }
+    ]
+  },
+  {
+    "guid": "1360de8d-65d4-4a39-9ad9-464951e7f74b",
+    "prid": "VPWON_1362125",
+    "slug": "freeks-wilde-wereld_48",
+    "title": "Operatie giraffenverhuizing!",
+    "subtitle": "Afl. 2 • 10m",
+    "synopsis": "De bekendste bioloog van Nederland op zoek naar de meest bijzondere dieren. Van chagrijnige struisvogels op de Afrikaanse savanne tot de spinnenkoningin van Madagaskar en rivierhaaien in Australië.",
+    "contentIndication": "freeContent_premiumAccount",
+    "contentClassification": {
+      "ageRestriction": "all",
+      "contentWarnings": []
+    },
+    "images": [
+      {
+        "url": "https://assets-start.npo.nl/resources/2025/11/13/890f46f4-765e-485e-aeec-5fa2f6e24a18.jpg",
+        "role": "default",
+        "mimeType": "image/jpeg",
+        "description": "Operatie giraffenverhuizing!"
+      }
+    ]
+  },
+  {
+    "guid": "46701121-1e6f-4a56-9188-56462aace069",
+    "prid": "VPWON_1362126",
+    "slug": "freeks-wilde-wereld_47",
+    "title": "Freek op neushoornmissie",
+    "subtitle": "Afl. 3 • 10m",
+    "synopsis": "De bekendste bioloog van Nederland op zoek naar de meest bijzondere dieren. Van chagrijnige struisvogels op de Afrikaanse savanne tot de spinnenkoningin van Madagaskar en rivierhaaien in Australië.",
+    "contentIndication": "freeContent_premiumAccount",
+    "contentClassification": {
+      "ageRestriction": "all",
+      "contentWarnings": []
+    },
+    "images": [
+      {
+        "url": "https://assets-start.npo.nl/resources/2025/11/13/99e84832-d3ba-45fb-935d-17107e50c63e.jpg",
+        "role": "default",
+        "mimeType": "image/jpeg",
+        "description": "Freek op neushoornmissie"
+      }
+    ]
+  }
+]

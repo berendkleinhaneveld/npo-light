@@ -19,6 +19,16 @@ nonisolated enum NPOWire {
     static let deviceAuthorizationPath = "/connect/deviceauthorization"
     static let tokenPath = "/connect/token"
     static let accountPath = "/account"
+    static let profilesPath = "/profiles"
+    static let searchPath = "/search"
+
+    static func seriesPath(_ series: ItemID) -> String {
+        "/series/page/\(series.rawValue)"
+    }
+
+    static func episodesPath(_ season: SeasonID) -> String {
+        "/series/seasons/\(season.rawValue)/programs"
+    }
 
     /// NPO's own client for televisions, and the only one enrolled for the
     /// device-code grant. A borrowed identifier — ADR 0007 says so plainly.
@@ -36,11 +46,14 @@ nonisolated enum NPOWire {
     /// The only subscription type that counts as NPO Plus (FR-AUTH-08).
     static let plusSubscriptionType = "premium"
 
-    static func url(host: String, path: String) throws -> URL {
+    static func url(host: String, path: String, query: [URLQueryItem] = []) throws -> URL {
         var components = URLComponents()
         components.scheme = "https"
         components.host = host
         components.path = path
+        if !query.isEmpty {
+            components.queryItems = query
+        }
         guard let url = components.url else {
             throw BackendError.unexpectedResponse(status: nil)
         }
@@ -60,8 +73,13 @@ nonisolated enum NPOWire {
     }
 
     /// A GET to the app backend on behalf of `session`.
-    static func backendRequest(path: String, session: Session) throws -> URLRequest {
-        var request = URLRequest(url: try url(host: backendHost, path: path))
+    static func backendRequest(_ call: BackendCall, session: Session) throws -> URLRequest {
+        var request = URLRequest(url: try url(host: backendHost, path: call.path, query: call.query))
+        if let profile = call.profile {
+            // The whole of the catalogue switch: the same address answers with
+            // a different catalogue for a different profile (ADR 0014).
+            request.setValue(profile, forHTTPHeaderField: "profile-guid")
+        }
         // The id token, not the access token: with the access token `/account`
         // answers 401 while `/profiles` answers 200 (ADR 0007).
         request.setValue("Bearer \(session.idToken)", forHTTPHeaderField: "Authorization")
@@ -93,6 +111,14 @@ nonisolated enum NPOWire {
         allowed.insert(charactersIn: "-._~")
         return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? value
     }
+}
+
+/// One GET to the app backend.
+nonisolated struct BackendCall: Sendable, Equatable {
+    let path: String
+    var query: [URLQueryItem] = []
+    /// The NPO profile to ask as. Account-level calls carry none.
+    var profile: String?
 }
 
 // MARK: - response bodies

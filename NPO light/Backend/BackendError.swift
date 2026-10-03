@@ -26,6 +26,13 @@ nonisolated enum BackendError: Error, Equatable {
     /// about the account.
     case unreachable
 
+    /// Kids mode was asked for, and the account has no NPO kids profile to
+    /// browse as (ADR 0014).
+    case kidsProfileMissing
+
+    /// NPO no longer has the item that was asked for.
+    case itemUnavailable
+
     /// NPO answered with something this app cannot read. `status` is `nil` when
     /// the reply was not even HTTP.
     case unexpectedResponse(status: Int?)
