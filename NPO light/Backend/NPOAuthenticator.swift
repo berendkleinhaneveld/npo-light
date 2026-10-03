@@ -11,6 +11,10 @@ import Synchronization
 ///
 /// The session is read from the ``TokenStore`` every time rather than held
 /// here, so there is one copy of a token that must never be used twice.
+///
+/// Its entrances are `@concurrent`: a screen model calls them from the main
+/// actor, and without it the requests and their decoding would stay there
+/// (NFR-PERF-05).
 nonisolated final class NPOAuthenticator: Authenticating {
     /// A token this close to its expiry is renewed before it is used, so that a
     /// request does not have to fail first (FR-AUTH-07).
@@ -40,6 +44,7 @@ nonisolated final class NPOAuthenticator: Authenticating {
 
     // MARK: Authenticating
 
+    @concurrent
     func startSignIn() async throws -> DeviceCodeChallenge {
         let response = try await send(NPOWire.identityRequest(
             path: NPOWire.deviceAuthorizationPath,
@@ -59,6 +64,7 @@ nonisolated final class NPOAuthenticator: Authenticating {
         )
     }
 
+    @concurrent
     func awaitApproval(of challenge: DeviceCodeChallenge) async throws -> Account {
         var interval = challenge.pollInterval
         while clock.now < challenge.expiresAt {
@@ -84,6 +90,7 @@ nonisolated final class NPOAuthenticator: Authenticating {
         throw BackendError.signInExpired
     }
 
+    @concurrent
     func restoredAccount() async throws -> Account? {
         guard try tokenStore.load() != nil else { return nil }
         return try await account()
@@ -103,6 +110,7 @@ nonisolated final class NPOAuthenticator: Authenticating {
     /// A 401 is read as a lapsed session: it is renewed once and the request is
     /// repeated once (FR-AUTH-03). A second 401 is not a lapsed session any
     /// more, and is handed back to the caller rather than retried in a loop.
+    @concurrent
     func backendResponse(to call: BackendCall) async throws -> HTTPResponse {
         let session = try await currentSession()
         let response = try await send(NPOWire.backendRequest(call, session: session))
