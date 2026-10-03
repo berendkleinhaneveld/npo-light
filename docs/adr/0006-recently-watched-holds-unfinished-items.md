@@ -1,6 +1,6 @@
 # 0006. Twenty unfinished items, over positions that outlive the row
 
-- **Status:** Accepted
+- **Status:** Accepted — amended by [0015](0015-local-data-in-two-places.md): tvOS can evict the older positions
 - **Date:** 2026-09-01
 - **Deciders:** @berendkleinhaneveld
 

@@ -15,7 +15,8 @@ iCloud, not to a server of the app's own.
 
 - No request body carries watch history, pins or search terms, beyond the
   search query needed to answer the search itself.
-- The SwiftData store is local; no CloudKit container is configured.
+- `UserDefaults` and the SwiftData store are local; no CloudKit container and
+  no iCloud key-value store is configured.
 - Signing in on another device does not carry any of this across.
 
 ## NFR-PRIV-02 — Credentials only in the Keychain

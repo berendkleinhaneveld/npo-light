@@ -321,7 +321,7 @@
   function removeFromRecent(item) {
     // FR-HOME-08: removing hides the tile and keeps the stored position.
     md().recent = md().recent.filter((entry) => entry.id !== item.id);
-    toast(`${item.title} is uit Recent bekeken gehaald`);
+    toast(`${item.title} is uit Kijk verder gehaald`);
     commit();
   }
 
@@ -564,7 +564,7 @@
       ${offlineBanner()}
       <div class="vscroll home-rows">
         ${row('Vastgezet', 'pinned', pins.map(pinnedTile), emptyPinned)}
-        ${row('Recent bekeken', 'recent', recent.map(recentTile), emptyRecent)}
+        ${row('Kijk verder', 'recent', recent.map(recentTile), emptyRecent)}
         ${later.length ? row('Later kijken', 'later', later.map(laterTile), '') : ''}
       </div>
     </div>`;
@@ -641,7 +641,7 @@
       menu: () => [
         ...playMenuEntries(item),
         ...saveEntry,
-        { label: 'Verwijderen uit Recent bekeken', run: () => removeWithFallback('recent', item.id, () => removeFromRecent(item)) },
+        { label: 'Verwijderen uit Kijk verder', run: () => removeWithFallback('recent', item.id, () => removeFromRecent(item)) },
       ],
     };
     if (!item.available) {
