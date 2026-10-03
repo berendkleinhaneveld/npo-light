@@ -174,8 +174,10 @@ turning the list into a wall of thumbnails.
 - Focusing an episode in the list shows its image, title, duration, watched
   state and description beside the list, without a press and without leaving
   the list.
-- Each episode takes one line in the list: number, title and watched state
-  (NFR-A11Y-04).
+- Each episode takes one line in the list: its title, NPO's own caption for it
+  — which carries the episode number and the duration, such as `Afl. 1 • 10m` —
+  and its watched state (NFR-A11Y-04). The caption is shown as NPO gives it; the
+  app does not take a number out of it, and takes the order from the list.
 - A missing image is drawn as a placeholder (FR-CONTENT-01), and a missing
   description leaves no empty box.
 - The preview is announced with the focused episode, so VoiceOver reads the

@@ -105,9 +105,9 @@ part of the contract. All of it therefore sits behind one boundary —
 
 ## Q-03 — How is the youth catalogue identified?
 
-- **Partly answered:** 2026-08-31 — still blocking
+- **Answered:** 2026-10-03 — from captures of 2026-09-03
 
-**Blocks:** FR-MODE-04, FR-SEARCH-08.
+**Was blocking:** FR-MODE-04, FR-SEARCH-08.
 
 Does the backend expose an age rating, a "Zapp"/"NPO 3" grouping, a dedicated
 kids search parameter, or nothing usable? Can a search be constrained
@@ -136,11 +136,33 @@ across everything, or filter results on age rating, which is a weaker
 guarantee. FR-SEARCH-08 already allows for this ("where the backend allows
 it"), but the choice is real and is not made yet.
 
-**How to answer the rest:** one signed-in session, three calls — `user-profiles`
-to see whether a child profile exists and what marks it, a home layout for a
-child profile against one for an adult profile, and a search for a term that
-matches both adult and children's programmes. It is an hour's work and it
-decides how FR-MODE-04 and FR-SEARCH-08 are built.
+**Answer: mechanism 2, and it is the whole of it.** Three captures of NPO's
+own app — creating a kids profile, then the same search as the kids profile and
+as the general one, ninety seconds apart with nothing else changed — show that
+the `profile-guid` header alone selects the catalogue. With a kids profile the
+same home and search addresses answer from NPO's youth catalogue, filtered and
+ranked by a different model, server-side. There is no age parameter because
+none is needed.
+
+Three things follow, and the first two are easy to get wrong:
+
+- **The gate cuts at the series, not the episode.** A series rated 9 is gone
+  from a profile set to 6, including its episodes that are themselves rated
+  for all ages. Re-implementing the gate from per-item ratings would let those
+  through. The ratings on an item are display data, never the rule.
+- **A kids search is padded.** It returns a full page whether or not a full
+  page matches: after the handful of real matches come youth titles that do not
+  match the query at all, and nothing marks where the matches stop. A result
+  count is not a match count.
+- **A kids profile has an age band NPO derives**, from an age or a birth year
+  given when the profile is made. One band was seen (six to nine); which other
+  bands exist is not known.
+
+**Decided on 2026-10-03:** each mode browses as one of the account's own NPO
+profiles — normal mode as its general profile, kids mode as its kids profile —
+and **kids mode is unavailable until the account has a kids profile**. The app
+does not create one. [ADR 0014](../adr/0014-each-mode-browses-as-an-npo-profile.md)
+records it; FR-MODE-02 and FR-MODE-04 are amended to match.
 
 ## Q-04 — What counts as "near the end"?
 
@@ -348,3 +370,59 @@ can establish compatibility and observed persistence, not guarantee that caches
 will never be evicted. Choosing a cache-backed store, bounded defaults or remote
 storage changes existing promises and needs an explicit decision and the
 corresponding requirement amendments before implementing the stores.
+
+## Q-10 — What kind of thing is a programme in a list?
+
+**Blocks:** FR-CONTENT-01 for films and standalone episodes, and with it
+FR-LATER-02 (what may be saved) and the label FR-SEARCH-02 asks for.
+
+A search or a home row returns two kinds of item that matter: a `series`, and a
+`program`. A `program` is anything playable, and **nothing in it says whether
+it is a film, a standalone episode or an episode of a series**, nor which
+series it belongs to. A film and an episode differ only in a display line
+(`1u 23m` against `42m • Afl. 1`), which is text for a person and not a field
+to decide on.
+
+The only place a series link has been seen is the answer to the player call,
+which names the series and the season — but that call mints a playback token,
+and asking it for every tile is not an option.
+
+**How to answer:** a capture of NPO's app opening a film's detail page, and an
+episode picked from search results. The app shows a detail screen for both, so
+some call tells it what it is looking at. **Planned by the owner for later**;
+until then the catalogue returns a series or a "playable" that does not claim
+to know its kind, and nothing is built that has to tell them apart.
+
+## Q-11 — What does an item that cannot be played look like?
+
+**Blocks:** FR-CONTENT-06's first criterion.
+
+Items carry an indication of what this account may do with them, and both
+values ever seen mean "playable" — free content on a Plus account, and Plus
+content on a Plus account. Every capture came from an account with NPO Plus,
+and the owner's expectation is that such an account has **no unplayable items
+at all**: what is in the catalogue can be played.
+
+**Working assumption, 2026-10-03:** the catalogue does not mark anything as
+unavailable from that indication. An item is unavailable when NPO no longer
+returns it (FR-CONTENT-05), and a stream NPO refuses is a playback error
+(FR-PLAY-10). If an unplayable-but-listed item ever turns up — a geographic
+restriction, a withdrawn episode still in a season's list — its shape is the
+answer to this question, and FR-CONTENT-06 gets built against it.
+
+## Q-12 — Does playing through NPO light record progress at NPO?
+
+**Blocks:** nothing yet; bears on NFR-PRIV-01 once playback is built.
+
+The player call is made as an NPO profile ([ADR 0014](../adr/0014-each-mode-browses-as-an-npo-profile.md)),
+and NPO's answer to it carries that profile's stored position for the
+programme. NPO's own app evidently reports positions; whether NPO records one
+merely because a stream was requested, without the app reporting anything, has
+not been tested. NFR-PRIV-01 promises that positions are never sent to the NPO
+account, and that promise is about what this app sends — but if NPO infers a
+position from the stream alone, the household's NPO profiles will show what was
+watched here, and the requirement should say so.
+
+**How to answer:** play something through the proof-of-concept as a known
+profile, without any progress call, and look at that profile's continue-watching
+row in NPO's own app afterwards.
