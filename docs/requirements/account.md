@@ -111,7 +111,7 @@ the second line rather than the first.
 
 ## FR-AUTH-06 — Sign-in is a code on the screen, approved on a phone
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The television displays a short code, a web address, and a QR code. The user
 either scans the QR code with a phone, or types the address and enters the
@@ -211,12 +211,15 @@ such as a new password.
   and storing — leaves the app able to recover rather than stranded with a
   spent token.
 - A refresh NPO rejects returns to sign-in with local data intact.
-- The refresh token is the only credential kept, and it is kept in the Keychain
-  (FR-AUTH-02).
+- The session's tokens — the refresh token, and the id token and access token
+  issued with it — are the only credentials kept, and they are kept together in
+  the Keychain (FR-AUTH-02). Keeping the short-lived pair means a relaunch
+  within the hour needs no renewal, and so does not spend a single-use refresh
+  token just to start the app.
 
 ## FR-AUTH-08 — NPO Plus is required, and the app says so plainly
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Immediately after signing in, the app checks that the account has an NPO Plus
 subscription. If it does not, the app explains that NPO light needs one, that

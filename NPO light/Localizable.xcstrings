@@ -1,0 +1,28 @@
+{
+  "sourceLanguage" : "nl",
+  "strings" : {
+    "Code aanvragen…" : {},
+    "De code is verlopen." : {},
+    "Deze tv kan NPO nu niet bereiken. Controleer het netwerk en probeer het opnieuw." : {},
+    "Er is niet op tijd goedgekeurd. Vraag een nieuwe code aan en probeer het nog eens." : {},
+    "Geen verbinding met NPO." : {},
+    "Het account waarmee je bent ingelogd heeft geen NPO Plus." : {},
+    "Inloggen is afgebroken." : {},
+    "Inloggen is niet gelukt." : {},
+    "Log in bij NPO en keur de koppeling goed." : {},
+    "Log in met je NPO Plus-account" : {},
+    "NPO gaf een antwoord dat deze app niet begrijpt. Probeer het later opnieuw." : {},
+    "NPO light werkt alleen met NPO Plus" : {},
+    "Nieuwe code" : {},
+    "OK, afmelden" : {},
+    "Op de telefoon is het koppelen geweigerd of gestopt. Je kunt het opnieuw proberen." : {},
+    "Opnieuw beginnen" : {},
+    "Opnieuw proberen" : {},
+    "QR-code om in te loggen" : {},
+    "Scan de QR-code met je telefoon, of ga naar" : {},
+    "Vul deze code in:" : {},
+    "Wachten op goedkeuring. Deze tv gaat vanzelf verder." : {},
+    "We melden het daarom weer af. Log in met een account dat NPO Plus heeft, of neem NPO Plus op npo.nl." : {}
+  },
+  "version" : "1.0"
+}

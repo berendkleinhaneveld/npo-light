@@ -187,10 +187,10 @@
 				};
 			};
 			buildConfigurationList = 19138278304354500086C138 /* Build configuration list for PBXProject "NPO light" */;
-			developmentRegion = en;
+			developmentRegion = nl;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				en,
+				nl,
 				Base,
 			);
 			mainGroup = 19138274304354500086C138;
