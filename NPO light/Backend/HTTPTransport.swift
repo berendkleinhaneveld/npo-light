@@ -34,3 +34,21 @@ nonisolated struct HTTPResponse: Sendable, Equatable {
         self.body = body
     }
 }
+
+extension HTTPTransport {
+    /// Sends `request`, and reports anything the transport throws that is not
+    /// already the app's own error as the request or its reply getting lost.
+    nonisolated func reaching(_ request: URLRequest) async throws -> HTTPResponse {
+        do {
+            return try await send(request)
+        } catch let error as BackendError {
+            throw error
+        } catch let error as CancellationError {
+            throw error
+        } catch {
+            // `URLSession` reports a cancelled task as a failed request.
+            try Task.checkCancellation()
+            throw BackendError.unreachable
+        }
+    }
+}

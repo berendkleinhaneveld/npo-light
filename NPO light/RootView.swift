@@ -13,6 +13,7 @@ struct RootView: View {
     let homeModel: HomeModel
     let searchModel: SearchModel
     let seriesModel: (SeriesSummary) -> SeriesDetailModel
+    let playerModel: (Playable) -> PlayerModel
 
     var body: some View {
         content
@@ -26,7 +27,10 @@ struct RootView: View {
         case .signedOut:
             SignInView(model: signInModel)
         case .signedIn:
-            HomeView(model: homeModel, search: searchModel, seriesModel: seriesModel)
+            HomeView(model: homeModel,
+                     search: searchModel,
+                     seriesModel: seriesModel,
+                     playerModel: playerModel)
         case .plusRequired:
             PlusRequiredView { appModel.acknowledgePlusRequired() }
         case .unreachable:
@@ -56,7 +60,8 @@ private struct RootPreview: View {
                  signInModel: signInModel,
                  homeModel: HomeModel(),
                  searchModel: SearchModel(catalogue: ScriptedCatalogue(), clock: SystemClock(), mode: .normal),
-                 seriesModel: { SeriesDetailModel(summary: $0, catalogue: ScriptedCatalogue(), mode: .normal) })
+                 seriesModel: { SeriesDetailModel(summary: $0, catalogue: ScriptedCatalogue(), mode: .normal) },
+                 playerModel: { PlayerModel(playable: $0, mode: .normal, starter: ScriptedPlayback()) })
     }
 }
 

@@ -8,10 +8,10 @@ import SwiftUI
 /// A series: its header, a season picker, and one season's episodes with the
 /// focused one previewed beside them (FR-CONTENT-03, -07, -08).
 ///
-/// Playing, pinning and watched state are not here yet: they need playback and
-/// the local stores.
+/// Pinning and watched state are not here yet: they need the local stores.
 struct SeriesDetailView: View {
     let model: SeriesDetailModel
+    let play: (Playable) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 32) {
@@ -35,7 +35,7 @@ struct SeriesDetailView: View {
                 .frame(maxWidth: .infinity)
         case .loaded:
             SeasonPicker(seasons: model.pickerSeasons, shown: model.shownSeason) { model.show($0) }
-            SeasonEpisodesView(model: model)
+            SeasonEpisodesView(model: model, play: play)
         case .unavailable:
             Text("Deze serie is niet meer beschikbaar.")
                 .font(.headline)
@@ -119,6 +119,7 @@ struct SeasonPicker: View {
 /// A season's episodes, one line each, with the focused one previewed.
 struct SeasonEpisodesView: View {
     let model: SeriesDetailModel
+    let play: (Playable) -> Void
 
     @FocusState private var focused: EpisodeID?
 
@@ -146,8 +147,7 @@ struct SeasonEpisodesView: View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 12) {
                 ForEach(episodes) { episode in
-                    // Playing waits for playback (FR-PLAY-01).
-                    Button {} label: {
+                    Button { play(episode) } label: {
                         HStack {
                             Text(verbatim: episode.title)
                                 .lineLimit(1)
@@ -207,7 +207,8 @@ struct EpisodePreview: View {
 #Preview("Series") {
     SeriesDetailView(model: SeriesDetailModel(summary: ScriptedCatalogue.results.series[0],
                                               catalogue: ScriptedCatalogue(),
-                                              mode: .normal))
+                                              mode: .normal),
+                     play: { _ in })
 }
 
 #Preview("Header") {

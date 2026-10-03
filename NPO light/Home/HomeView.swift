@@ -17,6 +17,10 @@ enum Destination: Hashable {
 final class HomeModel {
     var path: [Destination] = []
 
+    /// What is playing. The player is presented over the stack rather than
+    /// pushed onto it (ADR 0011).
+    var playing: Playable?
+
     func openSearch() {
         path.append(.search)
     }
@@ -26,11 +30,15 @@ final class HomeModel {
         switch pick {
         case .series(let series):
             path.append(.series(series))
-        case .playable:
-            // A film's or an episode's own page waits for Q-10: NPO's list
-            // does not say which of the two it is.
-            break
+        case .playable(let playable):
+            // Straight to playing. A film's or an episode's own page waits
+            // for Q-10: NPO's list does not say which of the two it is.
+            play(playable)
         }
+    }
+
+    func play(_ playable: Playable) {
+        playing = playable
     }
 }
 
@@ -44,6 +52,7 @@ struct HomeView: View {
     @Bindable var model: HomeModel
     let search: SearchModel
     let seriesModel: (SeriesSummary) -> SeriesDetailModel
+    let playerModel: (Playable) -> PlayerModel
 
     var body: some View {
         NavigationStack(path: $model.path) {
@@ -59,9 +68,12 @@ struct HomeView: View {
                 case .search:
                     SearchView(model: search) { model.open($0) }
                 case .series(let series):
-                    SeriesDetailScreen(series: series, makeModel: seriesModel)
+                    SeriesDetailScreen(series: series, makeModel: seriesModel) { model.play($0) }
                 }
             }
+        }
+        .fullScreenCover(item: $model.playing) { playable in
+            PlayerScreen(playable: playable, makeModel: playerModel)
         }
     }
 }
@@ -70,13 +82,30 @@ struct HomeView: View {
 /// of the stack does not start the page over.
 private struct SeriesDetailScreen: View {
     @State private var model: SeriesDetailModel
+    private let play: (Playable) -> Void
 
-    init(series: SeriesSummary, makeModel: (SeriesSummary) -> SeriesDetailModel) {
+    init(series: SeriesSummary,
+         makeModel: (SeriesSummary) -> SeriesDetailModel,
+         play: @escaping (Playable) -> Void) {
         _model = State(initialValue: makeModel(series))
+        self.play = play
     }
 
     var body: some View {
-        SeriesDetailView(model: model)
+        SeriesDetailView(model: model, play: play)
+    }
+}
+
+/// Keeps one model for as long as the player is presented.
+private struct PlayerScreen: View {
+    @State private var model: PlayerModel
+
+    init(playable: Playable, makeModel: (Playable) -> PlayerModel) {
+        _model = State(initialValue: makeModel(playable))
+    }
+
+    var body: some View {
+        PlayerView(model: model)
     }
 }
 
@@ -84,6 +113,7 @@ private struct SeriesDetailScreen: View {
 #Preview {
     HomeView(model: HomeModel(),
              search: SearchModel(catalogue: ScriptedCatalogue(), clock: SystemClock(), mode: .normal),
-             seriesModel: { SeriesDetailModel(summary: $0, catalogue: ScriptedCatalogue(), mode: .normal) })
+             seriesModel: { SeriesDetailModel(summary: $0, catalogue: ScriptedCatalogue(), mode: .normal) },
+             playerModel: { PlayerModel(playable: $0, mode: .normal, starter: ScriptedPlayback()) })
 }
 #endif

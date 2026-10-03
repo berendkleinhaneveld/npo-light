@@ -16,6 +16,18 @@ nonisolated enum NPOWire {
     /// the tvOS client are accepted by the one the iOS app uses (ADR 0007).
     static let backendHost = "ios.bff.start.npox.nl"
 
+    static let playerHost = "prod.npoplayer.nl"
+
+    /// What NPO's app asks the player host for, as captured. The `ster` block
+    /// is the app's description of itself; the same stream comes back for the
+    /// website's different one, and whether it may be left out was never
+    /// tested.
+    static let streamLinkBody = """
+    {"profileName":"hls","drmType":"fairplay",\
+    "ster":{"player":"app","deviceType":4,"os":"ios","osVersion":"26.6.1",\
+    "identifier":"npo-app-ios","site":"npo"}}
+    """
+
     static let deviceAuthorizationPath = "/connect/deviceauthorization"
     static let tokenPath = "/connect/token"
     static let accountPath = "/account"
@@ -24,6 +36,10 @@ nonisolated enum NPOWire {
 
     static func seriesPath(_ series: ItemID) -> String {
         "/series/page/\(series.rawValue)"
+    }
+
+    static func playerPath(_ episode: EpisodeID) -> String {
+        "/programs/player/\(episode.rawValue)"
     }
 
     static func episodesPath(_ season: SeasonID) -> String {
@@ -88,6 +104,34 @@ nonisolated enum NPOWire {
         request.setValue(appDetails, forHTTPHeaderField: "App-Details")
         // Required but not authenticated: leaving it out is answered with 400.
         request.setValue(escaped(session.deviceIdentifier), forHTTPHeaderField: "party-id")
+        return request
+    }
+
+    /// The exchange of a player token for a stream, on NPO's player host.
+    static func streamLinkRequest(playerToken: String) throws -> URLRequest {
+        var request = URLRequest(url: try url(host: playerHost, path: "/stream-link"))
+        request.httpMethod = "POST"
+        // The raw token. With a `Bearer` prefix the player host answers 403.
+        request.setValue(playerToken, forHTTPHeaderField: "Authorization")
+        request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue(acceptLanguage, forHTTPHeaderField: "Accept-Language")
+        request.httpBody = Data(streamLinkBody.utf8)
+        return request
+    }
+
+    /// The licence exchange: the request the operating system made for a key,
+    /// sent raw to NPO's licence gateway.
+    static func licenceRequest(keyRequest: Data, assetID: String, protection: StreamProtection) -> URLRequest {
+        var components = URLComponents(url: protection.licenceURL, resolvingAgainstBaseURL: false)
+        // What NPO's app sends. The gateway answers without it too.
+        components?.queryItems = [URLQueryItem(name: "assetId", value: assetID)]
+        var request = URLRequest(url: components?.url ?? protection.licenceURL)
+        request.httpMethod = "POST"
+        request.httpBody = keyRequest
+        request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
+        // The only credential the gateway looks at.
+        request.setValue(protection.credential, forHTTPHeaderField: "X-Custom-Data")
         return request
     }
 
