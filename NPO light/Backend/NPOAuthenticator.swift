@@ -103,16 +103,24 @@ nonisolated final class NPOAuthenticator: Authenticating {
     /// A 401 is read as a lapsed session: it is renewed once and the request is
     /// repeated once (FR-AUTH-03). A second 401 is not a lapsed session any
     /// more, and is handed back to the caller rather than retried in a loop.
-    func backendResponse(path: String) async throws -> HTTPResponse {
+    func backendResponse(to call: BackendCall) async throws -> HTTPResponse {
         let session = try await currentSession()
-        let response = try await send(NPOWire.backendRequest(path: path, session: session))
+        let response = try await send(NPOWire.backendRequest(call, session: session))
         guard response.status == 401 else { return response }
         let renewed = try await renewedSession(replacing: session)
-        return try await send(NPOWire.backendRequest(path: path, session: renewed))
+        return try await send(NPOWire.backendRequest(call, session: renewed))
+    }
+
+    /// Names the current sign-in without being a credential: it is made at
+    /// sign-in and kept across renewals, so anything remembered about one
+    /// account can be told apart from the next.
+    func signInMarker() throws -> String {
+        guard let stored = try tokenStore.load() else { throw BackendError.notSignedIn }
+        return stored.deviceIdentifier
     }
 
     private func account() async throws -> Account {
-        let response = try await backendResponse(path: NPOWire.accountPath)
+        let response = try await backendResponse(to: BackendCall(path: NPOWire.accountPath))
         guard response.status == 200 else {
             throw BackendError.unexpectedResponse(status: response.status)
         }

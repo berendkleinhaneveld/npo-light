@@ -1,0 +1,105 @@
+{
+  "guid": "search",
+  "collections": [
+    {
+      "guid": "search-series",
+      "title": "Programma's",
+      "type": "series",
+      "items": [
+        {
+          "guid": "0806bc3a-3ad1-403c-aa4a-feac30c86ac4",
+          "slug": "freeks-wilde-wereld",
+          "title": "Freeks wilde wereld",
+          "type": "series",
+          "images": [
+            {
+              "url": "https://assets-start.npo.nl/resources/2025/01/21/1c87dca6-6425-4a53-a58b-cee58b41c791.png",
+              "role": "title",
+              "mimeType": "image/png",
+              "description": "Title Treatment Logo freeks wilde wereld"
+            },
+            {
+              "url": "https://assets-start.npo.nl/resources/2023/10/31/343ffaa5-fbb0-4358-bd3a-39b017a8e5d7.jpg",
+              "role": "default",
+              "mimeType": "image/jpeg",
+              "description": "SU Header Freeks wilde wereld seizoen 10"
+            }
+          ]
+        },
+        {
+          "guid": "0b7a23cb-621b-42f1-a4dc-fbf74c7228e5",
+          "slug": "freek-in-het-wild",
+          "title": "Freek in het wild",
+          "type": "series",
+          "images": [
+            {
+              "url": "https://assets-start.npo.nl/resources/2023/06/30/0b777b25-ca9a-4aaa-993b-5ae6ad032155.jpg",
+              "role": "default",
+              "mimeType": "image/jpeg",
+              "description": "Freek in het wild"
+            },
+            {
+              "url": "https://assets-start.npo.nl/resources/2025/03/04/cbe04ca7-6397-410f-a85b-9ae28327ec79.png",
+              "role": "title",
+              "mimeType": "image/png",
+              "description": "Title treatment - Freek in het wild"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "guid": "search-programs",
+      "title": "Afleveringen",
+      "type": "program",
+      "items": [
+        {
+          "guid": "50a874df-bd47-4531-b595-8b385596bcd7",
+          "prid": "VPWON_1362128",
+          "slug": "freeks-wilde-wereld_53",
+          "type": "program",
+          "title": "Freeks wilde wereld",
+          "subtitle": "10m • Afl. 5: Haaien in de rivier",
+          "durationInSeconds": 628,
+          "contentIndication": "freeContent_premiumAccount",
+          "contentClassification": {
+            "ageRestriction": "all",
+            "contentWarnings": []
+          },
+          "target": "player",
+          "images": [
+            {
+              "url": "https://assets-start.npo.nl/resources/2025/11/20/fc0c161b-3a91-45cf-980c-c493500b37ea.jpg",
+              "role": "default",
+              "mimeType": "image/jpeg",
+              "description": "Haaien in de rivier"
+            }
+          ]
+        },
+        {
+          "guid": "10c84845-36e5-400d-9ac0-1e68109cef8e",
+          "prid": "VPWON_1362124",
+          "slug": "freeks-wilde-wereld_46",
+          "type": "program",
+          "title": "Freeks wilde wereld",
+          "subtitle": "10m • Afl. 1: Freek tussen de wolven",
+          "durationInSeconds": 616,
+          "contentIndication": "freeContent_premiumAccount",
+          "contentClassification": {
+            "ageRestriction": "all",
+            "contentWarnings": []
+          },
+          "target": "player",
+          "images": [
+            {
+              "url": "https://assets-start.npo.nl/resources/2025/11/13/a20c1869-70ab-4ae1-ab11-820738049676.jpg",
+              "role": "default",
+              "mimeType": "image/jpeg",
+              "description": "Freek tussen de wolven"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
