@@ -51,14 +51,25 @@ failures are not retried in a loop.
 
 - **Status:** Accepted
 
-Killing the app, or the TV losing power, does not corrupt the local store or
-lose more than the last persistence interval (FR-PLAY-03).
+Killing the app, or the TV losing power, does not corrupt local data or lose
+more than the last persistence interval (FR-PLAY-03).
+
+tvOS may also empty the app's caches while the app is not running, and that is
+where the full table of playback positions has to live
+([ADR 0015](../adr/0015-local-data-in-two-places.md)). What the family chose —
+pins, watch later, search history — the recently watched row and the most
+recent positions are kept where tvOS does not reach, and survive it. Older
+positions do not.
 
 **Acceptance criteria**
 
 - Writes are committed transactionally; a partial write cannot leave an
   unreadable store.
 - After a simulated abrupt termination, pins, history and positions are intact.
+- After the position store is deleted between launches, pins, watch later,
+  search history, the recently watched row and the most recent positions are
+  intact, and the app does not report a reset (NFR-REL-05).
+- No write takes the app's `UserDefaults` past its fixed ceiling.
 
 ## NFR-REL-05 — A broken store recovers instead of crash-looping
 
