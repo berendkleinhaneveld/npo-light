@@ -1,0 +1,119 @@
+//
+//  NPOCatalogueBodies.swift
+//  NPO light
+//
+
+import Foundation
+
+/// One of the account's NPO profiles, from `GET /profiles`.
+nonisolated struct ProfileBody: Decodable {
+    static let generalType = "GENERAL"
+    static let kidsType = "KIDS"
+
+    let guid: String
+    let type: String?
+}
+
+/// An image as NPO lists it. `role` tells a header image (`default`) from a
+/// transparent title logo (`title`).
+nonisolated struct ImageBody: Decodable {
+    static let artworkRole = "default"
+
+    let url: String?
+    let role: String?
+}
+
+/// An item in a collection or a season. A collection mixes types, and only the
+/// fields every type shares are certain; the rest is there for some of them.
+nonisolated struct CatalogueItemBody: Decodable {
+    static let seriesType = "series"
+    static let programType = "program"
+
+    let guid: String
+    /// Absent in a season's list, where everything is a programme.
+    let type: String?
+    let title: String?
+    let subtitle: String?
+    let synopsis: String?
+    let durationInSeconds: Int?
+    let images: [ImageBody]?
+
+    var artwork: URL? {
+        images?.first { $0.role == ImageBody.artworkRole }?.url.flatMap(URL.init(string:))
+    }
+
+    var seriesSummary: SeriesSummary? {
+        guard let title else { return nil }
+        return SeriesSummary(id: ItemID(rawValue: guid), title: title, artwork: artwork)
+    }
+
+    var playable: Playable? {
+        guard let title else { return nil }
+        return Playable(id: EpisodeID(rawValue: guid),
+                        title: title,
+                        caption: subtitle,
+                        synopsis: synopsis,
+                        duration: durationInSeconds.map { .seconds($0) },
+                        artwork: artwork)
+    }
+}
+
+/// `GET /search`: the page envelope, with one collection of series and one of
+/// programmes.
+nonisolated struct SearchBody: Decodable {
+    struct Collection: Decodable {
+        let items: [CatalogueItemBody]?
+    }
+
+    let collections: [Collection]
+
+    /// Sorted by each item's own type rather than by the collection it came
+    /// in, so a collection NPO adds or renames does not lose results.
+    var results: SearchResults {
+        let items = collections.flatMap { $0.items ?? [] }
+        return SearchResults(
+            series: items.filter { $0.type == CatalogueItemBody.seriesType }.compactMap(\.seriesSummary),
+            playables: items.filter { $0.type == CatalogueItemBody.programType }.compactMap(\.playable)
+        )
+    }
+}
+
+/// `GET /series/page/{guid}`: the whole series screen in one answer.
+nonisolated struct SeriesPageBody: Decodable {
+    struct Header: Decodable {
+        let title: String
+        /// NPO puts the synopsis in the header's subtitle.
+        let subtitle: String?
+        let images: [ImageBody]?
+    }
+
+    struct Tab: Decodable {
+        static let seasonsType = "seasons"
+
+        let type: String?
+        let seasons: [SeasonBody]?
+    }
+
+    struct SeasonBody: Decodable {
+        let guid: String
+        let title: String
+    }
+
+    let guid: String
+    let header: Header
+    let tabs: [Tab]?
+
+    var detail: SeriesDetail {
+        let seasons = tabs?.first { $0.type == Tab.seasonsType }?.seasons ?? []
+        let artwork = header.images?
+            .first { $0.role == ImageBody.artworkRole }?.url
+            .flatMap(URL.init(string:))
+        return SeriesDetail(
+            id: ItemID(rawValue: guid),
+            title: header.title,
+            synopsis: header.subtitle,
+            artwork: artwork,
+            seasons: seasons.map { Season(id: SeasonID(rawValue: $0.guid), title: $0.title) }
+        )
+    }
+}
