@@ -1,6 +1,8 @@
 {
   "sourceLanguage" : "nl",
   "strings" : {
+    "%@, serie" : {},
+    "Afleveringen en films" : {},
     "Code aanvragen…" : {},
     "De code is verlopen." : {},
     "Deze tv kan NPO nu niet bereiken. Controleer het netwerk en probeer het opnieuw." : {},
@@ -13,6 +15,7 @@
     "Log in met je NPO Plus-account" : {},
     "NPO gaf een antwoord dat deze app niet begrijpt. Probeer het later opnieuw." : {},
     "NPO light werkt alleen met NPO Plus" : {},
+    "Niets gevonden voor “%@”." : {},
     "Nieuwe code" : {},
     "OK, afmelden" : {},
     "Op de telefoon is het koppelen geweigerd of gestopt. Je kunt het opnieuw proberen." : {},
@@ -20,9 +23,13 @@
     "Opnieuw proberen" : {},
     "QR-code om in te loggen" : {},
     "Scan de QR-code met je telefoon, of ga naar" : {},
+    "Series" : {},
     "Vul deze code in:" : {},
     "Wachten op goedkeuring. Deze tv gaat vanzelf verder." : {},
-    "We melden het daarom weer af. Log in met een account dat NPO Plus heeft, of neem NPO Plus op npo.nl." : {}
+    "We melden het daarom weer af. Log in met een account dat NPO Plus heeft, of neem NPO Plus op npo.nl." : {},
+    "Zoek een serie, film of aflevering" : {},
+    "Zoeken" : {},
+    "Zoeken is niet gelukt." : {}
   },
   "version" : "1.0"
 }

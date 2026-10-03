@@ -32,7 +32,7 @@ press.
 
 ## FR-SEARCH-03 — Typing is never blocked
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Characters appear on screen as fast as the user presses them, no matter what
 the network is doing. No fetching, decoding or persisting happens on the main
@@ -130,7 +130,7 @@ In kids mode, search returns only youth-catalogue items (FR-MODE-04).
 
 ## FR-SEARCH-09 — No results is a state, not a blank page
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 A search that matches nothing says so.
 
