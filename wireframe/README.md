@@ -63,9 +63,9 @@ standalone episodes go on watch later.
 These are placeholders chosen to make the sketch work. Each is open until a
 requirement settles it; if one is right, the requirement should say so.
 
-- **Labels.** *Kindermodus* and *Gewone modus* for the modes; *Vastgezet*,
-  *Recent bekeken* and *Later kijken* for the rows (only the last is named in
-  FR-LATER, as a working label).
+- **Labels.** *Kindermodus* and *Gewone modus* for the modes; *Vastgezet* for
+  the pinned row. *Kijk verder* is settled by FR-HOME-06, and *Later kijken* is
+  named in FR-LATER as a working label.
 - **Where the controls sit.** Search, the mode switch and settings share a bar
   above the rows; initial focus is the first pinned tile, one press below
   search (FR-HOME-01, FR-SEARCH-01, FR-MODE-02).

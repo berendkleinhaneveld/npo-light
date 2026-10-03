@@ -8,8 +8,7 @@ import SwiftUI
 /// The composition root (ADR 0011): the one place that names a concrete type
 /// and hands it down, so that the seams ADR 0009 relies on stay reachable.
 ///
-/// The stores and the model container are not here yet. Whether an Apple TV
-/// has anywhere to put that container is Q-09.
+/// The stores are not here yet. Where they keep their data is ADR 0015.
 @main
 struct NPOLightApp: App {
     /// How long a request to NPO may stay unanswered before it fails, so that
