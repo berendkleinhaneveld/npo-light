@@ -3,20 +3,31 @@
 What the app can show and play, and where that information comes from.
 Prefix `FR-CONTENT`.
 
-## FR-CONTENT-01 — Three kinds of item
+## FR-CONTENT-01 — Two kinds of item
 
 - **Status:** Accepted
 
-The app models exactly three kinds of item: a **series** (an ordered collection
-of episodes), a **film**, and a **standalone episode** that belongs to no
-series. Every item has a stable identifier, a title, a description and artwork.
+The app models exactly two kinds of item: a **series** (an ordered collection
+of episodes), and a **single programme** that belongs to no series — a film, a
+one-off documentary, a special. Every item has a stable identifier, a title, a
+description and artwork.
+
+**Why not three.** An earlier version of this requirement told a film from a
+standalone episode. NPO does not: its catalogue says whether a programme
+belongs to a series and nothing more, and "film" is a row on a home page rather
+than a kind
+([Q-10](open-questions.md#q-10--does-a-programme-in-a-list-belong-to-a-series)).
+Nothing in these requirements treated the two differently either. Where another
+requirement says "a film or a standalone episode", it means a single programme.
 
 **Acceptance criteria**
 
 - An item's identifier is stable across launches and app updates, and is what
   pins, watch history and search history store.
-- A film and a standalone episode are directly playable; a series is not — one
-  of its episodes is.
+- A single programme is directly playable; a series is not — one of its
+  episodes is.
+- A single programme is not labelled as a film or as an episode: the app has no
+  way to know which, and does not guess from a title or a duration.
 - Artwork may be missing; the app renders a placeholder rather than an empty
   tile.
 
