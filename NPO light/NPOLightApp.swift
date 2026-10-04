@@ -18,35 +18,45 @@ struct NPOLightApp: App {
 
     @State private var appModel: AppModel
     @State private var signInModel: SignInModel
+    @State private var homeModel = HomeModel()
+    @State private var searchModel: SearchModel
 
     init() {
-        let authenticator = Self.makeAuthenticator()
-        let appModel = AppModel(authenticator: authenticator)
+        let backend = Self.makeBackend()
+        let appModel = AppModel(authenticator: backend.authenticator)
         _appModel = State(initialValue: appModel)
-        _signInModel = State(initialValue: SignInModel(authenticator: authenticator,
+        _signInModel = State(initialValue: SignInModel(authenticator: backend.authenticator,
                                                        clock: SystemClock(),
                                                        onSignedIn: { appModel.admit($0) }))
+        // Normal mode until the mode switch exists (FR-MODE-02).
+        _searchModel = State(initialValue: SearchModel(catalogue: backend.catalogue,
+                                                       clock: SystemClock(),
+                                                       mode: .normal))
     }
 
     var body: some Scene {
         WindowGroup {
-            RootView(appModel: appModel, signInModel: signInModel)
+            RootView(appModel: appModel,
+                     signInModel: signInModel,
+                     homeModel: homeModel,
+                     searchModel: searchModel)
         }
     }
 
-    private static func makeAuthenticator() -> any Authenticating {
+    private static func makeBackend() -> (authenticator: any Authenticating, catalogue: any Catalogue) {
         #if DEBUG
-        // A launch by a test must not start a real sign-in at NPO.
+        // A launch by a test must not reach NPO.
         if let scripted = ScriptedAuthenticator(environment: ProcessInfo.processInfo.environment) {
-            return scripted
+            return (scripted, ScriptedCatalogue())
         }
         #endif
         let configuration = URLSessionConfiguration.ephemeral
         configuration.timeoutIntervalForRequest = requestTimeout
-        return NPOAuthenticator(
+        let authenticator = NPOAuthenticator(
             transport: URLSessionTransport(session: URLSession(configuration: configuration)),
             tokenStore: KeychainTokenStore(),
             clock: SystemClock()
         )
+        return (authenticator, NPOCatalogue(authenticator: authenticator))
     }
 }
