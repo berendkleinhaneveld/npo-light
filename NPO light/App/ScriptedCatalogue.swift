@@ -14,7 +14,15 @@ nonisolated struct ScriptedCatalogue: Catalogue {
             SeriesSummary(id: ItemID(rawValue: "series-1"), title: "Freeks wilde wereld", artwork: nil),
             SeriesSummary(id: ItemID(rawValue: "series-2"), title: "Het Klokhuis", artwork: nil)
         ],
-        playables: [
+        singleProgrammes: [
+            Playable(id: EpisodeID(rawValue: "playable-2"),
+                     title: "De wilde stad",
+                     caption: "1u 25m",
+                     synopsis: nil,
+                     duration: .seconds(5100),
+                     artwork: nil)
+        ],
+        episodes: [
             Playable(id: EpisodeID(rawValue: "playable-1"),
                      title: "Freeks wilde wereld",
                      caption: "10m • Afl. 5: Haaien in de rivier",

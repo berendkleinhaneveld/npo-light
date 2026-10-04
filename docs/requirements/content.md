@@ -17,6 +17,8 @@ standalone episode. NPO does not: its catalogue says whether a programme
 belongs to a series and nothing more, and "film" is a row on a home page rather
 than a kind
 ([Q-10](open-questions.md#q-10--does-a-programme-in-a-list-belong-to-a-series)).
+That much it does say, in every list: so a single programme can be told from an
+episode wherever it is shown (FR-SEARCH-10).
 Nothing in these requirements treated the two differently either. Where another
 requirement says "a film or a standalone episode", it means a single programme.
 
@@ -26,8 +28,8 @@ requirement says "a film or a standalone episode", it means a single programme.
   pins, watch history and search history store.
 - A single programme is directly playable; a series is not — one of its
   episodes is.
-- A single programme is not labelled as a film or as an episode: the app has no
-  way to know which, and does not guess from a title or a duration.
+- A single programme is not labelled as a film: the app knows that it stands
+  alone, not what it is, and does not guess from a title or a duration.
 - Artwork may be missing; the app renders a placeholder rather than an empty
   tile.
 

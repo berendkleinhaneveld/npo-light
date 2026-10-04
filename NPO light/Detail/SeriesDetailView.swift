@@ -220,6 +220,6 @@ struct EpisodePreview: View {
 }
 
 #Preview("Preview") {
-    EpisodePreview(episode: ScriptedCatalogue.results.playables[0])
+    EpisodePreview(episode: ScriptedCatalogue.results.episodes[0])
 }
 #endif

@@ -949,11 +949,11 @@
     if (!search.results.length) {
       return `<p class="empty-line" role="status">Niets gevonden voor “${esc(search.query)}”.${isKids() ? ' Je zoekt in het aanbod voor kinderen.' : ''}</p>`;
     }
-    const tiles = search.results.map((item) => {
+    const tileFor = (item) => {
       const tileHtml = tile(`result:${item.id}`, {
         item, title: item.title, line: item.kind === 'series' ? `${KIND.series} · ${plural(CAT.episodes(item).length, 'aflevering', 'afleveringen')}` : `${KIND[item.kind]} · ${minutesText(item.duration)}`,
         state: item.available ? null : unavailableState(),
-        req: 'FR-SEARCH-02 FR-SEARCH-05 FR-CONTENT-03',
+        req: 'FR-SEARCH-02 FR-SEARCH-05 FR-SEARCH-10 FR-CONTENT-03',
         label: `${item.title}, ${KIND[item.kind].toLowerCase()}`,
         onSelect: () => { rememberSearch(search.query, item.id); save(); openDetail(item); },
       });
@@ -961,9 +961,18 @@
         ? saveButton(`rsave:${item.id}`, item, 'btn btn-small', 'FR-LATER-03')
         : '<span class="btn-spacer"></span>';
       return `<div class="result">${tileHtml}${saver}</div>`;
+    };
+    // FR-SEARCH-10: a row for each kind, and what stands alone before the
+    // episodes. Here a film is the one kind of single programme there is.
+    const groups = [
+      ['Series', (item) => item.kind === 'series'],
+      ['Films en losse programma\'s', (item) => item.kind === 'film'],
+      ['Afleveringen', (item) => item.kind !== 'series' && item.kind !== 'film'],
+    ];
+    return groups.map(([title, belongs]) => {
+      const tiles = search.results.filter(belongs).map(tileFor).join('');
+      return tiles ? `<h2 class="row-title">${title}</h2><div class="results">${tiles}</div>` : '';
     }).join('');
-    return `<h2 class="row-title">${plural(search.results.length, 'resultaat', 'resultaten')} voor “${esc(search.query)}”</h2>
-      <div class="results">${tiles}</div>`;
   }
 
   // ---- player (FR-PLAY-*)

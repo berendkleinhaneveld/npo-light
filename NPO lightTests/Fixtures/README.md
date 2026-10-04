@@ -22,6 +22,7 @@ is here is extracted and rewritten, not copied.
 | `account-premium-200.json` | `GET ios.bff.start.npox.nl/account` | 2026-09-01 |
 | `profiles-200.json` | `GET ios.bff.start.npox.nl/profiles`, an account with a general and a kids profile | 2026-09-03 |
 | `search-200.json` | `GET ios.bff.start.npox.nl/search?query=fr&page=1`, as the general profile; two items kept per collection | 2026-09-03 |
+| `search-single-programme-200.json` | `GET ios.bff.start.npox.nl/search?query=subst&page=1`, as the general profile: one series, two of its eight episodes, and a film. From the app's own request log on an Apple TV | 2026-10-04 |
 | `series-page-200.json` | `GET ios.bff.start.npox.nl/series/page/{guid}`, as the kids profile | 2026-09-03 |
 | `season-programs-200.json` | `GET ios.bff.start.npox.nl/series/seasons/{guid}/programs?sort=asc`, as the kids profile; three episodes kept | 2026-09-03 |
 | `player-200.json` | `GET ios.bff.start.npox.nl/programs/player/{guid}?player-environment=production` | 2026-08-31 |

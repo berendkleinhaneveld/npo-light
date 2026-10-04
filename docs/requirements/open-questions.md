@@ -391,12 +391,43 @@ from the repository with this answer; git keeps it.
 
 ## Q-10 — Does a programme in a list belong to a series?
 
+- **Answered:** 2026-10-04 — from the app's own request log on an Apple TV
 - **Narrowed:** 2026-10-03 — from "what kind of thing is it?"
 
-**Blocks:** telling a single programme from an episode of a series in search
+**Blocked:** telling a single programme from an episode of a series in search
 results and on the home page — and with it the detail page of a single
 programme (FR-CONTENT-03), what may be saved (FR-LATER-02) and the label
-FR-SEARCH-02 asks for. It does not block playing either of them.
+FR-SEARCH-02 asks for. It did not block playing either of them.
+
+**Answer: yes, a list says whether a programme stands alone, and the answer to
+playing it says which series it belongs to.** Both leads below held.
+
+- **`target` is the mark.** A programme in a list carries `target: detail` when
+  it belongs to no series and `target: player` when it is an episode. In 23
+  searches, 477 different programmes: 476 were `player`, and the one `detail`
+  was a film, *The Substance*. It is the same split the home page's film rows
+  showed.
+- **The player call confirms it.** For the film its answer is a `program` with
+  no `seriesSlug` and no `seasonSlug`, and neither a `nextProgram` nor a
+  `previousProgram`. For three episodes of three series it names the series and
+  the season, and the next and previous episode — in broadcast order, across
+  the boundary between seasons, with no previous one for the first episode of a
+  series.
+- **An episode number is not the mark.** 143 of the 476 episodes have no
+  `Afl.` in their caption: daily and weekly programmes are listed by date.
+- **A list still does not name the series.** Nothing in a search item says
+  which series an episode belongs to; only playing it does.
+
+One film is a small sample for the first point. It agrees with the 36 of 40 on
+the captured home page, and FR-SEARCH-10 errs on the safe side: a programme
+that does not say is shown as an episode.
+
+**What this leaves open.** The detail page of a single programme
+(FR-CONTENT-03) still has no endpoint: the app plays one straight away. NPO's
+app opens a page for it — that is what `detail` means — and what that page asks
+for has not been captured.
+
+*The question as it stood, kept for the reasoning:*
 
 A search or a home row returns two kinds of item that matter: a `series`, and a
 `program`. A `program` is anything playable, and on the app backend nothing in
@@ -462,9 +493,17 @@ returns it (FR-CONTENT-05), and a stream NPO refuses is a playback error
 restriction, a withdrawn episode still in a season's list — its shape is the
 answer to this question, and FR-CONTENT-06 gets built against it.
 
+**Evidence, 2026-10-04.** Three runs on an Apple TV saw 477 programmes in
+search and 281 episodes in season lists. Every one carried one of the two known
+indications — `freeContent_premiumAccount` or `premiumContent_premiumAccount` —
+and a film with the second played. Nothing unplayable turned up, so the
+assumption stands.
+
 ## Q-12 — Does playing through NPO light record progress at NPO?
 
-**Blocks:** nothing yet; bears on NFR-PRIV-01 once playback is built.
+- **Answered:** 2026-10-04 — from the app's own request log on an Apple TV
+
+**Blocked:** nothing; it bore on NFR-PRIV-01 once playback was built.
 
 The player call is made as an NPO profile ([ADR 0014](../adr/0014-each-mode-browses-as-an-npo-profile.md)),
 and NPO's answer to it carries that profile's stored position for the
@@ -478,3 +517,26 @@ watched here, and the requirement should say so.
 **How to answer:** play something through the proof-of-concept as a known
 profile, without any progress call, and look at that profile's continue-watching
 row in NPO's own app afterwards.
+
+**Answer, 2026-10-04: no.** Playing through this app leaves no position at
+NPO, so NFR-PRIV-01 holds as it is written.
+
+A stored position does not come with the player call, as the paragraph above
+says: it comes with the list. An episode in a season's list carries
+`progress: { secondsWatched, fractionWatched }` when NPO has a position for it,
+and no `progress` at all when it has none. One episode in 281 had one — three
+seconds into a documentary, from NPO's own app — so even a position that small
+is kept and shown.
+
+Two episodes were then played through this app as the general profile, and
+their season's list fetched before and after:
+
+- a children's episode played to the end: the list two and a half hours later
+  was identical, with no `progress` on it;
+- a documentary played partway and stopped: the list twenty minutes later was
+  identical, with no `progress` on it, while the three-second position on its
+  neighbour was still there.
+
+The second is the one that settles it, since NPO might drop the position of a
+finished episode. NPO records a position when its own app reports one, and a
+stream that is merely asked for and played is not a report.

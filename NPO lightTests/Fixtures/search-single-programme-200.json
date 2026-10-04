@@ -1,0 +1,114 @@
+{
+  "guid": "search",
+  "collections": [
+    {
+      "guid": "search-series",
+      "title": "Programma's",
+      "type": "series",
+      "items": [
+        {
+          "guid": "a8eb51ef-a167-4a92-b5ea-b1ec24e72792",
+          "slug": "a-woman-of-substance",
+          "type": "series",
+          "title": "A Woman of Substance",
+          "images": [
+            {
+              "url": "https://assets-start.npo.nl/resources/2026/04/23/105c7ef6-2792-4e4d-8969-db3a6ba1c708.jpg",
+              "role": "default",
+              "mimeType": "image/jpeg",
+              "description": "Aan het begin van de 20e eeuw werkt de jonge Emma Harte als dienstmeisje in het indrukwekkende Fairley Hall. Jaren later is ze een succesvolle zakenvrouw met maar één doel voor ogen: wraak nemen op de familie Fairley voor alles wat haar is aangedaan."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "guid": "search-programs",
+      "title": "Afleveringen",
+      "type": "program",
+      "items": [
+        {
+          "guid": "935dff18-ebfd-4e91-b5ea-a50a6b274600",
+          "prid": "POW_06003960",
+          "slug": "a-woman-of-substance",
+          "type": "program",
+          "title": "A Woman of Substance",
+          "subtitle": "46m • Afl. 1",
+          "durationInSeconds": 2813,
+          "contentIndication": "premiumContent_premiumAccount",
+          "contentClassification": {
+            "ageRestriction": "12",
+            "contentWarnings": [
+              "violence",
+              "fear",
+              "sex"
+            ]
+          },
+          "target": "player",
+          "images": [
+            {
+              "url": "https://assets-start.npo.nl/resources/2026/03/13/442c1be3-f076-4271-b4c8-f719bb065600.jpg",
+              "role": "default",
+              "mimeType": "image/jpeg",
+              "description": "Aan het begin van de twintigste eeuw werkt de jonge Emma Harte als dienstmeisje in het indrukwekkende Fairley Hall. Jaren later heeft ze maar één doel voor ogen: wraak nemen op de familie Fairley."
+            }
+          ]
+        },
+        {
+          "guid": "9e4dfde9-d67f-48e3-8e4b-7d5d10334f86",
+          "prid": "POW_06003966",
+          "slug": "a-woman-of-substance_7",
+          "type": "program",
+          "title": "A Woman of Substance",
+          "subtitle": "46m • Afl. 7",
+          "durationInSeconds": 2793,
+          "contentIndication": "premiumContent_premiumAccount",
+          "contentClassification": {
+            "ageRestriction": "12",
+            "contentWarnings": [
+              "violence",
+              "fear",
+              "sex"
+            ]
+          },
+          "target": "player",
+          "images": [
+            {
+              "url": "https://assets-start.npo.nl/resources/2026/04/08/a2075287-abd2-45b1-9900-c0bafffd19c2.jpg",
+              "role": "default",
+              "mimeType": "image/jpeg",
+              "description": "De Eerste Wereldoorlog breekt uit en de mannen die Emma liefheeft, trekken naar het front. De zaken staan er niet goed voor en Emma moet moeilijke keuzes maken om het hoofd boven water te houden."
+            }
+          ]
+        },
+        {
+          "guid": "4fe27e46-e856-4116-be90-9fa31d3d13c7",
+          "prid": "POW_05958602",
+          "slug": "the-substance",
+          "type": "program",
+          "title": "The Substance",
+          "subtitle": "2u 9m",
+          "durationInSeconds": 7791,
+          "contentIndication": "premiumContent_premiumAccount",
+          "contentClassification": {
+            "ageRestriction": "16",
+            "contentWarnings": [
+              "violence",
+              "fear",
+              "profanity"
+            ]
+          },
+          "target": "detail",
+          "images": [
+            {
+              "url": "https://assets-start.npo.nl/resources/2026/06/29/582b0a8a-4921-4a16-a41e-7b24982a9e81.jpg",
+              "role": "default",
+              "mimeType": "image/jpeg",
+              "description": "Met The Substance kun je een betere versie van jezelf maken, op voorwaarde dat je de ene week de ene 'jij' bent en de week daarop de andere. Als je dit maar volhoudt, kan er niets fout gaan. Toch?"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
