@@ -34,6 +34,9 @@ final class SeriesDetailModel {
 
     private(set) var page = Page.loading
 
+    /// Whether the series is pinned in this mode (FR-HOME-03).
+    private(set) var isPinned = false
+
     /// The season whose episodes are shown.
     private(set) var shownSeason: SeasonID?
 
@@ -49,10 +52,12 @@ final class SeriesDetailModel {
     private var focused: EpisodeID?
 
     private let catalogue: any Catalogue
+    private let pins: any Pins
 
-    init(summary: SeriesSummary, catalogue: any Catalogue, mode: Mode) {
+    init(summary: SeriesSummary, catalogue: any Catalogue, pins: any Pins, mode: Mode) {
         self.summary = summary
         self.catalogue = catalogue
+        self.pins = pins
         self.mode = mode
     }
 
@@ -75,6 +80,7 @@ final class SeriesDetailModel {
     /// episode. Nothing records what was watched yet, so that is the first.
     func load() async {
         page = .loading
+        isPinned = await pins.isPinned(summary.id, in: mode)
         do {
             let detail = try await catalogue.series(summary.id, in: mode)
             page = .loaded(detail)
@@ -90,6 +96,28 @@ final class SeriesDetailModel {
         } catch {
             page = .failed
         }
+    }
+
+    /// Pins the series, or takes its pin away (FR-HOME-03, FR-HOME-05).
+    ///
+    /// What is pinned is the series as NPO now describes it, when the page
+    /// has it: the pin's own title and image are what its tile is drawn from.
+    func togglePin() async {
+        do {
+            if isPinned {
+                try await pins.unpin(summary.id, in: mode)
+            } else {
+                try await pins.pin(current, in: mode)
+            }
+        } catch {
+            // Nothing was written; what is shown stays what is kept.
+        }
+        isPinned = await pins.isPinned(summary.id, in: mode)
+    }
+
+    private var current: SeriesSummary {
+        guard case .loaded(let detail) = page else { return summary }
+        return SeriesSummary(id: summary.id, title: detail.title, artwork: detail.artwork ?? summary.artwork)
     }
 
     /// Shows a season's episodes. Called as focus moves along the picker, with

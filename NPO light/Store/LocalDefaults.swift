@@ -25,6 +25,7 @@ nonisolated struct LocalDefaults {
     /// What is kept here. Every kind counts towards the ceiling.
     enum Record: String, CaseIterable, Sendable {
         case searchHistory = "search-history"
+        case pins
     }
 
     /// Comfortably below the 512 KB at which tvOS starts to warn.
@@ -60,6 +61,16 @@ nonisolated struct LocalDefaults {
             throw LocalDataError.full
         }
         defaults.set(data, forKey: Self.key(record, mode))
+    }
+
+    /// What is kept for `record`, read as `Value`. Nothing kept, or something
+    /// that cannot be read, is `nil`: the next write replaces it.
+    func value<Value: Decodable>(_ type: Value.Type, for record: Record, in mode: Mode) -> Value? {
+        data(for: record, in: mode).flatMap { try? JSONDecoder().decode(type, from: $0) }
+    }
+
+    func keep(_ value: some Encodable, for record: Record, in mode: Mode) throws {
+        try write(try JSONEncoder().encode(value), for: record, in: mode)
     }
 
     func remove(_ record: Record, in mode: Mode) {

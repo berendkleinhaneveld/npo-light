@@ -13,7 +13,10 @@ struct SeriesDetailModelTests {
     nonisolated private static let second = StubCatalogue.seasons[1].id
 
     private func model(_ catalogue: StubCatalogue) -> SeriesDetailModel {
-        SeriesDetailModel(summary: StubCatalogue.results.series[0], catalogue: catalogue, mode: .normal)
+        SeriesDetailModel(summary: StubCatalogue.results.series[0],
+                          catalogue: catalogue,
+                          pins: ScriptedPins(),
+                          mode: .normal)
     }
 
     @Test("FR-CONTENT-07: the page opens on a season and shows that season's episodes only")
@@ -165,12 +168,55 @@ struct SeriesDetailModelTests {
 
     @Test("FR-CONTENT-03: choosing a series from search results opens its detail page")
     func seriesPickOpensDetail() {
-        let home = HomeModel()
+        let home = HomeModel(pins: ScriptedPins(), mode: .normal)
         let series = StubCatalogue.results.series[0]
 
         home.openSearch()
         home.open(.series(series))
 
         #expect(home.path == [.search, .series(series)])
+    }
+
+    @Test("FR-HOME-03: the pin action reflects whether the series is pinned, and toggles it")
+    func pinActionToggles() async {
+        let pins = ScriptedPins()
+        let summary = StubCatalogue.results.series[0]
+        let model = SeriesDetailModel(summary: summary, catalogue: StubCatalogue(), pins: pins, mode: .normal)
+        await model.load()
+        #expect(!model.isPinned)
+
+        await model.togglePin()
+        #expect(model.isPinned)
+        #expect(await pins.pinned(in: .normal).map(\.id) == [summary.id])
+
+        await model.togglePin()
+        #expect(!model.isPinned)
+        #expect(await pins.pinned(in: .normal).isEmpty)
+    }
+
+    @Test("FR-HOME-03: a page opened for a pinned series says so, in its own mode only")
+    func pinnedStateIsReadOnLoad() async {
+        let summary = StubCatalogue.results.series[0]
+        let pins = ScriptedPins([summary])
+        let normal = SeriesDetailModel(summary: summary, catalogue: StubCatalogue(), pins: pins, mode: .normal)
+        let kids = SeriesDetailModel(summary: summary, catalogue: StubCatalogue(), pins: pins, mode: .kids)
+
+        await normal.load()
+        await kids.load()
+
+        #expect(normal.isPinned)
+        #expect(!kids.isPinned)
+    }
+
+    @Test("FR-CONTENT-05: what is pinned is the series as NPO now names it, not as the list that led here did")
+    func pinCarriesTheCurrentTitle() async {
+        let pins = ScriptedPins()
+        let stale = SeriesSummary(id: StubCatalogue.detail.id, title: "Old title", artwork: nil)
+        let model = SeriesDetailModel(summary: stale, catalogue: StubCatalogue(), pins: pins, mode: .normal)
+        await model.load()
+
+        await model.togglePin()
+
+        #expect(await pins.pinned(in: .normal).map(\.title) == [StubCatalogue.detail.title])
     }
 }

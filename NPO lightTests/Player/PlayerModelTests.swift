@@ -79,7 +79,7 @@ struct PlayerModelTests {
 
     @Test("FR-PLAY-01: an episode chosen in a series, or a playable search result, opens the player")
     func choosingSomethingPlayableOpensThePlayer() {
-        let home = HomeModel()
+        let home = HomeModel(pins: ScriptedPins(), mode: .normal)
 
         home.play(Self.episode)
         #expect(home.playing == Self.episode)

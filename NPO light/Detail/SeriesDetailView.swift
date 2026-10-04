@@ -8,16 +8,27 @@ import SwiftUI
 /// A series: its header, a season picker, and one season's episodes with the
 /// focused one previewed beside them (FR-CONTENT-03, -07, -08).
 ///
-/// Pinning and watched state are not here yet: they need the local stores.
+/// Watched state is not here yet: it needs the store of positions.
 struct SeriesDetailView: View {
     let model: SeriesDetailModel
     let play: (Playable) -> Void
 
+    @Namespace private var page
+
     var body: some View {
         VStack(alignment: .leading, spacing: 32) {
-            SeriesHeaderView(title: model.summary.title, detail: loadedDetail, fallbackArtwork: model.summary.artwork)
+            SeriesHeaderView(title: model.summary.title,
+                             detail: loadedDetail,
+                             fallbackArtwork: model.summary.artwork,
+                             isPinned: model.isPinned) {
+                Task { await model.togglePin() }
+            }
+            // The page opens on its seasons and episodes, as it did before
+            // there was a button above them.
             content
+                .prefersDefaultFocus(in: page)
         }
+        .focusScope(page)
         .padding(.horizontal, 80)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .task { await model.load() }
@@ -50,11 +61,13 @@ struct SeriesDetailView: View {
     }
 }
 
-/// The series' own image, title and description.
+/// The series' own image, title and description, and its pin (FR-HOME-03).
 struct SeriesHeaderView: View {
     let title: String
     let detail: SeriesDetail?
     let fallbackArtwork: URL?
+    let isPinned: Bool
+    let togglePin: () -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: 40) {
@@ -70,7 +83,21 @@ struct SeriesHeaderView: View {
                         .foregroundStyle(.secondary)
                         .lineLimit(5)
                 }
+                pin
             }
+        }
+        .focusSection()
+    }
+
+    /// The words say which of the two it does, not only the symbol
+    /// (NFR-A11Y-04).
+    @ViewBuilder private var pin: some View {
+        if isPinned {
+            Button("Losmaken", systemImage: "pin.slash", action: togglePin)
+                .accessibilityIdentifier("series-unpin")
+        } else {
+            Button("Vastzetten", systemImage: "pin", action: togglePin)
+                .accessibilityIdentifier("series-pin")
         }
     }
 }
@@ -205,14 +232,11 @@ struct EpisodePreview: View {
 
 #if DEBUG
 #Preview("Series") {
-    SeriesDetailView(model: SeriesDetailModel(summary: ScriptedCatalogue.results.series[0],
-                                              catalogue: ScriptedCatalogue(),
-                                              mode: .normal),
-                     play: { _ in })
+    SeriesDetailView(model: .scripted(ScriptedCatalogue.results.series[0]), play: { _ in })
 }
 
 #Preview("Header") {
-    SeriesHeaderView(title: "Freeks wilde wereld", detail: nil, fallbackArtwork: nil)
+    SeriesHeaderView(title: "Freeks wilde wereld", detail: nil, fallbackArtwork: nil, isPinned: false) {}
 }
 
 #Preview("Picker") {

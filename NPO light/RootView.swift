@@ -58,9 +58,9 @@ private struct RootPreview: View {
     var body: some View {
         RootView(appModel: appModel,
                  signInModel: signInModel,
-                 homeModel: HomeModel(),
+                 homeModel: .scripted(),
                  searchModel: SearchModel.scripted(),
-                 seriesModel: { SeriesDetailModel(summary: $0, catalogue: ScriptedCatalogue(), mode: .normal) },
+                 seriesModel: { .scripted($0) },
                  playerModel: { PlayerModel(playable: $0, mode: .normal, starter: ScriptedPlayback()) })
     }
 }

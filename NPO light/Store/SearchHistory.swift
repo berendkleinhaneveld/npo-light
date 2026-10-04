@@ -56,14 +56,10 @@ actor SearchHistoryStore: SearchHistory {
     /// What cannot be read is treated as no history: the next search writes a
     /// readable one over it.
     private func list(in mode: Mode) -> SearchHistoryList {
-        guard let data = defaults.data(for: .searchHistory, in: mode),
-              let list = try? JSONDecoder().decode(SearchHistoryList.self, from: data) else {
-            return SearchHistoryList()
-        }
-        return list
+        defaults.value(SearchHistoryList.self, for: .searchHistory, in: mode) ?? SearchHistoryList()
     }
 
     private func keep(_ list: SearchHistoryList, in mode: Mode) throws {
-        try defaults.write(try JSONEncoder().encode(list), for: .searchHistory, in: mode)
+        try defaults.keep(list, for: .searchHistory, in: mode)
     }
 }

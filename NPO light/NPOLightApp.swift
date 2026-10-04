@@ -8,7 +8,7 @@ import SwiftUI
 /// The composition root (ADR 0011): the one place that names a concrete type
 /// and hands it down, so that the seams ADR 0009 relies on stay reachable.
 ///
-/// The search history is the first of the stores. Where each keeps its data
+/// The search history and the pins are the first of the stores. Where each keeps its data
 /// is ADR 0015.
 @main
 struct NPOLightApp: App {
@@ -21,7 +21,7 @@ struct NPOLightApp: App {
 
     @State private var appModel: AppModel
     @State private var signInModel: SignInModel
-    @State private var homeModel = HomeModel()
+    @State private var homeModel: HomeModel
     @State private var searchModel: SearchModel
 
     private let backend: Backend
@@ -35,6 +35,7 @@ struct NPOLightApp: App {
                                                        clock: SystemClock(),
                                                        onSignedIn: { appModel.admit($0) }))
         // Normal mode until the mode switch exists (FR-MODE-02).
+        _homeModel = State(initialValue: HomeModel(pins: backend.pins, mode: .normal))
         _searchModel = State(initialValue: SearchModel(catalogue: backend.catalogue,
                                                        history: backend.searchHistory,
                                                        clock: SystemClock(),
@@ -48,7 +49,7 @@ struct NPOLightApp: App {
                      homeModel: homeModel,
                      searchModel: searchModel,
                      seriesModel: { [backend] in
-                         SeriesDetailModel(summary: $0, catalogue: backend.catalogue, mode: .normal)
+                         SeriesDetailModel(summary: $0, catalogue: backend.catalogue, pins: backend.pins, mode: .normal)
                      },
                      playerModel: { [backend] in
                          PlayerModel(playable: $0, mode: .normal, starter: backend.playback)
@@ -65,7 +66,8 @@ struct NPOLightApp: App {
                            catalogue: ScriptedCatalogue(),
                            playback: ScriptedPlayback(),
                            artwork: NoArtwork(),
-                           searchHistory: ScriptedSearchHistory())
+                           searchHistory: ScriptedSearchHistory(),
+                           pins: ScriptedPins())
         }
         #endif
         let configuration = URLSessionConfiguration.ephemeral
@@ -91,7 +93,8 @@ struct NPOLightApp: App {
                                        log: log),
             playback: LoggedPlayback(wrapping: playback, log: log),
             artwork: ArtworkLoader(transport: URLSessionTransport(session: artworkSession()), log: log),
-            searchHistory: SearchHistoryStore()
+            searchHistory: SearchHistoryStore(),
+            pins: PinStore()
         )
     }
 
@@ -137,4 +140,5 @@ private struct Backend {
     let playback: any PlaybackStarting
     let artwork: any ArtworkProviding
     let searchHistory: any SearchHistory
+    let pins: any Pins
 }

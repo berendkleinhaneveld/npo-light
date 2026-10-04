@@ -155,4 +155,63 @@ final class NPOLightUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["search-no-history"].waitForExistence(timeout: 10))
         XCTAssertFalse(app.buttons["recent-term-fr"].exists)
     }
+
+    // Requirement: FR-HOME-02, FR-HOME-03, FR-HOME-05, FR-HOME-09, FR-HOME-10
+    @MainActor
+    func testSeriesIsPinnedAndUnpinned() throws {
+        let app = XCUIApplication()
+        let remote = XCUIRemote.shared
+        app.launchEnvironment["NPO_LIGHT_SCENARIO"] = "signed-in"
+        app.launch()
+
+        // Nothing pinned: the row says what to do.
+        XCTAssertTrue(app.buttons["home-search"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["pinned-empty-search"].exists)
+
+        // Find a series, and pin it from its page.
+        remote.press(.select)
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 10))
+        field.typeText("fr")
+        XCTAssertTrue(app.buttons["Freeks wilde wereld, serie"].waitForExistence(timeout: 10))
+        remote.press(.down)
+        remote.press(.select)
+        let pin = app.buttons["series-pin"]
+        XCTAssertTrue(pin.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["season-season-1"].waitForExistence(timeout: 10))
+        for _ in 0..<3 where !pin.hasFocus {
+            remote.press(.up)
+        }
+        XCTAssertTrue(pin.hasFocus)
+        remote.press(.select)
+        XCTAssertTrue(app.buttons["series-unpin"].waitForExistence(timeout: 10))
+
+        // Back home, the series is on the row without a refresh.
+        remote.press(.menu)
+        remote.press(.menu)
+        let tile = app.buttons["pinned-series-1"]
+        XCTAssertTrue(tile.waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["pinned-empty-search"].exists)
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = "Home with a pin"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+
+        // Its tile opens the series, where it can be unpinned again.
+        for _ in 0..<3 where !tile.hasFocus {
+            remote.press(.down)
+        }
+        XCTAssertTrue(tile.hasFocus)
+        remote.press(.select)
+        let unpin = app.buttons["series-unpin"]
+        XCTAssertTrue(unpin.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["season-season-1"].waitForExistence(timeout: 10))
+        for _ in 0..<3 where !unpin.hasFocus {
+            remote.press(.up)
+        }
+        remote.press(.select)
+        XCTAssertTrue(app.buttons["series-pin"].waitForExistence(timeout: 10))
+        remote.press(.menu)
+        XCTAssertTrue(app.buttons["pinned-empty-search"].waitForExistence(timeout: 10))
+    }
 }

@@ -23,7 +23,7 @@ reachable from the same page.
 
 ## FR-HOME-02 — Pinned order is most recently pinned first
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The pinned row shows pinned items with the most recently pinned first.
 
