@@ -30,9 +30,11 @@ non-functional requirements describe *how well it has to do it*.
 
 ## Vocabulary
 
-- **Item** — anything the user can find or watch: a **series**, a **film** or
-  a **standalone episode**. Where a rule holds for all three, it says
-  "item".
+- **Item** — anything the user can find or watch: a **series** or a **single
+  programme**. Where a rule holds for both, it says "item".
+- **Single programme** — something playable that belongs to no series: a film,
+  a one-off documentary, a special. Older text says "a film or a standalone
+  episode" for the same thing (FR-CONTENT-01).
 - **Episode** — one playable instalment of a series.
 - **Mode** — *normal mode* or *kids mode*. The app is always in exactly one.
 - **Pinned** — a series the user deliberately put on the home page to follow

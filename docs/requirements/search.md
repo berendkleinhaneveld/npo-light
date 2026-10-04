@@ -18,7 +18,7 @@ both modes.
 
 ## FR-SEARCH-02 — Results appear as you type
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Results update while the user types; there is no separate "search" button to
 press.
@@ -28,7 +28,7 @@ press.
 - Typing more characters narrows the results without further action.
 - Deleting characters widens them again.
 - Results show enough to recognise an item: artwork, title, and whether it is a
-  series or a film.
+  series or something that plays (FR-CONTENT-01).
 
 ## FR-SEARCH-03 — Typing is never blocked
 

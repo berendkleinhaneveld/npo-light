@@ -31,8 +31,8 @@ Every focusable element has a meaningful VoiceOver label.
 
 **Acceptance criteria**
 
-- A tile reads its title and its kind — series, film, episode — not the name of
-  an image asset.
+- A tile reads its title and its kind — series, single programme, episode —
+  not the name of an image asset.
 - Progress on a recently watched tile is announced, not conveyed only by a bar.
 - Buttons whose label is an icon carry an accessibility label.
 - A countdown before the next episode (FR-PLAY-06) is announced.
