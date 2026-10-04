@@ -103,4 +103,45 @@ struct EpisodeOrderTests {
             try await order.following(EpisodeID(rawValue: "gone"), at: Self.place(in: Self.first), in: .normal)
         }
     }
+
+    @Test("FR-CONTENT-02, FR-PLAY-07: an episode NPO no longer has, or will not play, is passed over")
+    func unavailableEpisodeIsSkipped() async throws {
+        let three = (1...3).map { number in
+            Playable(id: EpisodeID(rawValue: "episode-\(number)"), title: "Aflevering \(number)", caption: nil,
+                     synopsis: nil, duration: nil, artwork: nil)
+        }
+        let gone = EpisodeOrder(catalogue: StubCatalogue(season: { _ in three }, programme: { id in
+            if id == three[1].id { throw BackendError.itemUnavailable }
+            return StubCatalogue.film(id)
+        }))
+        let refused = EpisodeOrder(catalogue: StubCatalogue(season: { _ in three }, programme: { id in
+            ProgrammeDetail(playable: StubCatalogue.film(id).playable, isPlayable: id != three[1].id)
+        }))
+
+        #expect(try await gone.following(three[0].id, at: Self.place(in: Self.first), in: .normal)?.id == three[2].id)
+        #expect(try await refused.following(three[0].id, at: Self.place(in: Self.first), in: .normal)?.id
+                == three[2].id)
+    }
+
+    @Test("FR-PLAY-07: when every later episode is unavailable, nothing follows, also across seasons")
+    func nothingPlayableFollows() async throws {
+        let order = EpisodeOrder(catalogue: StubCatalogue(programme: { _ in throw BackendError.itemUnavailable }))
+
+        let next = try await order.following(Self.episode(1, of: Self.first).id,
+                                             at: Self.place(in: Self.first),
+                                             in: .normal)
+
+        #expect(next == nil)
+    }
+
+    @Test("NFR-REL-02: an episode NPO could not be asked about is not passed over")
+    func unknownAvailabilityIsTried() async throws {
+        let order = EpisodeOrder(catalogue: StubCatalogue(programme: { _ in throw BackendError.unreachable }))
+
+        let next = try await order.following(Self.episode(1, of: Self.first).id,
+                                             at: Self.place(in: Self.first),
+                                             in: .normal)
+
+        #expect(next?.id == Self.episode(2, of: Self.first).id)
+    }
 }

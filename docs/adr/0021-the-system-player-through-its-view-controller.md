@@ -68,8 +68,6 @@ is reported within two seconds of the app doing something is the app's.
 - Kids mode pauses first (FR-PLAY-06). Its countdown is a screen of the
   app's own in place of the player, between two episodes, where nothing
   plays and an ordinary button takes focus.
-- An unavailable next episode is not skipped yet, so FR-PLAY-07 stays
-  `Accepted`.
 - A press in the two seconds after an episode starts by itself is not counted
   as somebody being there. With limits counted in half hours that costs
   nothing.

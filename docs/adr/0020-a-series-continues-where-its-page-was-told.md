@@ -116,5 +116,8 @@ the series.
   nothing was left: a daily programme is not finished by having seen
   yesterday's. Only the page does this. The home page's tile still says
   finished until the page was opened and the new episode started.
-- An unavailable episode is not skipped yet (FR-CONTENT-02): nothing in a
-  season's list says that it is.
+- An unavailable episode is passed over when the next one is looked for
+  (FR-PLAY-07). A season's list does not say which are; the episode's own
+  page does, so finding the next episode asks for that page too. An episode
+  list still shows every episode alike: marking the unavailable ones would
+  take a request per episode, and FR-CONTENT-02 stays `Accepted` for it.

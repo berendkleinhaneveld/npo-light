@@ -118,7 +118,7 @@ before the next episode carries them along.
 
 ## FR-PLAY-07 — Autoplay knows when to stop
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Autoplay only continues within a series, and stops when there is nothing to
 continue to.
