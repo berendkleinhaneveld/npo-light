@@ -136,14 +136,16 @@ in a debug build we can keep every exchange with NPO whole, as a file.**
   an issue or a chat. Fixtures made from these files are sanitised as ADR 0009
   already says.
 - **The `http` category does not see the video.** A stream that fails shows up
-  under `playback`, in the player's words, and that part has only been tested
-  against a file that does not exist.
+  under `playback`, in the player's words.
 - **Request logging needs a launch from Xcode.** A failure that only happens on
   an ordinary evening leaves the always-on error lines and nothing more.
-- **Copying files off an Apple TV with `devicectl` has not been tried.** The
-  command exists and takes these arguments; whether tvOS serves an app's
-  container to it is the first thing the first run will show. If it does not,
-  the fallback is the summary lines, or bringing back log pieces for bodies.
+- **Copying files off an Apple TV with `devicectl` works.** It was the way the
+  first failed playback was read, on an Apple TV HD, the same morning this was
+  written.
+- **A log line carries an address without its query values.** That same run
+  showed NPO signing a licence address with the authorisation in its query,
+  which a summary line would have copied into the system log. The search term
+  goes with it; the file has both.
 - **The files are capped at 500**, tidied at launch, and tvOS may empty
   `Caches` by itself (ADR 0015). Both are fine: they are read once.
 - **Reversing it is cheap.** Three decorators and a wrapper, all named in one

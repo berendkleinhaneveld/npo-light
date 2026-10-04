@@ -37,14 +37,16 @@ with the environment variable `NPO_LIGHT_HTTP_LOG`:
 | Value | What is kept |
 | --- | --- |
 | `off`, or nothing | Only what NFR-DIAG-01 asks for. |
-| `summary` | One log line per request: method, address, status, size and duration. |
+| `summary` | One log line per request: method, address without its query values, status, size and duration. |
 | `full` | The summary, and the whole exchange in a file (NFR-DIAG-03). |
 
 **Acceptance criteria**
 
 - Without the variable, and with a value that is not one of these, nothing
   beyond NFR-DIAG-01 is kept.
-- A summary line carries no header and no body.
+- A summary line carries no header, no body and no query value: the names of
+  the query's parameters are there and what they were set to is not. NPO signs
+  a licence address by putting the authorisation in its query.
 - Logging changes neither the request that goes out nor the response that
   comes back.
 - The shared Xcode scheme carries the variable, switched off, so that turning
@@ -81,7 +83,7 @@ is not what was sent. A release build never does this (NFR-PRIV-02).
 
 ## NFR-DIAG-04 — The player's own errors are logged
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The video does not pass through the app: the system player fetches the
 manifest, the segments and — by way of the app — the keys. What it reports
@@ -97,9 +99,10 @@ stopped with, and each entry the player adds to its error log while playing.
   a signed stream.
 - Listening lasts as long as the playback does and ends with it.
 
-*The first criterion is tested against a stream that does not exist. The second
-has never been seen: an error-log entry cannot be made in a test, and no real
-stream has played yet. It stays `Accepted` until one has.*
+*The first criterion is tested against a stream that does not exist. An
+error-log entry cannot be made in a test; the second was seen on an Apple TV on
+2026-10-04, when the player reported a segment over its variant's bandwidth
+while it went on playing.*
 
 ## Crashes
 

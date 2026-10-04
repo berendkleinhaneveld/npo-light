@@ -107,12 +107,25 @@ struct LoggingTransportTests {
         let size = Self.answer.body.count
         #expect(log.entries == [
             RecordingLog.Entry(
-                message: "POST https://ios.bff.start.npox.nl/search?query=freek → 200, \(size) bytes, 87 ms",
+                message: "POST https://ios.bff.start.npox.nl/search?query → 200, \(size) bytes, 87 ms",
                 level: .info,
                 category: .http
             )
         ])
         #expect(!FileManager.default.fileExists(atPath: archive.directory.path()))
+    }
+
+    @Test("NFR-DIAG-02, NFR-PRIV-02: an address that carries its own authorisation is logged without it")
+    func signedAddressesAreLoggedBare() async throws {
+        let log = RecordingLog()
+        let signed = "https://drm.npoplayer.nl/proxyEngine.aspx?auth=secret-auth&sig=secret-sig"
+        let address = try #require(URL(string: signed))
+
+        _ = try await Self.transport(.full, log: log, archive: Self.archive()).send(URLRequest(url: address))
+
+        let line = try #require(log.messages.first)
+        #expect(line.hasPrefix("GET https://drm.npoplayer.nl/proxyEngine.aspx?auth&sig → 200, "))
+        #expect(!line.contains("secret"))
     }
 
     @Test("NFR-DIAG-03: kept in full, both directions are in a file whole, credentials and all")

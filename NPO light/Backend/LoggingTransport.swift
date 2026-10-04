@@ -117,10 +117,11 @@ nonisolated struct HTTPExchange: Sendable {
     let started: Date
     let elapsed: TimeInterval
 
-    /// One line for a request that was answered.
+    /// One line for a request that was answered. It is written to the system
+    /// log, so it carries nothing from a header, a body or a query value.
     var summary: String {
         guard case .answered(let response) = outcome else { return failure }
-        return "\(method) \(request.url?.absoluteString ?? "?") → \(response.status), "
+        return "\(method) \(address) → \(response.status), "
             + "\(response.body.count) bytes, \(milliseconds) ms"
     }
 
@@ -175,6 +176,18 @@ nonisolated struct HTTPExchange: Sendable {
     }
 
     private static let timestamp = Date.ISO8601FormatStyle(includingFractionalSeconds: true)
+
+    /// The address for a log line: with the names of what was asked and not
+    /// the values. NPO signs a licence address by putting the authorisation in
+    /// its query, and a line in the system log is no place for that.
+    private var address: String {
+        guard let url = request.url,
+              var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return "?" }
+        let names = components.queryItems?.map(\.name) ?? []
+        components.query = nil
+        let bare = components.string ?? "?"
+        return names.isEmpty ? bare : "\(bare)?\(names.joined(separator: "&"))"
+    }
 
     private var method: String {
         request.httpMethod ?? "GET"
