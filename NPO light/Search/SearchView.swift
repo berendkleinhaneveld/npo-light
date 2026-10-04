@@ -139,10 +139,18 @@ struct CatalogueTile: View {
         .frame(width: Self.width, alignment: .leading)
     }
 
-    /// Artwork may be missing, or not have arrived: a placeholder then, never
-    /// an empty tile (FR-CONTENT-01).
     private var image: some View {
-        AsyncImage(url: artwork) { phase in
+        ArtworkView(url: artwork)
+    }
+}
+
+/// An image from NPO. It may be missing, or not have arrived: a placeholder
+/// then, never an empty space (FR-CONTENT-01).
+struct ArtworkView: View {
+    let url: URL?
+
+    var body: some View {
+        AsyncImage(url: url) { phase in
             if let image = phase.image {
                 image
                     .resizable()
@@ -172,6 +180,11 @@ struct CatalogueTile: View {
         SearchView(model: SearchModel(catalogue: ScriptedCatalogue(), clock: SystemClock(), mode: .normal),
                    open: { _ in })
     }
+}
+
+#Preview("Artwork") {
+    ArtworkView(url: nil)
+        .frame(width: 320, height: 180)
 }
 
 #Preview("Tile") {

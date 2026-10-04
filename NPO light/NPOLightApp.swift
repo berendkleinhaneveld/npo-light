@@ -21,8 +21,11 @@ struct NPOLightApp: App {
     @State private var homeModel = HomeModel()
     @State private var searchModel: SearchModel
 
+    private let catalogue: any Catalogue
+
     init() {
         let backend = Self.makeBackend()
+        catalogue = backend.catalogue
         let appModel = AppModel(authenticator: backend.authenticator)
         _appModel = State(initialValue: appModel)
         _signInModel = State(initialValue: SignInModel(authenticator: backend.authenticator,
@@ -39,7 +42,10 @@ struct NPOLightApp: App {
             RootView(appModel: appModel,
                      signInModel: signInModel,
                      homeModel: homeModel,
-                     searchModel: searchModel)
+                     searchModel: searchModel,
+                     seriesModel: { [catalogue] in
+                         SeriesDetailModel(summary: $0, catalogue: catalogue, mode: .normal)
+                     })
         }
     }
 
