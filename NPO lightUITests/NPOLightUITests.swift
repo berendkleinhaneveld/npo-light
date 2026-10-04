@@ -272,4 +272,31 @@ final class NPOLightUITests: XCTestCase {
         remote.press(.menu)
         XCTAssertTrue(app.buttons["pinned-empty-search"].waitForExistence(timeout: 10))
     }
+
+    // Requirement: FR-CONTENT-08, NFR-A11Y-01
+    @MainActor
+    func testLastEpisodeOfASeasonCanBeReached() throws {
+        let app = XCUIApplication()
+        let remote = XCUIRemote.shared
+        app.launchEnvironment["NPO_LIGHT_SCENARIO"] = "signed-in"
+        app.launch()
+        XCTAssertTrue(app.buttons["home-search"].waitForExistence(timeout: 10))
+        remote.press(.select)
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 10))
+        field.typeText("fr")
+        XCTAssertTrue(app.buttons["Freeks wilde wereld, serie"].waitForExistence(timeout: 10))
+        remote.press(.down)
+        remote.press(.select)
+        XCTAssertTrue(app.buttons["episode-season-1-episode-1"].waitForExistence(timeout: 10))
+
+        // Down the whole season, which is longer than the screen, and once
+        // more: focus is on the last episode and stays there.
+        let last = app.buttons["episode-season-1-episode-12"]
+        for _ in 0..<13 {
+            remote.press(.down)
+        }
+        XCTAssertTrue(last.hasFocus)
+        XCTAssertTrue(app.buttons["episode-season-1-episode-1"].exists)
+    }
 }

@@ -83,7 +83,7 @@ struct SeriesHeaderView: View {
     var body: some View {
         HStack(alignment: .top, spacing: 40) {
             ArtworkView(url: detail?.artwork ?? fallbackArtwork, size: .large)
-                .frame(width: 480, height: 270)
+                .frame(width: 400, height: 225)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
             VStack(alignment: .leading, spacing: 16) {
                 Text(verbatim: detail?.title ?? title)
@@ -92,7 +92,7 @@ struct SeriesHeaderView: View {
                     Text(verbatim: synopsis)
                         .font(.body)
                         .foregroundStyle(.secondary)
-                        .lineLimit(5)
+                        .lineLimit(3)
                 }
                 pin
             }
@@ -192,7 +192,10 @@ struct SeasonEpisodesView: View {
 
     private func list(_ episodes: [Playable]) -> some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 12) {
+            // Not a lazy stack: in one, the last episode of a season was
+            // drawn and could not take focus. A season is a few hundred
+            // one-line rows at most.
+            VStack(alignment: .leading, spacing: 12) {
                 ForEach(episodes) { episode in
                     Button { play(episode) } label: {
                         HStack {
@@ -229,8 +232,10 @@ struct EpisodePreview: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
+            // Small enough to leave the description room under it: at
+            // 560 wide the image took the height and the text got one line.
             ArtworkView(url: episode.artwork, size: .large)
-                .frame(width: 560, height: 315)
+                .frame(width: 448, height: 252)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
             Text(verbatim: episode.title)
                 .font(.headline)
