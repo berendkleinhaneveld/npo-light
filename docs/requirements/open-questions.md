@@ -501,7 +501,9 @@ assumption stands.
 
 ## Q-12 — Does playing through NPO light record progress at NPO?
 
-**Blocks:** nothing yet; bears on NFR-PRIV-01 once playback is built.
+- **Answered:** 2026-10-04 — from the app's own request log on an Apple TV
+
+**Blocked:** nothing; it bore on NFR-PRIV-01 once playback was built.
 
 The player call is made as an NPO profile ([ADR 0014](../adr/0014-each-mode-browses-as-an-npo-profile.md)),
 and NPO's answer to it carries that profile's stored position for the
@@ -516,19 +518,25 @@ watched here, and the requirement should say so.
 profile, without any progress call, and look at that profile's continue-watching
 row in NPO's own app afterwards.
 
-**Evidence, 2026-10-04 — probably not, not yet settled.** A stored position
-does not come with the player call, as the paragraph above says: it comes with
-the list. An episode in a season's list carries
+**Answer, 2026-10-04: no.** Playing through this app leaves no position at
+NPO, so NFR-PRIV-01 holds as it is written.
+
+A stored position does not come with the player call, as the paragraph above
+says: it comes with the list. An episode in a season's list carries
 `progress: { secondsWatched, fractionWatched }` when NPO has a position for it,
-and no `progress` at all when it has none. One episode in 281 had one, a few
-seconds into a documentary, from NPO's own app.
+and no `progress` at all when it has none. One episode in 281 had one — three
+seconds into a documentary, from NPO's own app — so even a position that small
+is kept and shown.
 
-The first episode of a children's series was played to the end through this
-app, as the general profile. Its season's list, fetched two and a half hours
-later, was identical to the one fetched before: no `progress` on it. So a
-stream that was asked for and played left no position at NPO.
+Two episodes were then played through this app as the general profile, and
+their season's list fetched before and after:
 
-What keeps this from being an answer: the episode was watched to the end, and
-NPO may drop the position of a finished episode rather than keep it. An episode
-watched halfway and its list fetched afterwards settles it, and so does the
-continue-watching row in NPO's own app.
+- a children's episode played to the end: the list two and a half hours later
+  was identical, with no `progress` on it;
+- a documentary played partway and stopped: the list twenty minutes later was
+  identical, with no `progress` on it, while the three-second position on its
+  neighbour was still there.
+
+The second is the one that settles it, since NPO might drop the position of a
+finished episode. NPO records a position when its own app reports one, and a
+stream that is merely asked for and played is not a report.
