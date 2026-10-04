@@ -16,7 +16,7 @@ handful of things below.
 
 ## FR-SET-02 — The timings are configurable
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Three durations can be changed, with these defaults:
 

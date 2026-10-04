@@ -134,7 +134,7 @@ continue to.
 
 ## FR-PLAY-08 — Are you still watching?
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 After a stretch of continuous playback the app asks whether anyone is still
 there: one hour in kids mode, three hours in normal mode, both configurable
@@ -146,8 +146,8 @@ there: one hour in kids mode, three hours in normal mode, both configurable
   not reset it.
 - Any remote interaction — pause, scrub, a button press — resets the timer.
 - The prompt pauses playback and offers to continue.
-- With no answer within a defined grace period, playback stops and the app
-  returns to home.
+- With no answer within a defined grace period — thirty seconds — playback
+  stops and the app returns to home.
 - Confirming continues from exactly where the prompt interrupted, and restarts
   the timer.
 - The two durations are independent: changing one does not change the other.

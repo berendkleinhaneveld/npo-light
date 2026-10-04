@@ -31,6 +31,10 @@ final class PlayerModel {
         /// Kids mode waits before the next episode, and counts the seconds
         /// down (FR-PLAY-06).
         case pausing(before: Playable, remaining: Int)
+
+        /// Playback is held while the player asks whether anyone is still
+        /// watching, for this many seconds more (FR-PLAY-08).
+        case asking(Playback, remaining: Int)
         case failed(Problem)
     }
 
@@ -56,6 +60,10 @@ final class PlayerModel {
     /// ended, or somebody stopped it from going on (FR-PLAY-07).
     private(set) var isOver = false
 
+    /// It is over because nobody answered whether they were still watching:
+    /// the app goes back to its home page (FR-PLAY-08).
+    private(set) var wasLeftUnattended = false
+
     private let starter: any PlaybackStarting
     private let positions: PlaybackCoordinator
     private let clock: any Clocking
@@ -63,10 +71,11 @@ final class PlayerModel {
     /// The wait after which the announcement goes away, while it runs.
     private(set) var announcing: Task<Void, Never>?
     private var isClosed = false
-    private var itemStatus: NSKeyValueObservation?
-    private var pauses: NSKeyValueObservation?
-    private var ticks: (player: AVPlayer, token: Any)?
-    private var ending: (any NSObjectProtocol)?
+    private let watcher = PlayerWatcher()
+    private var attention: Attention
+
+    /// The wait for an answer to the still-watching prompt, while it runs.
+    private(set) var asking: Task<Void, Never>?
 
     /// The latest write of the position, while it is under way.
     private(set) var writing: Task<Void, Never>?
@@ -85,6 +94,15 @@ final class PlayerModel {
         self.positions = positions
         self.clock = clock
         self.timings = timings
+        attention = Attention(at: clock.now)
+    }
+
+    /// What is loaded, while something plays or is held for the prompt.
+    private var playback: Playback? {
+        switch state {
+        case .playing(let playback), .asking(let playback, _): playback
+        case .preparing, .pausing, .failed: nil
+        }
     }
 
     /// The problem on screen, if there is one.
@@ -104,6 +122,8 @@ final class PlayerModel {
             await resume(playback.player)
             watch(playback.player)
             state = .playing(playback)
+            // The app starting something is nobody touching the remote.
+            attention.expectOwnChange(at: clock.now)
             playback.player.play()
             // After it plays, so that asking NPO which series an episode
             // from search belongs to does not hold the picture up.
@@ -131,11 +151,10 @@ final class PlayerModel {
     func stop() {
         isClosed = true
         announcing?.cancel()
+        asking?.cancel()
         rest()
         stopWatching()
-        if case .playing(let playback) = state {
-            playback.player.pause()
-        }
+        playback?.player.pause()
     }
 
     /// Playback stops here for now — closed, paused, or the app left the
@@ -157,7 +176,7 @@ final class PlayerModel {
     /// means. The task holds what it needs and not the model: the last write
     /// is made as the player closes.
     private func record(resting: Bool) {
-        guard case .playing(let playback) = state, let item = playback.player.currentItem else { return }
+        guard let playback, let item = playback.player.currentItem else { return }
         let position = playback.player.currentTime().seconds
         let duration = item.duration.seconds
         writing = Task { [positions, id = playable.id, origin, mode] in
@@ -166,16 +185,7 @@ final class PlayerModel {
     }
 
     private func stopWatching() {
-        itemStatus = nil
-        pauses = nil
-        if let ticks {
-            ticks.player.removeTimeObserver(ticks.token)
-        }
-        ticks = nil
-        if let ending {
-            NotificationCenter.default.removeObserver(ending)
-        }
-        ending = nil
+        watcher.stop()
     }
 
     /// A stream that stops being playable — a licence that could not be
@@ -185,32 +195,16 @@ final class PlayerModel {
     /// While it plays its position is written at a fixed interval, at every
     /// pause, and when it reaches the end (FR-PLAY-03).
     private func watch(_ player: AVPlayer) {
-        itemStatus = player.currentItem?.observe(\.status) { [weak self] item, _ in
-            guard item.status == .failed else { return }
-            Task { @MainActor [weak self] in
-                self?.playbackFailed()
-            }
-        }
-        pauses = player.observe(\.timeControlStatus) { [weak self] player, _ in
-            guard player.timeControlStatus == .paused else { return }
-            Task { @MainActor [weak self] in
-                self?.rest()
-            }
-        }
-        let interval = CMTime(seconds: PlaybackCoordinator.interval, preferredTimescale: 600)
-        let token = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] _ in
-            Task { @MainActor [weak self] in
+        watcher.watch(player, telling: PlayerWatcher.Events(
+            failed: { [weak self] in self?.playbackFailed() },
+            paused: { [weak self] in self?.rest() },
+            tick: { [weak self] in
                 self?.record(resting: false)
-            }
-        }
-        ticks = (player, token)
-        ending = NotificationCenter.default.addObserver(forName: AVPlayerItem.didPlayToEndTimeNotification,
-                                                        object: player.currentItem,
-                                                        queue: .main) { [weak self] _ in
-            Task { @MainActor [weak self] in
-                self?.playedToEnd()
-            }
-        }
+                self?.checkAttention()
+            },
+            ended: { [weak self] in self?.playedToEnd() },
+            interacted: { [weak self] in self?.interacted() }
+        ))
     }
 
     private func playedToEnd() {
@@ -280,5 +274,57 @@ final class PlayerModel {
         rest()
         stopWatching()
         state = .failed(.failed)
+    }
+
+    // MARK: Still watching (FR-PLAY-08)
+
+    /// How long this mode plays before it asks, in seconds.
+    var attentionLimit: Int {
+        timings()[mode == .kids ? .kidsStillWatching : .normalStillWatching]
+    }
+
+    /// Somebody paused, resumed or scrubbed: the count of unattended
+    /// playback starts again.
+    func interacted() {
+        attention.noticed(at: clock.now)
+    }
+
+    /// Asks, when it has played for as long as the mode's setting says with
+    /// nobody touching the remote. Looked at whenever the position is
+    /// written, which is often enough for a limit counted in hours.
+    func checkAttention() {
+        guard case .playing(let playback) = state,
+              attention.isDue(at: clock.now, after: .seconds(attentionLimit)) else { return }
+        ask(holding: playback)
+    }
+
+    /// Somebody is still watching: on from exactly where the prompt held it,
+    /// and the count starts again.
+    func keepWatching() {
+        guard case .asking(let playback, _) = state else { return }
+        asking?.cancel()
+        attention.confirmed(at: clock.now)
+        attention.expectOwnChange(at: clock.now)
+        state = .playing(playback)
+        playback.player.play()
+    }
+
+    /// Holds playback and waits for an answer. With none in time the sitting
+    /// is over, and the app goes home.
+    private func ask(holding playback: Playback) {
+        attention.expectOwnChange(at: clock.now)
+        playback.player.pause()
+        state = .asking(playback, remaining: Attention.grace)
+        asking?.cancel()
+        asking = Task { [clock] in
+            for remaining in stride(from: Attention.grace, to: 0, by: -1) {
+                guard case .asking(let held, _) = self.state else { return }
+                self.state = .asking(held, remaining: remaining)
+                guard (try? await clock.wait(for: .seconds(1))) != nil else { return }
+            }
+            guard case .asking = self.state, !self.isClosed else { return }
+            self.wasLeftUnattended = true
+            self.isOver = true
+        }
     }
 }

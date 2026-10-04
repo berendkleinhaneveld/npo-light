@@ -13,6 +13,10 @@ struct PlayerView: View {
     /// The player went away, after its last position was written.
     var closed: () -> Void = {}
 
+    /// Nobody answered whether they were still watching: the app is to go
+    /// back to its home page (FR-PLAY-08).
+    var unattended: () -> Void = {}
+
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.dismiss) private var dismiss
 
@@ -32,7 +36,9 @@ struct PlayerView: View {
             .onChange(of: model.isOver) { _, isOver in
                 // The last episode ended, or going on was stopped: back to
                 // where playback was started from (FR-PLAY-05, FR-PLAY-07).
-                if isOver { dismiss() }
+                guard isOver else { return }
+                if model.wasLeftUnattended { unattended() }
+                dismiss()
             }
             .onChange(of: scenePhase) { _, phase in
                 // The television went to its home screen, or to sleep.
@@ -50,7 +56,7 @@ struct PlayerView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .focusable()
         case .playing(let playback):
-            SystemPlayer(player: playback.player, action: stopAction)
+            SystemPlayer(player: playback.player, action: stopAction, interacted: { model.interacted() })
                 .ignoresSafeArea()
                 .overlay(alignment: .topLeading) {
                     if let announced = model.announced {
@@ -60,6 +66,11 @@ struct PlayerView: View {
                     }
                 }
                 .animation(.default, value: model.announced)
+        case .asking(_, let remaining):
+            StillWatchingPrompt(played: model.attentionLimit,
+                                remaining: remaining,
+                                keepWatching: { model.keepWatching() },
+                                stop: { model.stopGoingOn() })
         case let .pausing(next, remaining):
             NextEpisodeCountdown(episode: next, remaining: remaining) { model.stopGoingOn() }
         case .failed(let problem):

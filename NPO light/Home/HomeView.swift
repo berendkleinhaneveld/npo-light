@@ -78,9 +78,12 @@ struct HomeView: View {
             }
         }
         .fullScreenCover(item: $model.playing) { request in
-            PlayerScreen(request: request, makeModel: playerModel) {
-                Task { await model.playbackEnded() }
-            }
+            PlayerScreen(request: request,
+                         makeModel: playerModel,
+                         closed: { Task { await model.playbackEnded() } },
+                         // Nobody is watching: back to the home page itself
+                         // (FR-PLAY-08).
+                         unattended: { model.path.removeAll() })
         }
     }
 
@@ -142,14 +145,19 @@ private struct SeriesDetailScreen: View {
 private struct PlayerScreen: View {
     @State private var model: PlayerModel
     private let closed: () -> Void
+    private let unattended: () -> Void
 
-    init(request: PlayRequest, makeModel: (PlayRequest) -> PlayerModel, closed: @escaping () -> Void) {
+    init(request: PlayRequest,
+         makeModel: (PlayRequest) -> PlayerModel,
+         closed: @escaping () -> Void,
+         unattended: @escaping () -> Void) {
         _model = State(initialValue: makeModel(request))
         self.closed = closed
+        self.unattended = unattended
     }
 
     var body: some View {
-        PlayerView(model: model, closed: closed)
+        PlayerView(model: model, closed: closed, unattended: unattended)
     }
 }
 

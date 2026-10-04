@@ -32,6 +32,18 @@ asks the coordinator what its series continues with
 ([ADR 0020](0020-a-series-continues-where-its-page-was-told.md)), plays that,
 or says that the sitting is over, on which the player goes away.
 
+**What the app draws itself takes the player's place.** The countdown before
+the next episode in kids mode (FR-PLAY-06) and the question whether anyone is
+still watching (FR-PLAY-08) are screens of the app's own, shown instead of the
+player while nothing plays, where an ordinary button takes focus. For the
+question the loaded player is held and put back, so that confirming carries on
+from exactly where it stopped.
+
+**Somebody touching the remote is what the player reports**: a change of rate
+that was asked for, a jump in time, the transport bar coming up. The app's own
+starts and pauses are reported the same way, and are told apart by time: what
+is reported within two seconds of the app doing something is the app's.
+
 ## Alternatives considered
 
 - **A SwiftUI button over `VideoPlayer`** — what the wireframe draws.
@@ -58,6 +70,11 @@ or says that the sitting is over, on which the player goes away.
   plays and an ordinary button takes focus.
 - An unavailable next episode is not skipped yet, so FR-PLAY-07 stays
   `Accepted`.
+- A press in the two seconds after an episode starts by itself is not counted
+  as somebody being there. With limits counted in half hours that costs
+  nothing.
+- The still-watching question was not watched on the simulator: its shortest
+  setting is half an hour. Its rules are tested with a clock that is moved.
 - The transition cannot be watched against NPO's streams on the simulator. It
   was watched there with the test card
   ([ADR 0019](0019-play-a-generated-video-where-fairplay-cannot-run.md)).
