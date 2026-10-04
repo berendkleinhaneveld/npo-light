@@ -42,6 +42,16 @@ final class NPOPlayback: PlaybackStarting {
     }
 
     func playback(of playable: Playable, in mode: Mode) async throws -> Playback {
+        #if targetEnvironment(simulator)
+        // Creating the content-key session below raises an exception here,
+        // which nothing can catch. Fail the way a stream fails instead.
+        throw BackendError.protectionUnsupported
+        #else
+        try await protectedPlayback(of: playable, in: mode)
+        #endif
+    }
+
+    private func protectedPlayback(of playable: Playable, in mode: Mode) async throws -> Playback {
         let stream = try await streams.stream(for: playable.id, in: mode)
         let asset = AVURLAsset(url: stream.manifest)
 

@@ -57,6 +57,20 @@ struct StreamsTests {
         #expect(stream.protection.expiresAt == Date(timeIntervalSince1970: 1_788_209_420))
     }
 
+    @Test("FR-PLAY-11: a stream whose licence address carries its own authorisation has no credential beside it")
+    func signedLicenceAddressIsAStream() async throws {
+        let link = HTTPResponse(status: 200, body: try Fixture.data("stream-link-signed-address-200"))
+        let (streams, _) = try await Self.streams(streamLink: link)
+
+        let stream = try await streams.stream(for: Self.episode, in: .normal)
+
+        #expect(stream.manifest.absoluteString == "https://npo-vod.prd.cdn.bcms.kpn.com/sanitised/index.m3u8")
+        #expect(stream.protection.licenceURL.absoluteString
+            == "https://drm.npoplayer.nl/proxyEngine.aspx?auth=sanitised.licence.auth&sig=sanitised-signature")
+        #expect(stream.protection.credential == nil)
+        #expect(stream.protection.expiresAt == Date(timeIntervalSince1970: 1_791_107_859))
+    }
+
     @Test("FR-PLAY-11, FR-MODE-04: the player token is asked for as the mode's profile, then exchanged raw")
     func tokenIsExchangedRaw() async throws {
         let (streams, harness) = try await Self.streams()
@@ -128,6 +142,25 @@ struct StreamsTests {
         #expect(!harness.transport.sent.contains { $0.url?.host == "ads.example.invalid" })
     }
 
+    #if targetEnvironment(simulator)
+    @Test("FR-PLAY-10: on a simulator, which has no FairPlay, playback fails as an error and asks NPO for nothing")
+    @MainActor
+    func simulatorCannotPlayProtectedStreams() async throws {
+        let (streams, harness) = try await Self.streams()
+        let asked = harness.transport.sent.count
+        let playback = NPOPlayback(streams: streams,
+                                   licenser: FairPlayLicenser(transport: harness.transport),
+                                   clock: TestClock())
+        let episode = Playable(id: Self.episode, title: "", caption: nil, synopsis: nil, duration: nil, artwork: nil)
+
+        await #expect(throws: BackendError.protectionUnsupported) {
+            _ = try await playback.playback(of: episode, in: .normal)
+        }
+
+        #expect(harness.transport.sent.count == asked)
+    }
+    #endif
+
     // MARK: the licence exchange
 
     @Test("FR-PLAY-11: the licence request carries the system's key request raw, with NPO's credential")
@@ -150,6 +183,26 @@ struct StreamsTests {
         #expect(request.value(forHTTPHeaderField: "X-Custom-Data") == "licence-credential")
         #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/octet-stream")
         #expect(request.value(forHTTPHeaderField: "Authorization") == nil)
+    }
+
+    @Test("FR-PLAY-11: a licence address that carries its own authorisation is used exactly as NPO gave it")
+    func signedLicenceAddressIsLeftAlone() async throws {
+        let address = try #require(URL(string: "https://drm.npoplayer.nl/proxyEngine.aspx?auth=a.b.c&sig=d"))
+        let signed = StreamProtection(certificateURL: Self.protection.certificateURL,
+                                      licenceURL: address,
+                                      credential: nil,
+                                      expiresAt: nil)
+        let keyRequest = Data([0x01, 0x02, 0x03])
+        let transport = StubTransport { _ in HTTPResponse(status: 200, body: Data([0xAA])) }
+
+        _ = try await FairPlayLicenser(transport: transport)
+            .licence(for: keyRequest, assetID: "929b1e40-e233", protection: signed)
+
+        let request = try #require(transport.sent.first)
+        #expect(request.url == address)
+        #expect(request.httpMethod == "POST")
+        #expect(request.httpBody == keyRequest)
+        #expect(request.value(forHTTPHeaderField: "X-Custom-Data") == nil)
     }
 
     @Test("FR-PLAY-10, FR-PLAY-11: a licence the gateway refuses is an error the player can retry")

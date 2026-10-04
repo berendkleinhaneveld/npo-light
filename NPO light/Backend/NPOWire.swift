@@ -122,16 +122,23 @@ nonisolated enum NPOWire {
 
     /// The licence exchange: the request the operating system made for a key,
     /// sent raw to NPO's licence gateway.
+    ///
+    /// NPO answers with one of two gateways. One is authorised by a header,
+    /// and NPO's app adds the asset to its address. The other comes with the
+    /// authorisation signed into the address, which is then sent exactly as
+    /// given: adding to a signed address is a way to break it.
     static func licenceRequest(keyRequest: Data, assetID: String, protection: StreamProtection) -> URLRequest {
-        var components = URLComponents(url: protection.licenceURL, resolvingAgainstBaseURL: false)
-        // What NPO's app sends. The gateway answers without it too.
-        components?.queryItems = [URLQueryItem(name: "assetId", value: assetID)]
-        var request = URLRequest(url: components?.url ?? protection.licenceURL)
+        var request = URLRequest(url: protection.licenceURL)
+        if let credential = protection.credential {
+            var components = URLComponents(url: protection.licenceURL, resolvingAgainstBaseURL: false)
+            // What NPO's app sends. The gateway answers without it too.
+            components?.queryItems = [URLQueryItem(name: "assetId", value: assetID)]
+            request = URLRequest(url: components?.url ?? protection.licenceURL)
+            request.setValue(credential, forHTTPHeaderField: "X-Custom-Data")
+        }
         request.httpMethod = "POST"
         request.httpBody = keyRequest
         request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
-        // The only credential the gateway looks at.
-        request.setValue(protection.credential, forHTTPHeaderField: "X-Custom-Data")
         return request
     }
 

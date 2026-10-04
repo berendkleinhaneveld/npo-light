@@ -26,6 +26,7 @@ is here is extracted and rewritten, not copied.
 | `season-programs-200.json` | `GET ios.bff.start.npox.nl/series/seasons/{guid}/programs?sort=asc`, as the kids profile; three episodes kept | 2026-09-03 |
 | `player-200.json` | `GET ios.bff.start.npox.nl/programs/player/{guid}?player-environment=production` | 2026-08-31 |
 | `stream-link-200.json` | `POST prod.npoplayer.nl/stream-link`, for a Plus account; the manifest address and both tokens are placeholders | 2026-08-31 |
+| `stream-link-signed-address-200.json` | `POST prod.npoplayer.nl/stream-link`, for a Plus account and an older children's programme: no credential header, the authorisation is in the licence address; the manifest address and the `auth` and `sig` values are placeholders. From the app's own request log on an Apple TV | 2026-10-04 |
 
 ## The rules
 
