@@ -98,4 +98,61 @@ final class NPOLightUITests: XCTestCase {
         attachment.lifetime = .keepAlways
         add(attachment)
     }
+
+    // Requirement: FR-SEARCH-04, FR-SEARCH-05, FR-SEARCH-07
+    @MainActor
+    func testRecentSearchesAreKeptAndCleared() throws {
+        let app = XCUIApplication()
+        let remote = XCUIRemote.shared
+        app.launchEnvironment["NPO_LIGHT_SCENARIO"] = "signed-in"
+        app.launch()
+        XCTAssertTrue(app.buttons["home-search"].waitForExistence(timeout: 10))
+        remote.press(.select)
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 10))
+
+        // With no history the page says so.
+        XCTAssertTrue(app.staticTexts["search-no-history"].waitForExistence(timeout: 10))
+
+        // Open a series from the results, and come back.
+        field.typeText("fr")
+        XCTAssertTrue(app.buttons["Freeks wilde wereld, serie"].waitForExistence(timeout: 10))
+        remote.press(.down)
+        remote.press(.select)
+        XCTAssertTrue(app.buttons["season-season-1"].waitForExistence(timeout: 10))
+        remote.press(.menu)
+        XCTAssertTrue(app.buttons["Freeks wilde wereld, serie"].waitForExistence(timeout: 10))
+
+        // Emptying the field shows the term, with what was picked for it.
+        remote.press(.up)
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2))
+        XCTAssertTrue(app.buttons["recent-term-fr"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["recent-pick-series-1"].exists)
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = "Recent searches"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+
+        // Clearing asks first, and then the page is empty again.
+        let clear = app.buttons["search-clear-history"]
+        for _ in 0..<4 where !clear.hasFocus {
+            remote.press(.down)
+        }
+        XCTAssertTrue(clear.hasFocus)
+        remote.press(.select)
+        // The dialog opens on its cancel button; the one that clears is the
+        // one carrying the same label as the identified action.
+        let confirm = app.buttons["search-clear-confirm"]
+        XCTAssertTrue(confirm.waitForExistence(timeout: 10))
+        let clearing = app.buttons.matching(NSPredicate(format: "label == %@", confirm.label))
+        func clearingHasFocus() -> Bool {
+            clearing.allElementsBoundByIndex.contains { $0.hasFocus }
+        }
+        XCTAssertFalse(clearingHasFocus())
+        remote.press(.right)
+        XCTAssertTrue(clearingHasFocus())
+        remote.press(.select)
+        XCTAssertTrue(app.staticTexts["search-no-history"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["recent-term-fr"].exists)
+    }
 }

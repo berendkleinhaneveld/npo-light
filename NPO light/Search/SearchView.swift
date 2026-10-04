@@ -5,12 +5,6 @@
 
 import SwiftUI
 
-/// What was chosen from a set of results.
-enum SearchPick: Equatable {
-    case series(SeriesSummary)
-    case playable(Playable)
-}
-
 /// The search page: the system's search field, and what the catalogue has for
 /// the text in it (FR-SEARCH-02).
 struct SearchView: View {
@@ -21,19 +15,27 @@ struct SearchView: View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .searchable(text: $model.query, prompt: "Zoek een serie, film of aflevering")
+            .task { await model.loadRecent() }
+            .onDisappear {
+                Task { await model.leave() }
+            }
+    }
+
+    /// Opens what was picked from the results, and has it remembered.
+    private func choose(_ pick: SearchPick) {
+        Task { await model.chose(pick) }
+        open(pick)
     }
 
     @ViewBuilder private var content: some View {
         switch model.state {
         case .idle:
-            // Recent searches go here (FR-SEARCH-04) once there is a store to
-            // keep them in.
-            Color.clear
+            RecentSearchesView(model: model, open: open)
         case .searching:
             ProgressView()
                 .padding(.top, 80)
         case .results(let results):
-            SearchResultsView(results: results, open: open)
+            SearchResultsView(results: results, open: choose)
         case .noResults(let term):
             Text("Niets gevonden voor “\(term)”.")
                 .font(.headline)
@@ -162,7 +164,7 @@ struct CatalogueTile: View {
 
 #Preview("Search") {
     NavigationStack {
-        SearchView(model: SearchModel(catalogue: ScriptedCatalogue(), clock: SystemClock(), mode: .normal),
+        SearchView(model: SearchModel.scripted(history: .filled),
                    open: { _ in })
     }
 }

@@ -8,7 +8,8 @@ import SwiftUI
 /// The composition root (ADR 0011): the one place that names a concrete type
 /// and hands it down, so that the seams ADR 0009 relies on stay reachable.
 ///
-/// The stores are not here yet. Where they keep their data is ADR 0015.
+/// The search history is the first of the stores. Where each keeps its data
+/// is ADR 0015.
 @main
 struct NPOLightApp: App {
     /// How long a request to NPO may stay unanswered before it fails, so that
@@ -35,6 +36,7 @@ struct NPOLightApp: App {
                                                        onSignedIn: { appModel.admit($0) }))
         // Normal mode until the mode switch exists (FR-MODE-02).
         _searchModel = State(initialValue: SearchModel(catalogue: backend.catalogue,
+                                                       history: backend.searchHistory,
                                                        clock: SystemClock(),
                                                        mode: .normal))
     }
@@ -62,7 +64,8 @@ struct NPOLightApp: App {
             return Backend(authenticator: scripted,
                            catalogue: ScriptedCatalogue(),
                            playback: ScriptedPlayback(),
-                           artwork: NoArtwork())
+                           artwork: NoArtwork(),
+                           searchHistory: ScriptedSearchHistory())
         }
         #endif
         let configuration = URLSessionConfiguration.ephemeral
@@ -87,7 +90,8 @@ struct NPOLightApp: App {
             catalogue: LoggedCatalogue(wrapping: NPOCatalogue(authenticator: authenticator, profiles: profiles),
                                        log: log),
             playback: LoggedPlayback(wrapping: playback, log: log),
-            artwork: ArtworkLoader(transport: URLSessionTransport(session: artworkSession()), log: log)
+            artwork: ArtworkLoader(transport: URLSessionTransport(session: artworkSession()), log: log),
+            searchHistory: SearchHistoryStore()
         )
     }
 
@@ -125,10 +129,12 @@ struct NPOLightApp: App {
     }
 }
 
-/// Everything behind the NPO boundary, as the rest of the app sees it.
+/// Everything behind the NPO boundary and the local stores, as the rest of
+/// the app sees them.
 private struct Backend {
     let authenticator: any Authenticating
     let catalogue: any Catalogue
     let playback: any PlaybackStarting
     let artwork: any ArtworkProviding
+    let searchHistory: any SearchHistory
 }

@@ -112,7 +112,7 @@ private struct PlayerScreen: View {
 #if DEBUG
 #Preview {
     HomeView(model: HomeModel(),
-             search: SearchModel(catalogue: ScriptedCatalogue(), clock: SystemClock(), mode: .normal),
+             search: SearchModel.scripted(),
              seriesModel: { SeriesDetailModel(summary: $0, catalogue: ScriptedCatalogue(), mode: .normal) },
              playerModel: { PlayerModel(playable: $0, mode: .normal, starter: ScriptedPlayback()) })
 }

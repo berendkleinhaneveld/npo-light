@@ -54,7 +54,7 @@ the user experiences it as behaviour, and measured by NFR-PERF-01.
 
 ## FR-SEARCH-04 — An empty field shows recent searches
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 With no text in the field, the search page shows recent search terms, most
 recent first.
@@ -64,11 +64,14 @@ recent first.
 - Opening search with no text shows recent terms rather than an empty page.
 - Clearing the field returns to the recent terms.
 - With no history at all, the page says so instead of showing an empty band.
-- The list is capped at a fixed number of terms; the oldest is dropped.
+- The list is capped at a fixed number of terms — ten — and the oldest is
+  dropped.
+- The history is kept where tvOS does not empty it, and is there after a
+  relaunch (NFR-REL-04).
 
 ## FR-SEARCH-05 — A recent search remembers what was picked
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 When the user opens or plays an item from a set of results, that item is
 recorded against the search term. The recent-search tile then shows the term
@@ -84,11 +87,20 @@ carrying *Freeks Wilde Wereld*.
 - Searching the same term again and picking another item adds that item to the
   same term, without duplicating the term.
 - Picking the same item twice does not duplicate it; it moves to the front.
-- A term with no pick is still remembered, as a term on its own.
+- A term with no pick is still remembered, as a term on its own: when the
+  search page is left while that term's results are on screen. A term that
+  found nothing, or one typed on the way to another, is not.
+- An episode picked from the results is kept as that episode: a list does not
+  say which series an episode belongs to
+  ([Q-10](open-questions.md#q-10--does-a-programme-in-a-list-belong-to-a-series)).
+- A term keeps its most recent picks, up to a fixed number — four, what fits
+  beside it on its row.
+- Opening a pick from a recent search, with nothing in the field, records
+  nothing new.
 
 ## FR-SEARCH-06 — A recent search is two shortcuts
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 From a recent-search tile the user can either re-run the whole search or go
 straight to a previously picked item.
@@ -102,7 +114,7 @@ straight to a previously picked item.
 
 ## FR-SEARCH-07 — Delete a recent search
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The user can delete a recent search term, and can clear the whole history.
 
@@ -111,7 +123,10 @@ The user can delete a recent search term, and can clear the whole history.
 - Deleting a term removes it and the items picked for it, immediately and
   permanently.
 - Deleting a term does not unpin anything and does not touch recently watched.
-- Clearing all history asks for confirmation first.
+- A term is deleted by holding the select button on it; the page says so, so
+  that the long press is not the only way to learn it exists (NFR-A11Y-01).
+- Clearing all history asks for confirmation first, and the confirmation opens
+  on *Annuleren*.
 - Clearing history in one mode leaves the other mode's history alone
   (FR-MODE-05).
 
