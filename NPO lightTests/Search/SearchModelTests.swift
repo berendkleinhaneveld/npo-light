@@ -11,7 +11,8 @@ import Testing
 struct SearchModelTests {
     nonisolated private static func results(_ title: String) -> SearchResults {
         SearchResults(series: [SeriesSummary(id: ItemID(rawValue: title), title: title, artwork: nil)],
-                      playables: [])
+                      singleProgrammes: [],
+                      episodes: [])
     }
 
     private func model(_ catalogue: StubCatalogue,

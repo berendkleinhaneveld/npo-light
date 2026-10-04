@@ -68,7 +68,7 @@ struct PlayerProblemView: View {
 
 #if DEBUG
 #Preview("Player") {
-    PlayerView(model: PlayerModel(playable: ScriptedCatalogue.results.playables[0],
+    PlayerView(model: PlayerModel(playable: ScriptedCatalogue.results.episodes[0],
                                   mode: .normal,
                                   starter: ScriptedPlayback()))
 }

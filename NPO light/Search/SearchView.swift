@@ -55,7 +55,8 @@ struct SearchView: View {
     }
 }
 
-/// Series and playable items, apart, as NPO answers them.
+/// A row for each kind: series, then what stands alone, then episodes
+/// (FR-SEARCH-10).
 struct SearchResultsView: View {
     let results: SearchResults
     let open: (SearchPick) -> Void
@@ -73,15 +74,23 @@ struct SearchResultsView: View {
                         }
                     }
                 }
-                if !results.playables.isEmpty {
-                    row("Afleveringen en films") {
-                        ForEach(results.playables) { playable in
-                            Button { open(.playable(playable)) } label: {
-                                CatalogueTile(artwork: playable.artwork,
-                                              title: playable.title,
-                                              caption: playable.caption)
-                            }
-                        }
+                // Before the episodes: a search for a film's name is answered
+                // with every episode of every series that shares a word with it.
+                playables("Films en losse programma's", results.singleProgrammes)
+                playables("Afleveringen", results.episodes)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func playables(_ title: LocalizedStringKey, _ items: [Playable]) -> some View {
+        if !items.isEmpty {
+            row(title) {
+                ForEach(items) { playable in
+                    Button { open(.playable(playable)) } label: {
+                        CatalogueTile(artwork: playable.artwork,
+                                      title: playable.title,
+                                      caption: playable.caption)
                     }
                 }
             }

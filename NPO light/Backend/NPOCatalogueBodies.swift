@@ -29,6 +29,10 @@ nonisolated struct CatalogueItemBody: Decodable {
     static let seriesType = "series"
     static let programType = "program"
 
+    /// What NPO's app opens for a programme that belongs to no series: a
+    /// page of its own. An episode of a series has `player` here (Q-10).
+    static let singleProgrammeTarget = "detail"
+
     let guid: String
     /// Absent in a season's list, where everything is a programme.
     let type: String?
@@ -36,6 +40,8 @@ nonisolated struct CatalogueItemBody: Decodable {
     let subtitle: String?
     let synopsis: String?
     let durationInSeconds: Int?
+    /// Only in a collection. A season's list has none.
+    let target: String?
     let images: [ImageBody]?
 
     var artwork: URL? {
@@ -69,11 +75,19 @@ nonisolated struct SearchBody: Decodable {
 
     /// Sorted by each item's own type rather than by the collection it came
     /// in, so a collection NPO adds or renames does not lose results.
+    ///
+    /// NPO lists single programmes among the episodes. They are told apart by
+    /// where NPO's app would go for them, and a programme that does not say is
+    /// taken for an episode, which is what nearly all of them are.
     var results: SearchResults {
         let items = collections.flatMap { $0.items ?? [] }
+        let programmes = items.filter { $0.type == CatalogueItemBody.programType }
+        let singles = programmes.filter { $0.target == CatalogueItemBody.singleProgrammeTarget }
+        let episodes = programmes.filter { $0.target != CatalogueItemBody.singleProgrammeTarget }
         return SearchResults(
             series: items.filter { $0.type == CatalogueItemBody.seriesType }.compactMap(\.seriesSummary),
-            playables: items.filter { $0.type == CatalogueItemBody.programType }.compactMap(\.playable)
+            singleProgrammes: singles.compactMap(\.playable),
+            episodes: episodes.compactMap(\.playable)
         )
     }
 }

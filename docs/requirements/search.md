@@ -140,3 +140,27 @@ A search that matches nothing says so.
 - A search that fails because of the network shows a retry, distinct from "no
   results" (NFR-REL-02).
 - Neither state hides the text field or loses what was typed.
+
+## FR-SEARCH-10 — Results are grouped by kind
+
+- **Status:** Implemented
+
+Search results are shown in up to three rows, in this order: series, single
+programmes, episodes. A row with nothing in it is not shown.
+
+**Rationale.** NPO answers a search with series in one list and everything
+playable in another, where a film sits among the episodes. A search for a
+film's name is answered with every episode of every series that shares a word
+with it, and the film at the end: searching for "substance" gave eight episodes
+of a series and then the film. What stands alone is what was most likely
+looked for, so it comes before the episodes.
+
+**Acceptance criteria**
+
+- A programme that belongs to no series (FR-CONTENT-01) is in the row of single
+  programmes and not among the episodes.
+- The row is headed *Films en losse programma's*: the app knows that a
+  programme stands alone, not whether it is a film.
+- A programme NPO does not mark either way is shown among the episodes, which
+  is what nearly all programmes are.
+- Within a row the order is NPO's.

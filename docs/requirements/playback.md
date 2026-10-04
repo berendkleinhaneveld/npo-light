@@ -185,7 +185,7 @@ does not implement, wrap or work around the protection itself.
 
 **Rationale.** The licence exchange belongs to the operating system, which
 holds the key material; the app's only job is to forward what NPO's backend
-mints for it. NPO's licence credential is short-lived — around a minute — which
+mints for it. NPO's licence credential is short-lived — a minute or two — which
 makes the order of operations part of the requirement rather than an
 implementation detail: the stream details are fetched immediately before
 playback starts, not held from earlier

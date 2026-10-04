@@ -13,11 +13,12 @@ nonisolated struct SeriesSummary: Sendable, Hashable, Identifiable {
     let artwork: URL?
 }
 
-/// Something that can be played: a film, a standalone episode or an episode of
-/// a series.
+/// Something that can be played: a single programme, or an episode of a
+/// series.
 ///
-/// Which of the three it is, and which series it belongs to, is not in what
-/// NPO returns for a list (Q-10), so this type does not claim to know.
+/// The type does not say which. A list that knows keeps the two apart
+/// (``SearchResults``), and nothing in a list names the series an episode
+/// belongs to: only the answer to playing it does (Q-10).
 nonisolated struct Playable: Sendable, Equatable, Identifiable {
     let id: EpisodeID
     let title: String
@@ -35,15 +36,21 @@ nonisolated struct Playable: Sendable, Equatable, Identifiable {
     let artwork: URL?
 }
 
-/// What a search answers with. NPO keeps series and playable items apart, and
-/// so does this.
+/// What a search answers with, by kind (FR-SEARCH-10).
 nonisolated struct SearchResults: Sendable, Equatable {
     let series: [SeriesSummary]
-    let playables: [Playable]
 
-    static let empty = SearchResults(series: [], playables: [])
+    /// What belongs to no series: a film, a one-off documentary, a special
+    /// (FR-CONTENT-01).
+    let singleProgrammes: [Playable]
 
-    var isEmpty: Bool { series.isEmpty && playables.isEmpty }
+    /// Episodes of series. A search for a series' name answers with a great
+    /// many of these.
+    let episodes: [Playable]
+
+    static let empty = SearchResults(series: [], singleProgrammes: [], episodes: [])
+
+    var isEmpty: Bool { series.isEmpty && singleProgrammes.isEmpty && episodes.isEmpty }
 }
 
 /// One season, named as NPO names it. The title is editorial — a series can

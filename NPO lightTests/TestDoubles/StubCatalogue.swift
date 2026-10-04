@@ -17,7 +17,8 @@ nonisolated final class StubCatalogue: Catalogue {
 
     static let results = SearchResults(
         series: [SeriesSummary(id: ItemID(rawValue: "series-1"), title: "Freeks wilde wereld", artwork: nil)],
-        playables: []
+        singleProgrammes: [],
+        episodes: []
     )
 
     static let seasons = [

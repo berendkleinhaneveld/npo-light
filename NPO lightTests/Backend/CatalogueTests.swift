@@ -109,18 +109,47 @@ struct CatalogueTests {
         let results = try await catalogue.search(for: "fr", in: .normal)
 
         #expect(results.series.count == 2)
-        #expect(results.playables.count == 2)
+        #expect(results.singleProgrammes.isEmpty)
+        #expect(results.episodes.count == 2)
         let series = try #require(results.series.first)
         #expect(series.id == ItemID(rawValue: "0806bc3a-3ad1-403c-aa4a-feac30c86ac4"))
         #expect(series.title == "Freeks wilde wereld")
         // The header image, not the transparent title logo listed before it.
         #expect(series.artwork?.pathExtension == "jpg")
-        let playable = try #require(results.playables.first)
+        let playable = try #require(results.episodes.first)
         #expect(playable.id == EpisodeID(rawValue: "50a874df-bd47-4531-b595-8b385596bcd7"))
         #expect(playable.caption == "10m • Afl. 5: Haaien in de rivier")
         #expect(playable.duration == .seconds(628))
         let request = try #require(Self.requests(to: "/search", in: harness).first)
         #expect(request.url?.query() == "query=fr&page=1")
+    }
+
+    @Test("FR-SEARCH-10, FR-CONTENT-01: a programme that belongs to no series is kept apart from the episodes")
+    func singleProgrammesAreKeptApart() async throws {
+        let (catalogue, _) = try await Self.catalogue(answering: "/search",
+                                                      with: try Self.fixture("search-single-programme-200"))
+
+        let results = try await catalogue.search(for: "subst", in: .normal)
+
+        #expect(results.series.map(\.title) == ["A Woman of Substance"])
+        #expect(results.singleProgrammes.map(\.title) == ["The Substance"])
+        #expect(results.singleProgrammes.first?.caption == "2u 9m")
+        #expect(results.episodes.map(\.caption) == ["46m • Afl. 1", "46m • Afl. 7"])
+    }
+
+    @Test("FR-SEARCH-10: a programme that does not say where it leads is taken for an episode")
+    func unmarkedProgrammesAreEpisodes() async throws {
+        let body = """
+        {"guid":"search","collections":[{"guid":"search-programs","items":[
+        {"guid":"a","type":"program","title":"Zonder doel"},
+        {"guid":"b","type":"program","title":"Met een ander doel","target":"elders"}]}]}
+        """
+        let (catalogue, _) = try await Self.catalogue(answering: "/search", with: .json(body))
+
+        let results = try await catalogue.search(for: "doel", in: .normal)
+
+        #expect(results.singleProgrammes.isEmpty)
+        #expect(results.episodes.map(\.title) == ["Zonder doel", "Met een ander doel"])
     }
 
     @Test("FR-SEARCH-09: a search that matches nothing answers with nothing, not with an error")
