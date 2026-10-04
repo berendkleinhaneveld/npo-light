@@ -25,8 +25,18 @@ actor ScriptedPins: Pins {
         lists[mode]?.contains(id) ?? false
     }
 
+    func starts(in mode: Mode) -> [ItemID: Upcoming] {
+        lists[mode]?.startsByItem ?? [:]
+    }
+
+    func pin(_ series: SeriesSummary, startingWith start: Upcoming?, in mode: Mode) {
+        lists[mode, default: PinList()].pin(series, startingWith: start)
+    }
+
+    /// Pins a series whose first episode is not known. Unlike the store's,
+    /// this cannot fail.
     func pin(_ series: SeriesSummary, in mode: Mode) {
-        lists[mode, default: PinList()].pin(series)
+        pin(series, startingWith: nil, in: mode)
     }
 
     func unpin(_ id: ItemID, in mode: Mode) {

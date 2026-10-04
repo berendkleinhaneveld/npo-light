@@ -57,18 +57,22 @@ that" has exactly one place.
 
 ## FR-HOME-04 — A pinned series tile is the next episode
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 A pinned series shows one tile. That tile names the episode that will play —
 the next unwatched one — and playing it starts that episode.
 
 **Acceptance criteria**
 
-- With no episode of the series watched, the tile offers the first episode.
+- With no episode of the series watched, the tile offers the first episode:
+  the one the series' page offered when the series was pinned, kept with the
+  pin so that the home page need not ask NPO for it.
 - A programme NPO lists latest season first — a daily one, with a season for
   each year — is not watched from its beginning: with nothing to continue
   with it offers its latest episode, as NPO's own app does, and offers the
-  latest again once a newer one than was watched has been broadcast.
+  latest again once a newer one than was watched has been broadcast. Its
+  latest episode is another one tomorrow, so its tile keeps none: until the
+  programme was started, the tile opens its page, which offers the latest.
 - With episodes watched up to and including episode *n*, the tile offers
   episode *n+1* (FR-CONTENT-02).
 - With a partly watched episode, the tile offers that episode and resumes it

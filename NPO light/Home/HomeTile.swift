@@ -61,16 +61,24 @@ nonisolated struct HomeTile: Sendable, Equatable, Identifiable {
     /// The series whose page the tile can open, when it is of one.
     let series: SeriesSummary?
 
-    /// A pinned series nobody started.
-    init(pinned series: SeriesSummary) {
+    /// A pinned series nobody started. With the episode it starts with, the
+    /// tile names and plays that one; without, it opens the series' page
+    /// (FR-HOME-04).
+    init(pinned series: SeriesSummary, startingWith start: Upcoming? = nil) {
         id = series.id
         kind = .series
         title = series.title
-        artwork = series.artwork
         itemArtwork = series.artwork
-        state = .notStarted
-        origin = .unknown
         self.series = series
+        if let start, let season = start.season {
+            artwork = start.artwork ?? series.artwork
+            state = .continues(start, fraction: nil)
+            origin = .series(SeriesPlace(series: series, season: season))
+        } else {
+            artwork = series.artwork
+            state = .notStarted
+            origin = .unknown
+        }
     }
 
     /// Something saved for later: the tile is that exact thing, never the

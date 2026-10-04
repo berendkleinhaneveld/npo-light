@@ -228,6 +228,25 @@ struct SeriesWatchedTests {
         #expect(model.primary == .init(episode: Self.episode(2, of: Self.first), season: Self.first, resumes: false))
     }
 
+    @Test("FR-HOME-04: a daily programme is pinned without a first episode: its latest is another one tomorrow")
+    func dailyProgrammeIsPinnedWithoutAStart() async {
+        let pins = ScriptedPins()
+        var detail = StubCatalogue.detail
+        detail.listsNewestFirst = true
+        let model = SeriesDetailModel(summary: Self.series,
+                                      catalogue: StubCatalogue(detail: { [detail] _ in detail }),
+                                      pins: pins,
+                                      watched: .scripted(),
+                                      mode: .normal)
+        await model.load()
+        await model.pending?.value
+
+        await model.togglePin()
+
+        #expect(await pins.pinned(in: .normal).count == 1)
+        #expect(await pins.starts(in: .normal).isEmpty)
+    }
+
     @Test("FR-HOME-04: a daily programme still continues with an episode that was started")
     func dailyProgrammeContinues() async {
         let episode = Self.episode(1, of: Self.second)

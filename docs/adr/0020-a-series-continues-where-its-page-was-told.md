@@ -97,9 +97,10 @@ the series.
   without asking NPO for anything but the page and that season.
 - Finishing an episode costs one request for its season's list, and two more
   at a season's end. They are made while the stream is still playing.
-- A pinned series nobody started has no entry, so its tile cannot name its
-  first episode without the network: it opens the series' page, and FR-HOME-04
-  stays `Accepted`.
+- A pinned series nobody started has no entry. Its pin keeps the episode the
+  series' page offered when it was pinned, so that its tile can name and play
+  it without the network (FR-HOME-04). A pin made before that was kept, and
+  one of a daily programme, keeps none: such a tile opens the series' page.
 - The position's `@Model` gained an optional attribute. SwiftData adds it to
   a store that is already there; a store it cannot open is started over and
   filled from the copy, as before.

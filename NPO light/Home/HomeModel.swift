@@ -64,6 +64,7 @@ final class HomeModel {
     /// Reads the rows as they are kept now.
     func refresh() async {
         let series = await pins.pinned(in: mode)
+        let starts = await pins.starts(in: mode)
         let entries = await watched.history.entries(in: mode)
         let row = ContinueWatching.row(from: entries, at: clock.now)
         // A pinned series keeps its tile when it has left the row
@@ -74,7 +75,7 @@ final class HomeModel {
         let positions = await watched.progress.progress(of: continued, in: mode)
         pinned = series.map { pin in
             guard let entry = entries.first(where: { $0.id == pin.id }), entry.kind == .series else {
-                return HomeTile(pinned: pin)
+                return HomeTile(pinned: pin, startingWith: starts[pin.id])
             }
             return HomeTile(entry, positions: positions)
         }

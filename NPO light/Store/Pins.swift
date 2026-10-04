@@ -15,19 +15,41 @@ nonisolated struct PinList: Sendable, Equatable, Codable {
     /// Most recently pinned first.
     private(set) var series: [SeriesSummary] = []
 
+    /// The episode each series starts with, by the series' identifier, where
+    /// its page knew one when it was pinned: what lets a tile name and play
+    /// an episode of a series nobody started, without asking NPO
+    /// (FR-HOME-04). Absent in a list kept before this was.
+    private(set) var starts: [String: Upcoming]?
+
     func contains(_ id: ItemID) -> Bool {
         series.contains { $0.id == id }
     }
 
+    /// The episode `id` starts with, when one was kept.
+    func start(of id: ItemID) -> Upcoming? {
+        starts?[id.rawValue]
+    }
+
     /// Puts `pinned` at the front. A series that is already pinned keeps its
     /// one tile and moves there.
-    mutating func pin(_ pinned: SeriesSummary) {
+    mutating func pin(_ pinned: SeriesSummary, startingWith start: Upcoming? = nil) {
         unpin(pinned.id)
         series.insert(pinned, at: 0)
+        if let start {
+            starts = (starts ?? [:]).merging([pinned.id.rawValue: start]) { _, new in new }
+        }
     }
 
     mutating func unpin(_ id: ItemID) {
         series.removeAll { $0.id == id }
+        starts?[id.rawValue] = nil
+    }
+}
+
+nonisolated extension PinList {
+    /// ``starts``, by the app's own identifier.
+    var startsByItem: [ItemID: Upcoming] {
+        Dictionary(uniqueKeysWithValues: (starts ?? [:]).map { (ItemID(rawValue: $0.key), $0.value) })
     }
 }
 
@@ -39,7 +61,13 @@ nonisolated protocol Pins: Sendable {
 
     func isPinned(_ id: ItemID, in mode: Mode) async -> Bool
 
-    func pin(_ series: SeriesSummary, in mode: Mode) async throws
+    /// The episode each pinned series starts with, for those that were
+    /// pinned with one.
+    func starts(in mode: Mode) async -> [ItemID: Upcoming]
+
+    /// Pins `series`. `start` is the episode its page would play for
+    /// somebody who has not started it, when the page knows one.
+    func pin(_ series: SeriesSummary, startingWith start: Upcoming?, in mode: Mode) async throws
 
     /// Takes the pin away and nothing else: not what was watched of the
     /// series, nor where (FR-HOME-05).
@@ -63,10 +91,19 @@ actor PinStore: Pins {
         list(in: mode).contains(id)
     }
 
-    func pin(_ series: SeriesSummary, in mode: Mode) throws {
+    func starts(in mode: Mode) -> [ItemID: Upcoming] {
+        list(in: mode).startsByItem
+    }
+
+    func pin(_ series: SeriesSummary, startingWith start: Upcoming?, in mode: Mode) throws {
         var list = list(in: mode)
-        list.pin(series)
+        list.pin(series, startingWith: start)
         try defaults.keep(list, for: .pins, in: mode)
+    }
+
+    /// Pins a series whose first episode is not known.
+    func pin(_ series: SeriesSummary, in mode: Mode) throws {
+        try pin(series, startingWith: nil, in: mode)
     }
 
     func unpin(_ id: ItemID, in mode: Mode) throws {

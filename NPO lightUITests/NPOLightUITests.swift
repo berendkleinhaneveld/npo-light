@@ -275,22 +275,20 @@ final class NPOLightUITests: XCTestCase {
         attachment.lifetime = .keepAlways
         add(attachment)
 
-        // Its tile opens the series, where it can be unpinned again.
+        // Its tile plays the first episode. Holding select on it offers
+        // unpinning, from the home page itself.
         // Focus is on the header above the row, or on the row below it.
         for direction in [XCUIRemote.Button.down, .up, .up] where !tile.hasFocus {
             remote.press(direction)
         }
         XCTAssertTrue(tile.hasFocus)
+        remote.press(.select, forDuration: 1.5)
+        // The menu opens on the way to the series' page; unpinning is the
+        // entry under it. A menu's entries do not carry identifiers.
+        remote.press(.down)
         remote.press(.select)
-        let unpin = app.buttons["series-unpin"]
-        XCTAssertTrue(unpin.waitForExistence(timeout: 10))
-        XCTAssertTrue(app.buttons["season-season-1"].waitForExistence(timeout: 10))
-        moveFocus(to: unpin, in: app)
-        XCTAssertTrue(unpin.hasFocus)
-        remote.press(.select)
-        XCTAssertTrue(app.buttons["series-pin"].waitForExistence(timeout: 10))
-        remote.press(.menu)
         XCTAssertTrue(app.buttons["pinned-empty-search"].waitForExistence(timeout: 10))
+        XCTAssertFalse(tile.exists)
     }
 
     // Requirement: FR-CONTENT-08, NFR-A11Y-01

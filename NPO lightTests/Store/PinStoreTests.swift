@@ -143,4 +143,41 @@ struct PinStoreTests {
             #expect(await store.pinned(in: .normal).isEmpty)
         }
     }
+
+    private static let start = Upcoming(Playable(id: EpisodeID(rawValue: "episode-1"),
+                                                 title: "Aflevering 1",
+                                                 caption: "Afl. 1 • 10m",
+                                                 synopsis: nil,
+                                                 duration: nil,
+                                                 artwork: nil),
+                                        in: SeasonID(rawValue: "season-1"))
+
+    @Test("FR-HOME-04: a pin keeps the episode its series starts with, across a relaunch, and loses it with the pin")
+    func pinKeepsItsFirstEpisode() async throws {
+        try await withSuite { suite in
+            let store = PinStore(suite: suite)
+            try await store.pin(Self.series("freek"), startingWith: Self.start, in: .normal)
+            try await store.pin(Self.series("other"), in: .normal)
+
+            #expect(await PinStore(suite: suite).starts(in: .normal) == [Self.series("freek").id: Self.start])
+            #expect(await store.starts(in: .kids).isEmpty)
+
+            try await store.unpin(Self.series("freek").id, in: .normal)
+
+            #expect(await store.starts(in: .normal).isEmpty)
+        }
+    }
+
+    @Test("NFR-REL-04: pins kept before a first episode was kept with them are still read")
+    func olderListIsRead() async throws {
+        try await withSuite { suite in
+            let older = #"{"series":[{"id":{"rawValue":"freek"},"title":"freek"}]}"#
+            UserDefaults(suiteName: suite)?.set(Data(older.utf8), forKey: "local.pins.normal")
+
+            let store = PinStore(suite: suite)
+
+            #expect(await store.pinned(in: .normal).map(\.title) == ["freek"])
+            #expect(await store.starts(in: .normal).isEmpty)
+        }
+    }
 }

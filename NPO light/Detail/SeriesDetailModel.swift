@@ -219,12 +219,21 @@ final class SeriesDetailModel {
             if isPinned {
                 try await pins.unpin(summary.id, in: mode)
             } else {
-                try await pins.pin(current, in: mode)
+                try await pins.pin(current, startingWith: start, in: mode)
             }
         } catch {
             // Nothing was written; what is shown stays what is kept.
         }
         isPinned = await pins.isPinned(summary.id, in: mode)
+    }
+
+    /// The episode a tile for this series starts with, for somebody who has
+    /// not started it: what the page itself would play. Not for a programme
+    /// that is followed as it is broadcast, whose latest episode is another
+    /// one tomorrow.
+    private var start: Upcoming? {
+        guard case .loaded(let detail) = page, !detail.listsNewestFirst, let primary else { return nil }
+        return Upcoming(primary.episode, in: primary.season)
     }
 
     private var current: SeriesSummary {

@@ -229,6 +229,19 @@ struct SeriesDetailModelTests {
         #expect(await pins.pinned(in: .normal).map(\.title) == [StubCatalogue.detail.title])
     }
 
+    @Test("FR-HOME-04: a series is pinned with the episode it starts with, so that its tile can play it")
+    func pinCarriesTheFirstEpisode() async {
+        let pins = ScriptedPins()
+        let model = pinning(StubCatalogue.results.series[0], pins, in: .normal)
+        await model.load()
+        await model.pending?.value
+
+        await model.togglePin()
+
+        let first = StubCatalogue.episodes(of: Self.first)[0]
+        #expect(await pins.starts(in: .normal) == [StubCatalogue.detail.id: Upcoming(first, in: Self.first)])
+    }
+
     @Test("FR-CONTENT-07: moving focus along the picker shows the season focus is on")
     func movingAlongThePickerShowsTheSeason() async {
         let model = model(StubCatalogue())
