@@ -129,9 +129,10 @@ struct SeriesHero: View {
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            // Whole, on the right: the images are anything from square to
-            // a wide banner, and filling the strip showed a slice of some.
-            ArtworkView(url: detail?.artwork ?? fallbackArtwork, size: .full, placement: .wholeAtTrailingEdge)
+            // As wide as the screen, and its middle. NPO's images are mostly
+            // wide banners, which this suits; a square one shows a band
+            // across its middle, and that is the image's doing.
+            ArtworkView(url: detail?.artwork ?? fallbackArtwork, size: .full)
             shade
             info
         }
@@ -148,13 +149,13 @@ struct SeriesHero: View {
     /// the page; the image itself to the right.
     private var shade: some View {
         ZStack {
-            LinearGradient(stops: [.init(color: .black.opacity(0.7), location: 0),
-                                   .init(color: .black.opacity(0.5), location: 0.4),
-                                   .init(color: .clear, location: 0.7)],
+            LinearGradient(stops: [.init(color: .black, location: 0),
+                                   .init(color: .black.opacity(0.85), location: 0.38),
+                                   .init(color: .black.opacity(0.15), location: 0.78)],
                            startPoint: .leading,
                            endPoint: .trailing)
             LinearGradient(stops: [.init(color: .black, location: 0),
-                                   .init(color: .clear, location: 0.3)],
+                                   .init(color: .clear, location: 0.45)],
                            startPoint: .bottom,
                            endPoint: .top)
         }

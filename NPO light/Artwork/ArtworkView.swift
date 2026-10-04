@@ -17,20 +17,6 @@ struct ArtworkView: View {
     let url: URL?
     var size = ArtworkSize.tile
 
-    /// How the image sits in a frame that is not its shape.
-    var placement = Placement.filling
-
-    enum Placement {
-        /// Fills the frame, cut where it does not fit: a tile.
-        case filling
-
-        /// Whole, as large as the frame allows, against its trailing edge,
-        /// with its leading edge fading out. For an image behind text, whose
-        /// shape is not known beforehand: NPO's are anything from square to
-        /// a wide banner.
-        case wholeAtTrailingEdge
-    }
-
     @Environment(\.artwork) private var artwork
     @State private var loaded: Loaded?
 
@@ -45,27 +31,18 @@ struct ArtworkView: View {
         // The frame decides the size and the image fills it: an overlay takes
         // the size it is offered, where the image alone would take its own.
         Color.clear
-            .overlay(alignment: placement == .filling ? .center : .trailing) { content }
+            .overlay { content }
             .clipped()
             .task(id: url) { await load() }
             .accessibilityHidden(true)
     }
 
     @ViewBuilder private var content: some View {
-        if let image, placement == .wholeAtTrailingEdge {
-            Image(decorative: image, scale: 1)
-                .resizable()
-                .scaledToFit()
-                .mask {
-                    LinearGradient(stops: [.init(color: .clear, location: 0), .init(color: .black, location: 0.4)],
-                                   startPoint: .leading,
-                                   endPoint: .trailing)
-                }
-        } else if let image {
+        if let image {
             Image(decorative: image, scale: 1)
                 .resizable()
                 .scaledToFill()
-        } else if placement == .filling {
+        } else {
             ZStack {
                 Rectangle().fill(.quaternary)
                 Image(systemName: "tv")
