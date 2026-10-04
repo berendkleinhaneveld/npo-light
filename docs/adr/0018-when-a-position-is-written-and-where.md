@@ -73,5 +73,7 @@ store says that it was reset.
 - Nobody is told yet when the store was reset. NFR-REL-05 asks for that, and
   it stays `Accepted` until a screen says it.
 - The player's part — seeking to the resume point, the periodic observer, the
-  pause and end notifications — cannot run on the simulator, which has no
-  FairPlay. It is verified on the television.
+  pause and end notifications — cannot run against NPO's streams on the
+  simulator, which has no FairPlay. It runs there against a generated video
+  ([ADR 0019](0019-play-a-generated-video-where-fairplay-cannot-run.md)), and
+  against the real thing on the television.

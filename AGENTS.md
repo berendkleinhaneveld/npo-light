@@ -197,6 +197,11 @@ SwiftLint settles formatting; these are the conventions it cannot check.
 - **Artwork.** As decided in ADR 0017, an image is drawn by `ArtworkView`,
   which names an `ArtworkSize` — never by `AsyncImage`, which fetches NPO's
   three-thousand-pixel original and decodes it on the main thread.
+- **Playback on the simulator.** As decided in ADR 0019, a debug build on the
+  simulator plays a generated test card instead of NPO's protected streams,
+  with the real catalogue and stores around it. Use it to see and to test
+  what happens while something plays; the licence exchange itself is only
+  ever seen on a television.
 - **Concurrency.** UI state is `@MainActor`. Do not add `@unchecked Sendable`
   or `nonisolated(unsafe)` to silence the compiler — model the isolation
   properly.

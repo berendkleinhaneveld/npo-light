@@ -41,6 +41,9 @@ final class PlayerModel {
     private var ticks: (player: AVPlayer, token: Any)?
     private var ending: (any NSObjectProtocol)?
 
+    /// The latest write of the position, while it is under way.
+    private(set) var writing: Task<Void, Never>?
+
     init(playable: Playable, mode: Mode, starter: any PlaybackStarting, positions: PlaybackCoordinator) {
         self.playable = playable
         self.mode = mode
@@ -108,7 +111,7 @@ final class PlayerModel {
         guard case .playing(let playback) = state, let item = playback.player.currentItem else { return }
         let position = playback.player.currentTime().seconds
         let duration = item.duration.seconds
-        Task { [positions, id = playable.id, mode] in
+        writing = Task { [positions, id = playable.id, mode] in
             await positions.played(id, to: position, of: duration, in: mode, resting: resting)
         }
     }
@@ -162,7 +165,7 @@ final class PlayerModel {
     }
 
     private func playedToEnd() {
-        Task { [positions, id = playable.id, mode] in
+        writing = Task { [positions, id = playable.id, mode] in
             await positions.playedToEnd(id, in: mode)
         }
     }

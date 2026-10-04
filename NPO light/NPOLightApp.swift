@@ -88,7 +88,10 @@ struct NPOLightApp: App {
         let authenticator = NPOAuthenticator(transport: transport, tokenStore: KeychainTokenStore(), clock: clock)
         let profiles = NPOProfiles(authenticator: authenticator)
         let streams = NPOStreams(authenticator: authenticator, profiles: profiles, transport: transport)
-        let playback = NPOPlayback(streams: streams, licenser: FairPlayLicenser(transport: transport), clock: clock)
+        let npoPlayback = NPOPlayback(streams: streams,
+                                      licenser: FairPlayLicenser(transport: transport),
+                                      clock: clock)
+        let playback = simulatorPlayback ?? npoPlayback
         // Every failure behind the boundary is written down on its way out
         // (ADR 0016).
         return Backend(
@@ -114,6 +117,17 @@ struct NPOLightApp: App {
         configuration.httpCookieStorage = nil
         configuration.urlCredentialStorage = nil
         return URLSession(configuration: configuration)
+    }
+
+    /// What plays instead of NPO's streams where they cannot: a debug build
+    /// on the simulator plays the test card, with the real catalogue and the
+    /// real stores around it (ADR 0019). `nil` everywhere else.
+    private static var simulatorPlayback: (any PlaybackStarting)? {
+        #if DEBUG && targetEnvironment(simulator)
+        ScriptedPlayback()
+        #else
+        nil
+        #endif
     }
 
     /// Where requests and responses are kept whole, tidied and announced: the

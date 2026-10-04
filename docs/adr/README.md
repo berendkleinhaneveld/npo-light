@@ -27,6 +27,7 @@ the old one as superseded instead of rewriting it.
 | [0016](0016-log-at-the-seams.md) | Log at the seams, and keep whole exchanges in files in debug builds | Proposed |
 | [0017](0017-load-artwork-at-the-size-it-is-shown.md) | Load artwork at the size it is shown, off the main actor | Proposed |
 | [0018](0018-when-a-position-is-written-and-where.md) | When a position is written, and where | Proposed |
+| [0019](0019-play-a-generated-video-where-fairplay-cannot-run.md) | Play a generated video where FairPlay cannot run | Proposed |
 
 ## How to add one
 

@@ -3,6 +3,7 @@
 //  NPO lightTests
 //
 
+import AVFoundation
 import Foundation
 import Testing
 @testable import NPO_light
@@ -89,5 +90,98 @@ struct PlayerModelTests {
 
         #expect(home.playing == Self.episode)
         #expect(home.path.isEmpty)
+    }
+
+    // MARK: With something to play
+
+    /// A model that plays the test card, over positions a test can read.
+    private func cardModel(_ store: ScriptedProgress, mode: Mode = .normal) -> PlayerModel {
+        PlayerModel(playable: Self.episode,
+                    mode: mode,
+                    starter: ScriptedPlayback(),
+                    positions: PlaybackCoordinator(progress: store, clock: TestClock()))
+    }
+
+    private func playhead(of model: PlayerModel) -> TimeInterval? {
+        guard case .playing(let playback) = model.state else { return nil }
+        return playback.player.currentTime().seconds
+    }
+
+    private static func stopped(at offset: TimeInterval) -> PlaybackProgress {
+        PlaybackProgress(id: episode.id, offset: offset, finishedAt: nil, updatedAt: Date(timeIntervalSince1970: 0))
+    }
+
+    @Test("FR-PLAY-02: the player is moved to the stored position before it starts")
+    func playerStartsAtTheStoredPosition() async throws {
+        let model = cardModel(ScriptedProgress([Self.stopped(at: 60)]))
+
+        await model.start()
+        let position = try #require(playhead(of: model))
+        model.stop()
+
+        // Within a second of where it stopped.
+        #expect(abs(position - 60) < 1)
+    }
+
+    @Test("FR-PLAY-02: something with no stored position starts at the beginning")
+    func playerStartsAtTheBeginning() async throws {
+        let model = cardModel(ScriptedProgress())
+
+        await model.start()
+        let position = try #require(playhead(of: model))
+        model.stop()
+
+        #expect(position < 1)
+    }
+
+    @Test("FR-PLAY-02, FR-MODE-05: a position from the other mode is not resumed")
+    func otherModesPositionIsNotResumed() async throws {
+        let model = cardModel(ScriptedProgress([Self.stopped(at: 60)], in: .kids), mode: .normal)
+
+        await model.start()
+        let position = try #require(playhead(of: model))
+        model.stop()
+
+        #expect(position < 1)
+    }
+
+    @Test("FR-PLAY-03: closing the player writes where it was, durably")
+    func closingWritesThePosition() async throws {
+        let store = ScriptedProgress([Self.stopped(at: 60)])
+        let model = cardModel(store)
+        await model.start()
+
+        model.stop()
+        await model.writing?.value
+
+        let kept = try #require(await store.kept.last)
+        #expect(kept.id == Self.episode.id)
+        #expect(abs((kept.offset ?? 0) - 60) < 2)
+        #expect(!kept.isFinished)
+    }
+
+    @Test("FR-PLAY-10: a player closed before anything played leaves the stored position alone")
+    func closingAtTheStartWritesNothing() async {
+        let store = ScriptedProgress()
+        let model = cardModel(store)
+        await model.start()
+
+        model.stop()
+        await model.writing?.value
+
+        // The test card has not got past its first frame.
+        #expect(await store.kept.allSatisfy { ($0.offset ?? 0) < 2 })
+        #expect(await store.progress(of: Self.episode.id, in: .normal)?.isFinished != true)
+    }
+
+    @Test("NFR-MAINT-04: the test card is a playable video of the length it says, made without a network")
+    func testCardIsPlayable() async throws {
+        let asset = AVURLAsset(url: try await TestCard.video())
+
+        let duration = try await asset.load(.duration).seconds
+        let isPlayable = try await asset.load(.isPlayable)
+
+        #expect(isPlayable)
+        #expect(abs(duration - TimeInterval(TestCard.duration)) < 1)
     }
 }
