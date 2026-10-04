@@ -5,6 +5,7 @@
 
 import AVFoundation
 import Foundation
+import Synchronization
 import Testing
 @testable import NPO_light
 
@@ -109,22 +110,30 @@ struct LoggedBoundaryTests {
         ])
     }
 
-    @Test("NFR-DIAG-04: a stream the player gives up on is logged with the player's own reason",
-          .timeLimit(.minutes(1)))
+    @Test("NFR-DIAG-04: a stream the player gives up on is logged with the player's own reason")
     @MainActor
     func aStreamThatStopsIsLogged() async throws {
         let log = RecordingLog()
-        let playback = LoggedPlayback(wrapping: MissingStream(), log: log)
+        let item = StoppableItem(url: URL(filePath: "/nowhere/stream.m3u8"))
+        let playback = LoggedPlayback(wrapping: OneItemPlayback(item: item), log: log)
 
         // Held for the length of the test: the listening lasts as long as the
         // playback does.
         let started = try await playback.playback(of: Self.episode, in: .normal)
-        let entry = try #require(await log.next())
+        #expect(log.entries.isEmpty)
 
-        #expect(started.player.currentItem?.status == .failed)
-        #expect(entry.level == .error)
-        #expect(entry.category == .playback)
-        #expect(entry.message.hasPrefix("playback of season-1-1 in normal stopped: "))
+        item.stop(with: NSError(domain: AVFoundationErrorDomain,
+                                code: -11_800,
+                                userInfo: [NSLocalizedDescriptionKey: "Cannot Open"]))
+
+        #expect(started.player.currentItem === item)
+        #expect(log.entries == [
+            RecordingLog.Entry(
+                message: "playback of season-1-1 in normal stopped: AVFoundationErrorDomain -11800: Cannot Open",
+                level: .error,
+                category: .playback
+            )
+        ])
     }
 
     @Test("NFR-DIAG-04: what the player says is logged with what was underneath it")
@@ -145,12 +154,36 @@ struct LoggedBoundaryTests {
     }
 }
 
-/// A `PlaybackStarting` whose player has a stream that is not there, so that
-/// the system player fails by itself.
+/// A `PlaybackStarting` that hands out a player holding the item it was given.
 @MainActor
-private struct MissingStream: PlaybackStarting {
+private struct OneItemPlayback: PlaybackStarting {
+    let item: AVPlayerItem
+
     func playback(of playable: Playable, in mode: Mode) async throws -> Playback {
-        let item = AVPlayerItem(url: URL(filePath: "/nowhere/\(UUID().uuidString).m3u8"))
-        return Playback(player: AVPlayer(playerItem: item), keys: nil)
+        Playback(player: AVPlayer(playerItem: item), keys: nil)
+    }
+}
+
+/// A player item that stops when the test says so, and reports it the way the
+/// system's does: by changing `status` under key-value observation.
+///
+/// What the real player makes of a stream that is not there depends on the
+/// machine — a continuous-integration runner never gives up on one — so the
+/// test does not wait for it to make up its mind (NFR-MAINT-04).
+nonisolated private final class StoppableItem: AVPlayerItem {
+    private let stopped = Mutex<NSError?>(nil)
+
+    override var status: AVPlayerItem.Status {
+        stopped.withLock { $0 } == nil ? .unknown : .failed
+    }
+
+    override var error: (any Error)? {
+        stopped.withLock { $0 }
+    }
+
+    func stop(with error: NSError) {
+        willChangeValue(for: \.status)
+        stopped.withLock { $0 = error }
+        didChangeValue(for: \.status)
     }
 }

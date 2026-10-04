@@ -17,12 +17,6 @@ nonisolated final class RecordingLog: Logging {
     }
 
     private let recorded = Mutex<[Entry]>([])
-    private let stream: AsyncStream<Entry>
-    private let continuation: AsyncStream<Entry>.Continuation
-
-    init() {
-        (stream, continuation) = AsyncStream.makeStream(of: Entry.self)
-    }
 
     /// Everything written so far, oldest first.
     var entries: [Entry] { recorded.withLock { $0 } }
@@ -33,13 +27,5 @@ nonisolated final class RecordingLog: Logging {
     func record(_ message: String, level: LogLevel, category: LogCategory) {
         let entry = Entry(message: message, level: level, category: category)
         recorded.withLock { $0.append(entry) }
-        continuation.yield(entry)
-    }
-
-    /// The next line written, for what is logged from somewhere a test cannot
-    /// await — the system player reports on a queue of its own.
-    func next() async -> Entry? {
-        for await entry in stream { return entry }
-        return nil
     }
 }

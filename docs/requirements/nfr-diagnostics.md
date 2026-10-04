@@ -99,7 +99,9 @@ stopped with, and each entry the player adds to its error log while playing.
   a signed stream.
 - Listening lasts as long as the playback does and ends with it.
 
-*The first criterion is tested against a stream that does not exist. An
+*The first criterion is tested with a player item that stops when the test
+says so: what the real player makes of a missing stream differs from one
+machine to the next. An
 error-log entry cannot be made in a test; the second was seen on an Apple TV on
 2026-10-04, when the player reported a segment over its variant's bandwidth
 while it went on playing.*
