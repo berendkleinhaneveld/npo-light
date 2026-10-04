@@ -1,0 +1,19 @@
+{
+  "token": "sanitised.player.token",
+  "program": {
+    "guid": "7a4c73be-b8e7-4ffd-a2c1-f7df7be3a918",
+    "prid": "POW_04274500",
+    "programSlug": "wisting_12",
+    "seasonSlug": "3737e7bb-b163-456a-b064-6160316f9cc7",
+    "seriesSlug": "wisting",
+    "contentIndication": "premiumContent_premiumAccount"
+  },
+  "nextProgram": {
+    "guid": "899c7ffe-8286-444b-b435-6364d717c9cf",
+    "prid": "POW_04274501",
+    "programSlug": "wisting_21",
+    "seasonSlug": "3737e7bb-b163-456a-b064-6160316f9cc7",
+    "seriesSlug": "wisting",
+    "contentIndication": "premiumContent_premiumAccount"
+  }
+}

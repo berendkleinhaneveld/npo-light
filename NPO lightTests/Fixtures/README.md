@@ -24,6 +24,8 @@ is here is extracted and rewritten, not copied.
 | `search-200.json` | `GET ios.bff.start.npox.nl/search?query=fr&page=1`, as the general profile; two items kept per collection | 2026-09-03 |
 | `series-page-200.json` | `GET ios.bff.start.npox.nl/series/page/{guid}`, as the kids profile | 2026-09-03 |
 | `season-programs-200.json` | `GET ios.bff.start.npox.nl/series/seasons/{guid}/programs?sort=asc`, as the kids profile; three episodes kept | 2026-09-03 |
+| `player-200.json` | `GET ios.bff.start.npox.nl/programs/player/{guid}?player-environment=production` | 2026-08-31 |
+| `stream-link-200.json` | `POST prod.npoplayer.nl/stream-link`, for a Plus account; the manifest address and both tokens are placeholders | 2026-08-31 |
 
 ## The rules
 

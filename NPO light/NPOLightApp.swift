@@ -21,11 +21,11 @@ struct NPOLightApp: App {
     @State private var homeModel = HomeModel()
     @State private var searchModel: SearchModel
 
-    private let catalogue: any Catalogue
+    private let backend: Backend
 
     init() {
         let backend = Self.makeBackend()
-        catalogue = backend.catalogue
+        self.backend = backend
         let appModel = AppModel(authenticator: backend.authenticator)
         _appModel = State(initialValue: appModel)
         _signInModel = State(initialValue: SignInModel(authenticator: backend.authenticator,
@@ -43,26 +43,40 @@ struct NPOLightApp: App {
                      signInModel: signInModel,
                      homeModel: homeModel,
                      searchModel: searchModel,
-                     seriesModel: { [catalogue] in
-                         SeriesDetailModel(summary: $0, catalogue: catalogue, mode: .normal)
+                     seriesModel: { [backend] in
+                         SeriesDetailModel(summary: $0, catalogue: backend.catalogue, mode: .normal)
+                     },
+                     playerModel: { [backend] in
+                         PlayerModel(playable: $0, mode: .normal, starter: backend.playback)
                      })
         }
     }
 
-    private static func makeBackend() -> (authenticator: any Authenticating, catalogue: any Catalogue) {
+    private static func makeBackend() -> Backend {
         #if DEBUG
         // A launch by a test must not reach NPO.
         if let scripted = ScriptedAuthenticator(environment: ProcessInfo.processInfo.environment) {
-            return (scripted, ScriptedCatalogue())
+            return Backend(authenticator: scripted, catalogue: ScriptedCatalogue(), playback: ScriptedPlayback())
         }
         #endif
         let configuration = URLSessionConfiguration.ephemeral
         configuration.timeoutIntervalForRequest = requestTimeout
-        let authenticator = NPOAuthenticator(
-            transport: URLSessionTransport(session: URLSession(configuration: configuration)),
-            tokenStore: KeychainTokenStore(),
-            clock: SystemClock()
+        let transport = URLSessionTransport(session: URLSession(configuration: configuration))
+        let clock = SystemClock()
+        let authenticator = NPOAuthenticator(transport: transport, tokenStore: KeychainTokenStore(), clock: clock)
+        let profiles = NPOProfiles(authenticator: authenticator)
+        let streams = NPOStreams(authenticator: authenticator, profiles: profiles, transport: transport)
+        return Backend(
+            authenticator: authenticator,
+            catalogue: NPOCatalogue(authenticator: authenticator, profiles: profiles),
+            playback: NPOPlayback(streams: streams, licenser: FairPlayLicenser(transport: transport), clock: clock)
         )
-        return (authenticator, NPOCatalogue(authenticator: authenticator))
     }
+}
+
+/// Everything behind the NPO boundary, as the rest of the app sees it.
+private struct Backend {
+    let authenticator: any Authenticating
+    let catalogue: any Catalogue
+    let playback: any PlaybackStarting
 }
