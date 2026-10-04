@@ -15,6 +15,9 @@ struct NPOLightApp: App {
     /// no screen waits for ever on a backend that went quiet.
     private static let requestTimeout: TimeInterval = 15
 
+    /// The most the images kept on disk may take. tvOS may empty it sooner.
+    private static let artworkDiskCeiling = 128 * 1024 * 1024
+
     @State private var appModel: AppModel
     @State private var signInModel: SignInModel
     @State private var homeModel = HomeModel()
@@ -48,6 +51,7 @@ struct NPOLightApp: App {
                      playerModel: { [backend] in
                          PlayerModel(playable: $0, mode: .normal, starter: backend.playback)
                      })
+                     .environment(\.artwork, backend.artwork)
         }
     }
 
@@ -55,7 +59,10 @@ struct NPOLightApp: App {
         #if DEBUG
         // A launch by a test must not reach NPO.
         if let scripted = ScriptedAuthenticator(environment: ProcessInfo.processInfo.environment) {
-            return Backend(authenticator: scripted, catalogue: ScriptedCatalogue(), playback: ScriptedPlayback())
+            return Backend(authenticator: scripted,
+                           catalogue: ScriptedCatalogue(),
+                           playback: ScriptedPlayback(),
+                           artwork: NoArtwork())
         }
         #endif
         let configuration = URLSessionConfiguration.ephemeral
@@ -79,8 +86,22 @@ struct NPOLightApp: App {
             authenticator: LoggedAuthenticator(wrapping: authenticator, log: log),
             catalogue: LoggedCatalogue(wrapping: NPOCatalogue(authenticator: authenticator, profiles: profiles),
                                        log: log),
-            playback: LoggedPlayback(wrapping: playback, log: log)
+            playback: LoggedPlayback(wrapping: playback, log: log),
+            artwork: ArtworkLoader(transport: URLSessionTransport(session: artworkSession()), log: log)
         )
+    }
+
+    /// Images come over a session of their own, kept on disk by the system's
+    /// cache under a ceiling: NPO lets an image be kept for a year, and what
+    /// is on disk need not be fetched again after a relaunch (ADR 0017). Not
+    /// through the logging transport, which would keep every image whole.
+    private static func artworkSession() -> URLSession {
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = requestTimeout
+        configuration.urlCache = URLCache(memoryCapacity: 0, diskCapacity: artworkDiskCeiling)
+        configuration.httpCookieStorage = nil
+        configuration.urlCredentialStorage = nil
+        return URLSession(configuration: configuration)
     }
 
     /// Where requests and responses are kept whole, tidied and announced: the
@@ -109,4 +130,5 @@ private struct Backend {
     let authenticator: any Authenticating
     let catalogue: any Catalogue
     let playback: any PlaybackStarting
+    let artwork: any ArtworkProviding
 }

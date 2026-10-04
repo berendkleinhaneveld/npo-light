@@ -153,30 +153,6 @@ struct CatalogueTile: View {
     }
 }
 
-/// An image from NPO. It may be missing, or not have arrived: a placeholder
-/// then, never an empty space (FR-CONTENT-01).
-struct ArtworkView: View {
-    let url: URL?
-
-    var body: some View {
-        AsyncImage(url: url) { phase in
-            if let image = phase.image {
-                image
-                    .resizable()
-                    .scaledToFill()
-            } else {
-                ZStack {
-                    Rectangle().fill(.quaternary)
-                    Image(systemName: "tv")
-                        .font(.largeTitle)
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-        .accessibilityHidden(true)
-    }
-}
-
 #if DEBUG
 #Preview("Results") {
     NavigationStack {
@@ -189,11 +165,6 @@ struct ArtworkView: View {
         SearchView(model: SearchModel(catalogue: ScriptedCatalogue(), clock: SystemClock(), mode: .normal),
                    open: { _ in })
     }
-}
-
-#Preview("Artwork") {
-    ArtworkView(url: nil)
-        .frame(width: 320, height: 180)
 }
 
 #Preview("Tile") {

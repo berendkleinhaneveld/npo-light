@@ -25,6 +25,7 @@ the old one as superseded instead of rewriting it.
 | [0014](0014-each-mode-browses-as-an-npo-profile.md) | Each mode browses as one of the account's NPO profiles | Accepted |
 | [0015](0015-local-data-in-two-places.md) | Keep what the family chose in UserDefaults, and every position in an evictable store | Accepted |
 | [0016](0016-log-at-the-seams.md) | Log at the seams, and keep whole exchanges in files in debug builds | Proposed |
+| [0017](0017-load-artwork-at-the-size-it-is-shown.md) | Load artwork at the size it is shown, off the main actor | Proposed |
 
 ## How to add one
 

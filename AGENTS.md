@@ -194,6 +194,9 @@ SwiftLint settles formatting; these are the conventions it cannot check.
   SwiftData store holds positions at an explicit URL in `Caches` — never a
   default `ModelConfiguration`, which only works in the Simulator. A store over
   `UserDefaults` follows the same rules as one over SwiftData.
+- **Artwork.** As decided in ADR 0017, an image is drawn by `ArtworkView`,
+  which names an `ArtworkSize` — never by `AsyncImage`, which fetches NPO's
+  three-thousand-pixel original and decodes it on the main thread.
 - **Concurrency.** UI state is `@MainActor`. Do not add `@unchecked Sendable`
   or `nonisolated(unsafe)` to silence the compiler — model the isolation
   properly.

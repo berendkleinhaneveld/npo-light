@@ -58,7 +58,7 @@ struct SeriesHeaderView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 40) {
-            ArtworkView(url: detail?.artwork ?? fallbackArtwork)
+            ArtworkView(url: detail?.artwork ?? fallbackArtwork, size: .large)
                 .frame(width: 480, height: 270)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
             VStack(alignment: .leading, spacing: 16) {
@@ -182,7 +182,7 @@ struct EpisodePreview: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            ArtworkView(url: episode.artwork)
+            ArtworkView(url: episode.artwork, size: .large)
                 .frame(width: 560, height: 315)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
             Text(verbatim: episode.title)
