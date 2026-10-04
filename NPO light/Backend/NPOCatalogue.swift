@@ -54,6 +54,12 @@ nonisolated final class NPOCatalogue: Catalogue {
     }
 
     @concurrent
+    func programme(_ id: EpisodeID, in mode: Mode) async throws -> ProgrammeDetail {
+        let call = BackendCall(path: NPOWire.programmePath(id), profile: try await profiles.profile(for: mode))
+        return try await body(ProgrammePageBody.self, from: call).detail
+    }
+
+    @concurrent
     func episodes(of season: SeasonID, in mode: Mode) async throws -> [Playable] {
         // `asc` is broadcast order, and what NPO's own app asks for.
         let call = BackendCall(path: NPOWire.episodesPath(season),

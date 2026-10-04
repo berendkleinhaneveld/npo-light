@@ -188,6 +188,54 @@ struct WatchLaterHomeTests {
         #expect(kids.later.count == 1)
     }
 
+    @Test("FR-HOME-06: a single programme being watched is a tile that plays it, as a programme of its own")
+    func singleProgrammeOnTheRow() async throws {
+        let film = Self.playable("film")
+        await history.record(WatchedEntry(single: film, playedAt: Self.now), in: .normal)
+        let model = model()
+        await model.refresh()
+        let tile = try #require(model.continuing.first)
+
+        model.select(tile)
+
+        #expect(tile.kind == .single)
+        #expect(model.playing == PlayRequest(playable: film.kept, origin: .single))
+        #expect(tile.page == .programme(film.kept))
+    }
+
+    @Test("FR-HOME-07: a finished single programme shows as finished, and opens its page instead of replaying")
+    func finishedSingleOpensItsPage() async throws {
+        var entry = WatchedEntry(single: Self.playable("film"), playedAt: Self.now)
+        entry.next = nil
+        entry.finishedAt = Self.now
+        await history.record(entry, in: .normal)
+        let model = model()
+        await model.refresh()
+        let tile = try #require(model.continuing.first)
+        #expect(tile.state == .finished)
+
+        model.select(tile)
+
+        #expect(model.playing == nil)
+        guard case .programme(let programme) = try #require(model.path.last) else {
+            Issue.record("The tile did not open a programme's page")
+            return
+        }
+        #expect(programme.id == EpisodeID(rawValue: "film"))
+        #expect(programme.title == "film")
+    }
+
+    @Test("FR-CONTENT-03: a single programme chosen from search results opens its own page")
+    func singleFromSearchOpensItsPage() {
+        let model = model()
+        model.openSearch()
+
+        model.open(.single(Self.playable("film")))
+
+        #expect(model.path == [.search, .programme(Self.playable("film"))])
+        #expect(model.playing == nil)
+    }
+
     @Test("FR-CONTENT-03: an episode in a list opens the series it belongs to, which NPO is asked for")
     func episodeOpensItsSeries() async {
         let model = model()

@@ -10,6 +10,7 @@ import Observation
 enum Destination: Hashable {
     case search
     case settings
+    case programme(Playable)
     case series(SeriesSummary)
 }
 
@@ -133,12 +134,12 @@ final class HomeModel {
     }
 
     /// A tile was selected: it plays what it continues with, or opens the
-    /// series' page when there is nothing to play (FR-HOME-04, FR-HOME-07).
+    /// item's page when there is nothing to play (FR-HOME-04, FR-HOME-07).
     func select(_ tile: HomeTile) {
         if let request = tile.request {
             play(request)
-        } else if let series = tile.series {
-            open(series)
+        } else if let page = tile.page {
+            show(page)
         }
     }
 
@@ -157,16 +158,21 @@ final class HomeModel {
         path.append(.series(series))
     }
 
+    /// Opens an item's own page.
+    func show(_ page: Destination) {
+        path.append(page)
+    }
+
     /// Something was chosen from search results.
     func open(_ pick: SearchPick) {
         switch pick {
         case .series(let series):
             open(series)
         case .single(let playable):
-            // Straight to playing: a single programme's own page has no
-            // endpoint yet (Q-10).
-            play(PlayRequest(playable: playable, origin: .single))
+            // Its own page, as for a series (FR-CONTENT-03).
+            show(.programme(playable))
         case .playable(let playable):
+            // An episode plays; the way to its series is in its menu.
             play(playable)
         }
     }

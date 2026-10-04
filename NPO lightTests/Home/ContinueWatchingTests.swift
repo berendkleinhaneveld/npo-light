@@ -320,18 +320,4 @@ struct ContinueWatchingTests {
         #expect(model.continuing.map(\.title) == ["freek"])
         #expect(model.playbacksEnded == 1)
     }
-
-    @Test("FR-HOME-07: a single programme that was finished shows as finished, and plays again when selected")
-    func singleProgrammeOnTheRow() async throws {
-        let film = Self.episode("film")
-        await history.record(WatchedEntry(single: film, playedAt: Self.now), in: .normal)
-        let model = model()
-        await model.refresh()
-        let tile = try #require(model.continuing.first)
-
-        model.select(tile)
-
-        #expect(tile.kind == .single)
-        #expect(model.playing == PlayRequest(playable: Upcoming(film, in: nil).playable, origin: .single))
-    }
 }

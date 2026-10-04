@@ -35,7 +35,7 @@ The pinned row shows pinned items with the most recently pinned first.
 
 ## FR-HOME-03 — Pin a series, and only a series
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 A series can be pinned from its detail page (FR-CONTENT-03). Nothing else can:
 an episode of a series pins its series, and a film or a standalone episode is
@@ -128,7 +128,7 @@ meant to be adjusted once the family has lived with it.
 
 ## FR-HOME-07 — A finished item stays seven days, then leaves
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 An episode finished mid-series leaves the item on the row, pointing at the next
 episode. An item with nothing left to watch — a film, or a series whose last
@@ -149,8 +149,7 @@ asked days later, and whoever was not in the room never sees it.
   the app was opened in between: it filters, rather than relying on a sweep.
 - The seven days are one named constant, alongside the cap (FR-HOME-06).
 - Selecting a finished tile opens the detail page instead of replaying silently
-  (FR-HOME-04). A single programme has no page yet (FR-CONTENT-03): until it
-  has, its finished tile plays it again.
+  (FR-HOME-04).
 - Playing it again puts it back as a live entry at the front, from the
   beginning (FR-PLAY-02).
 - Leaving the row discards nothing: the episodes stay marked watched, so

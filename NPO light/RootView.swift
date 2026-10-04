@@ -18,6 +18,7 @@ struct RootView: View {
     let homeModel: (Mode) -> HomeModel
     let searchModel: (Mode) -> SearchModel
     let seriesModel: (SeriesSummary, Mode) -> SeriesDetailModel
+    let programmeModel: (Playable, Mode) -> ProgrammeDetailModel
     let playerModel: (PlayRequest, Mode) -> PlayerModel
 
     var body: some View {
@@ -37,6 +38,7 @@ struct RootView: View {
                        homeModel: homeModel,
                        searchModel: searchModel,
                        seriesModel: seriesModel,
+                       programmeModel: programmeModel,
                        playerModel: playerModel)
                 // Another mode is another home page, from the start: nothing
                 // of the mode that was left stays on screen (FR-MODE-02).
@@ -58,6 +60,7 @@ private struct ModeScreen: View {
     let modes: ModeModel
     let settings: SettingsModel
     let seriesModel: (SeriesSummary, Mode) -> SeriesDetailModel
+    let programmeModel: (Playable, Mode) -> ProgrammeDetailModel
     let playerModel: (PlayRequest, Mode) -> PlayerModel
 
     @State private var home: HomeModel
@@ -68,10 +71,12 @@ private struct ModeScreen: View {
          homeModel: (Mode) -> HomeModel,
          searchModel: (Mode) -> SearchModel,
          seriesModel: @escaping (SeriesSummary, Mode) -> SeriesDetailModel,
+         programmeModel: @escaping (Playable, Mode) -> ProgrammeDetailModel,
          playerModel: @escaping (PlayRequest, Mode) -> PlayerModel) {
         self.modes = modes
         self.settings = settings
         self.seriesModel = seriesModel
+        self.programmeModel = programmeModel
         self.playerModel = playerModel
         _home = State(initialValue: homeModel(modes.current))
         _search = State(initialValue: searchModel(modes.current))
@@ -83,6 +88,7 @@ private struct ModeScreen: View {
                  modes: modes,
                  settings: settings,
                  seriesModel: { seriesModel($0, home.mode) },
+                 programmeModel: { programmeModel($0, home.mode) },
                  playerModel: { playerModel($0, home.mode) })
     }
 }
@@ -109,6 +115,7 @@ private struct RootPreview: View {
                  homeModel: { .scripted(mode: $0) },
                  searchModel: { .scripted(mode: $0) },
                  seriesModel: { series, _ in .scripted(series) },
+                 programmeModel: { programme, _ in .scripted(programme) },
                  playerModel: { request, _ in .scripted(request.playable) })
     }
 }

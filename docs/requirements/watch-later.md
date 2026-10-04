@@ -54,7 +54,7 @@ so every "we want to watch that" has exactly one home.
 
 ## FR-LATER-03 — Saving is offered wherever an item is
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 An item can be saved from every place the app already shows it, without
 navigating somewhere else first.
@@ -170,7 +170,7 @@ its progress, until it passes the completion threshold or is removed by hand.
 
 ## FR-LATER-09 — Remove by hand
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 A saved item can be taken off the list without watching it, from the watch
 later row itself and from its detail page.

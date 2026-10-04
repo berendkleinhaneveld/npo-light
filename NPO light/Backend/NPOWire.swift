@@ -44,6 +44,10 @@ nonisolated enum NPOWire {
         "/series/page/by/slug/\(slug)"
     }
 
+    static func programmePath(_ programme: EpisodeID) -> String {
+        "/programs/page/\(programme.rawValue)"
+    }
+
     static func playerPath(_ episode: EpisodeID) -> String {
         "/programs/player/\(episode.rawValue)"
     }

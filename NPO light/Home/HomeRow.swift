@@ -21,7 +21,7 @@ struct HomeRow: View {
     let kind: Kind
     let tiles: [HomeTile]
     let select: (HomeTile) -> Void
-    let open: (SeriesSummary) -> Void
+    let open: (Destination) -> Void
     let remove: (HomeTile) -> Void
     let search: () -> Void
 
@@ -131,8 +131,8 @@ struct HomeRow: View {
                         HomeTileView(tile: tile)
                     }
                     .contextMenu {
-                        if let series = tile.series {
-                            Button("Details", systemImage: "info.circle") { open(series) }
+                        if let page = tile.page {
+                            Button("Details", systemImage: "info.circle") { open(page) }
                         }
                         saveButton(for: tile)
                         Button(removal, systemImage: removalSymbol) { remove(tile) }

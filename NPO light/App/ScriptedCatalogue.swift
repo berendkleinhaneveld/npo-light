@@ -54,6 +54,17 @@ nonisolated struct ScriptedCatalogue: Catalogue {
                      seasons: Self.seasons)
     }
 
+    func programme(_ id: EpisodeID, in mode: Mode) async throws -> ProgrammeDetail {
+        let known = Self.results.singleProgrammes.first { $0.id == id } ?? Self.results.singleProgrammes[0]
+        let described = Playable(id: id,
+                                 title: known.title,
+                                 caption: "Documentaire • 1u 25m",
+                                 synopsis: "Hoe dieren hun weg vinden in de stad, een jaar lang gevolgd.",
+                                 duration: known.duration,
+                                 artwork: nil)
+        return ProgrammeDetail(playable: described, isPlayable: true)
+    }
+
     /// The scripted episodes carry their season in their identifier; anything
     /// else stands alone.
     func place(of episode: EpisodeID, in mode: Mode) async throws -> SeriesPlace? {

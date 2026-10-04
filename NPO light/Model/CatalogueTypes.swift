@@ -19,7 +19,7 @@ nonisolated struct SeriesSummary: Sendable, Hashable, Identifiable, Codable {
 /// The type does not say which. A list that knows keeps the two apart
 /// (``SearchResults``), and nothing in a list names the series an episode
 /// belongs to: only the answer to playing it does (Q-10).
-nonisolated struct Playable: Sendable, Equatable, Identifiable {
+nonisolated struct Playable: Sendable, Hashable, Identifiable {
     let id: EpisodeID
     let title: String
 
@@ -34,6 +34,17 @@ nonisolated struct Playable: Sendable, Equatable, Identifiable {
     let duration: Duration?
 
     let artwork: URL?
+}
+
+/// A programme that belongs to no series, as its own page describes it
+/// (FR-CONTENT-03).
+nonisolated struct ProgrammeDetail: Sendable, Equatable {
+    /// The programme, with the fuller description its page has.
+    let playable: Playable
+
+    /// Whether NPO says it can be played now, by this account
+    /// (FR-CONTENT-06).
+    let isPlayable: Bool
 }
 
 /// What a search answers with, by kind (FR-SEARCH-10).

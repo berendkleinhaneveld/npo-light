@@ -91,10 +91,13 @@ struct PlayerModelTests {
         #expect(home.playing == PlayRequest(playable: Self.episode, origin: .unknown))
         #expect(home.path.isEmpty)
 
-        // A programme that belongs to no series is played as one (FR-PLAY-09).
+        // A programme that belongs to no series opens its own page instead
+        // (FR-CONTENT-03).
+        home.playing = nil
         home.open(.single(Self.episode))
 
-        #expect(home.playing == PlayRequest(playable: Self.episode, origin: .single))
+        #expect(home.playing == nil)
+        #expect(home.path == [.programme(Self.episode)])
     }
 
     // MARK: With something to play

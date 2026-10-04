@@ -112,6 +112,20 @@ nonisolated struct HomeTile: Sendable, Equatable, Identifiable {
         return PlayRequest(playable: next.playable, origin: origin)
     }
 
+    /// The item's own page: the series', or the single programme's.
+    var page: Destination? {
+        if let series { return .series(series) }
+        guard kind == .single else { return nil }
+        if case .continues(let programme, _) = state { return .programme(programme.playable) }
+        // Finished: what is left of it is what the entry kept.
+        return .programme(Playable(id: EpisodeID(rawValue: id.rawValue),
+                                   title: title,
+                                   caption: nil,
+                                   synopsis: nil,
+                                   duration: nil,
+                                   artwork: itemArtwork))
+    }
+
     /// What the tile plays, as the watch later list keeps it.
     var saving: SavedItem? {
         guard case .continues(let next, _) = state else { return nil }

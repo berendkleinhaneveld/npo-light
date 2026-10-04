@@ -15,6 +15,7 @@ struct HomeView: View {
     let modes: ModeModel
     let settings: SettingsModel
     let seriesModel: (SeriesSummary) -> SeriesDetailModel
+    let programmeModel: (Playable) -> ProgrammeDetailModel
     let playerModel: (PlayRequest) -> PlayerModel
 
     var body: some View {
@@ -26,13 +27,13 @@ struct HomeView: View {
                         HomeRow(kind: .pinned,
                                 tiles: model.pinned,
                                 select: { model.select($0) },
-                                open: { model.open($0) },
+                                open: { model.show($0) },
                                 remove: { tile in Task { await model.unpin(tile.id) } },
                                 search: { model.openSearch() })
                         HomeRow(kind: .continuing,
                                 tiles: model.continuing,
                                 select: { model.select($0) },
-                                open: { model.open($0) },
+                                open: { model.show($0) },
                                 remove: { tile in Task { await model.remove(tile.id) } },
                                 search: { model.openSearch() },
                                 saved: model.saved,
@@ -43,7 +44,7 @@ struct HomeView: View {
                             HomeRow(kind: .later,
                                     tiles: model.later,
                                     select: { model.select($0) },
-                                    open: { model.open($0) },
+                                    open: { model.show($0) },
                                     remove: { tile in Task { await model.removeSaved(tile) } },
                                     search: { model.openSearch() })
                         }
@@ -60,6 +61,10 @@ struct HomeView: View {
                 switch destination {
                 case .settings:
                     SettingsView(model: settings)
+                case .programme(let programme):
+                    ProgrammeDetailScreen(programme: programme,
+                                          playbacksEnded: model.playbacksEnded,
+                                          makeModel: programmeModel) { model.play($0) }
                 case .search:
                     SearchView(model: search, open: { model.open($0) }, actions: playableActions)
                 case .series(let series):
@@ -141,6 +146,29 @@ private struct SeriesDetailScreen: View {
     }
 }
 
+/// The same for a single programme's page.
+private struct ProgrammeDetailScreen: View {
+    @State private var model: ProgrammeDetailModel
+    private let playbacksEnded: Int
+    private let play: (PlayRequest) -> Void
+
+    init(programme: Playable,
+         playbacksEnded: Int,
+         makeModel: (Playable) -> ProgrammeDetailModel,
+         play: @escaping (PlayRequest) -> Void) {
+        _model = State(initialValue: makeModel(programme))
+        self.playbacksEnded = playbacksEnded
+        self.play = play
+    }
+
+    var body: some View {
+        ProgrammeDetailView(model: model, play: play)
+            .onChange(of: playbacksEnded) {
+                Task { await model.readWatched() }
+            }
+    }
+}
+
 /// Keeps one model for as long as the player is presented.
 private struct PlayerScreen: View {
     @State private var model: PlayerModel
@@ -168,6 +196,7 @@ private struct PlayerScreen: View {
              modes: .scripted(),
              settings: .scripted(),
              seriesModel: { .scripted($0) },
+             programmeModel: { .scripted($0) },
              playerModel: { .scripted($0.playable) })
 }
 

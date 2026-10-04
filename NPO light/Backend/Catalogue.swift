@@ -22,6 +22,11 @@ nonisolated protocol Catalogue: Sendable {
     /// Throws ``BackendError/itemUnavailable`` when NPO no longer has it.
     func series(_ id: ItemID, in mode: Mode) async throws -> SeriesDetail
 
+    /// A single programme as its own page describes it.
+    ///
+    /// Throws ``BackendError/itemUnavailable`` when NPO no longer has it.
+    func programme(_ id: EpisodeID, in mode: Mode) async throws -> ProgrammeDetail
+
     /// The episodes of one season, in broadcast order.
     func episodes(of season: SeasonID, in mode: Mode) async throws -> [Playable]
 

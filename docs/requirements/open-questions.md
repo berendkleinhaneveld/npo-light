@@ -422,10 +422,10 @@ One film is a small sample for the first point. It agrees with the 36 of 40 on
 the captured home page, and FR-SEARCH-10 errs on the safe side: a programme
 that does not say is shown as an episode.
 
-**What this leaves open.** The detail page of a single programme
-(FR-CONTENT-03) still has no endpoint: the app plays one straight away. NPO's
-app opens a page for it — that is what `detail` means — and what that page asks
-for has not been captured.
+**The page of a single programme** (FR-CONTENT-03) is `/programs/page/{guid}`:
+its title, a line of NPO's own, a long description, its image, and whether NPO
+would let it be played. Found by asking, 2026-10-04, not by capturing NPO's
+app: the app may ask for it differently. The same page answers for an episode.
 
 *The question as it stood, kept for the reasoning:*
 

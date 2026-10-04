@@ -31,6 +31,7 @@ struct ModeModelTests {
         func series(_ id: ItemID, in mode: Mode) async throws -> SeriesDetail { StubCatalogue.detail }
         func episodes(of season: SeasonID, in mode: Mode) async throws -> [Playable] { [] }
         func place(of episode: EpisodeID, in mode: Mode) async throws -> SeriesPlace? { nil }
+        func programme(_ id: EpisodeID, in mode: Mode) async throws -> ProgrammeDetail { StubCatalogue.film(id) }
     }
 
     private func withSuite(_ body: (String) async throws -> Void) async rethrows {

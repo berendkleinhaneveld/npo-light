@@ -5,7 +5,7 @@ Prefix `FR-CONTENT`.
 
 ## FR-CONTENT-01 — Two kinds of item
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The app models exactly two kinds of item: a **series** (an ordered collection
 of episodes), and a **single programme** that belongs to no series — a film, a
@@ -55,7 +55,7 @@ order, so that "the next episode" is well defined.
 
 ## FR-CONTENT-03 — Item detail page
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Selecting an item anywhere in the app opens its detail page: title,
 description, artwork and a play or resume action. A series adds a pin or unpin
@@ -146,7 +146,7 @@ here.
 
 ## FR-CONTENT-07 — A series is browsed one season at a time
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 A series' detail page shows the episodes of one season at a time, with a season
 picker above them that lists every season. Moving through the picker changes
@@ -174,7 +174,7 @@ read.
 
 ## FR-CONTENT-08 — An episode can be judged before it is played
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 A series' detail page shows the series' header image, and the episode that has
 focus in the list is previewed beside it with its own image and description.

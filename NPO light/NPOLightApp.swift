@@ -68,6 +68,12 @@ struct NPOLightApp: App {
                                            watched: backend.watchedState,
                                            mode: mode)
                      },
+                     programmeModel: { [backend] programme, mode in
+                         ProgrammeDetailModel(summary: programme,
+                                              catalogue: backend.catalogue,
+                                              watched: backend.watchedState,
+                                              mode: mode)
+                     },
                      playerModel: { [backend, positions, settings] request, mode in
                          PlayerModel(playable: request.playable,
                                      origin: request.origin,

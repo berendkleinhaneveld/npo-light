@@ -106,7 +106,6 @@ the series.
 - An episode started from search costs two more requests, after it has
   started playing. Seen to work against NPO from the simulator's session; the
   route by name is one NPO's own app was not seen to use.
-- FR-CONTENT-03 stays `Accepted`: a single programme has no page yet.
 - **Which way the seasons run is inferred from `programSort`**, which is
   about episodes. The two agreed on the two series looked at; a series where
   they differ would be followed in the wrong direction at a season's end.
