@@ -73,7 +73,7 @@ final class SeriesDetailModel {
     private var upNext: Upcoming?
 
     /// Every episode of the series was watched (FR-HOME-04).
-    private(set) var isFullyWatched = false
+    private var hasNothingNext = false
 
     /// The positions of the episodes on this page that have one.
     private var positions: [EpisodeID: PlaybackProgress] = [:]
@@ -90,11 +90,19 @@ final class SeriesDetailModel {
         self.mode = mode
     }
 
+    /// Every episode was watched, and there is nothing to offer
+    /// (FR-HOME-04).
+    var isFullyWatched: Bool {
+        hasNothingNext && primary == nil
+    }
+
     /// The episode the main action plays: the one the series continues with,
-    /// or its very first while none was played. Nothing for a series that
-    /// was watched to its end: an episode is played again from the list.
+    /// or, while it continues with none, where such a series is started.
+    /// Nothing for a series that was watched to its end: an episode is
+    /// played again from the list.
     var primary: Primary? {
-        guard !isFullyWatched, let seasons = loadedSeasons else { return nil }
+        guard case .loaded(let detail) = page else { return nil }
+        let seasons = detail.seasons
         if let upNext, let season = upNext.season, seasons.contains(where: { $0.id == season }) {
             // The list's own episode when it is on the page: it has the
             // description the kept one lacks.
@@ -103,7 +111,15 @@ final class SeriesDetailModel {
                            season: season,
                            resumes: positions[upNext.id]?.offset != nil)
         }
-        guard let first = seasons.first, let episode = fetched[first.id]?.first else { return nil }
+        guard let first = seasons.first, let listed = fetched[first.id] else { return nil }
+        // A programme NPO lists latest first is followed as it is broadcast:
+        // it starts with its latest episode, as in NPO's own app, and offers
+        // that one again whenever a newer one than was watched has come.
+        if detail.listsNewestFirst {
+            guard let latest = listed.last, positions[latest.id]?.isFinished != true else { return nil }
+            return Primary(episode: latest, season: first.id, resumes: positions[latest.id]?.offset != nil)
+        }
+        guard !hasNothingNext, let episode = listed.first else { return nil }
         return Primary(episode: episode, season: first.id, resumes: positions[episode.id]?.offset != nil)
     }
 
@@ -172,7 +188,7 @@ final class SeriesDetailModel {
     func readWatched() async {
         let entry = await watched.history.entry(for: summary.id, in: mode)
         upNext = entry?.next
-        isFullyWatched = entry.map { $0.next == nil } ?? false
+        hasNothingNext = entry.map { $0.next == nil } ?? false
         let listed = fetched.values.flatMap { $0.map(\.id) }
         positions = await watched.progress.progress(of: listed + [upNext?.id].compactMap(\.self), in: mode)
     }

@@ -65,6 +65,10 @@ the next unwatched one — and playing it starts that episode.
 **Acceptance criteria**
 
 - With no episode of the series watched, the tile offers the first episode.
+- A programme NPO lists latest season first — a daily one, with a season for
+  each year — is not watched from its beginning: with nothing to continue
+  with it offers its latest episode, as NPO's own app does, and offers the
+  latest again once a newer one than was watched has been broadcast.
 - With episodes watched up to and including episode *n*, the tile offers
   episode *n+1* (FR-CONTENT-02).
 - With a partly watched episode, the tile offers that episode and resumes it

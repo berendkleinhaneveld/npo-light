@@ -98,8 +98,10 @@ the series.
   about episodes. The two agreed on the two series looked at; a series where
   they differ would be followed in the wrong direction at a season's end.
 - For a series nobody started, the page offers the first episode of the
-  season NPO lists first. For a daily programme that is the first of this
-  year, which is neither the series' first nor its latest: what such a
-  programme should offer is a question for the requirements.
+  season NPO lists first. A programme listed latest season first is offered
+  by its latest episode instead (FR-HOME-04), also after its entry said that
+  nothing was left: a daily programme is not finished by having seen
+  yesterday's. Only the page does this. The home page's tile still says
+  finished until the page was opened and the new episode started.
 - An unavailable episode is not skipped yet (FR-CONTENT-02): nothing in a
   season's list says that it is.

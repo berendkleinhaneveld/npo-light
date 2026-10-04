@@ -179,4 +179,54 @@ struct SeriesWatchedTests {
         #expect(listed.origin == .series(SeriesPlace(series: Self.series, season: Self.second)))
         #expect(named.origin == .series(SeriesPlace(series: Self.series, season: Self.first)))
     }
+
+    // MARK: A programme listed latest season first
+
+    private func newestFirst() async -> SeriesDetailModel {
+        var detail = StubCatalogue.detail
+        detail.listsNewestFirst = true
+        return await loaded(StubCatalogue(detail: { [detail] _ in detail }))
+    }
+
+    @Test("FR-HOME-04: a programme listed latest season first starts with its latest episode")
+    func dailyProgrammeOffersTheLatest() async {
+        let model = await newestFirst()
+
+        // The first season listed is the latest, and its last episode the newest.
+        #expect(model.primary == .init(episode: Self.episode(2, of: Self.first), season: Self.first, resumes: false))
+    }
+
+    @Test("FR-HOME-04: a daily programme still continues with an episode that was started")
+    func dailyProgrammeContinues() async {
+        let episode = Self.episode(1, of: Self.second)
+        await continuing(with: episode, in: Self.second)
+        await stopped(episode, at: 90)
+
+        let model = await newestFirst()
+
+        #expect(model.primary == .init(episode: episode, season: Self.second, resumes: true))
+    }
+
+    @Test("FR-HOME-04: with the latest episode watched, a daily programme has nothing to offer until a newer one comes")
+    func dailyProgrammeWatchedToTheLatest() async {
+        await continuing(with: nil, in: Self.first)
+        await stopped(Self.episode(2, of: Self.first), at: nil, finished: true)
+
+        let model = await newestFirst()
+
+        #expect(model.primary == nil)
+        #expect(model.isFullyWatched)
+    }
+
+    @Test("FR-HOME-04: a newer episode than the last one watched is offered, though nothing was left before")
+    func dailyProgrammeOffersTheNewOne() async {
+        // Finished when episode 1 was the latest; episode 2 came since.
+        await continuing(with: nil, in: Self.first)
+        await stopped(Self.episode(1, of: Self.first), at: nil, finished: true)
+
+        let model = await newestFirst()
+
+        #expect(model.primary?.episode == Self.episode(2, of: Self.first))
+        #expect(!model.isFullyWatched)
+    }
 }
