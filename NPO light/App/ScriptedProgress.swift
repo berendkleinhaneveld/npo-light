@@ -39,6 +39,10 @@ actor ScriptedProgress: ProgressKeeping {
         kept.append(progress)
         positions[mode, default: [:]][progress.id] = progress
     }
+
+    func erase(in mode: Mode) {
+        positions[mode] = nil
+    }
 }
 
 extension PlayerModel {

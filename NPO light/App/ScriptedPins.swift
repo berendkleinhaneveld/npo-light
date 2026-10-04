@@ -32,6 +32,10 @@ actor ScriptedPins: Pins {
     func unpin(_ id: ItemID, in mode: Mode) {
         lists[mode]?.unpin(id)
     }
+
+    func erase(in mode: Mode) {
+        lists[mode] = nil
+    }
 }
 
 extension HomeModel {

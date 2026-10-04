@@ -57,7 +57,7 @@ the device, and no advertising identifier use.
 
 ## NFR-PRIV-04 — Erasing really erases
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 When the user erases local data (FR-SET-04), it is gone.
 

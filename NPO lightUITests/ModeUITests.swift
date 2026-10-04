@@ -10,7 +10,7 @@ final class ModeUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    // Requirement: FR-MODE-02, FR-MODE-03
+    // Requirement: FR-MODE-02, FR-MODE-03, FR-MODE-06, FR-SET-01
     @MainActor
     func testModeIsSwitchedInOneAction() throws {
         let app = XCUIApplication()
@@ -22,6 +22,7 @@ final class ModeUITests: XCTestCase {
         let toKids = app.buttons["mode-to-kids"]
         XCTAssertTrue(toKids.waitForExistence(timeout: 10))
         XCTAssertFalse(badge.exists)
+        XCTAssertTrue(app.buttons["home-settings"].exists)
 
         // The switch is beside search, on the home page itself.
         for direction in [XCUIRemote.Button.up, .up, .right, .right] where !toKids.hasFocus {
@@ -35,6 +36,8 @@ final class ModeUITests: XCTestCase {
         let toNormal = app.buttons["mode-to-normal"]
         XCTAssertTrue(toNormal.exists)
         XCTAssertTrue(app.buttons["home-search"].exists)
+        // Kids mode has no way into settings.
+        XCTAssertFalse(app.buttons["home-settings"].exists)
 
         for direction in [XCUIRemote.Button.up, .up, .right, .right] where !toNormal.hasFocus {
             remote.press(direction)

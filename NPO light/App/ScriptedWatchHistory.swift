@@ -32,6 +32,10 @@ actor ScriptedWatchHistory: WatchHistory {
     func hide(_ id: ItemID, in mode: Mode) {
         lists[mode]?.hide(id)
     }
+
+    func erase(in mode: Mode) {
+        lists[mode] = nil
+    }
 }
 
 extension PlaybackCoordinator {

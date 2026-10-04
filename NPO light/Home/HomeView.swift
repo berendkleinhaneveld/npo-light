@@ -13,6 +13,7 @@ struct HomeView: View {
     @Bindable var model: HomeModel
     let search: SearchModel
     let modes: ModeModel
+    let settings: SettingsModel
     let seriesModel: (SeriesSummary) -> SeriesDetailModel
     let playerModel: (PlayRequest) -> PlayerModel
 
@@ -57,6 +58,8 @@ struct HomeView: View {
             }
             .navigationDestination(for: Destination.self) { destination in
                 switch destination {
+                case .settings:
+                    SettingsView(model: settings)
                 case .search:
                     SearchView(model: search, open: { model.open($0) }, actions: playableActions)
                 case .series(let series):
@@ -98,6 +101,12 @@ struct HomeView: View {
             Button("Zoeken", systemImage: "magnifyingglass") { model.openSearch() }
                 .accessibilityIdentifier("home-search")
             ModeSwitch(modes: modes)
+            // No way in from kids mode (FR-MODE-06).
+            if model.mode == .normal {
+                Button("Instellingen", systemImage: "gearshape") { model.openSettings() }
+                    .labelStyle(.iconOnly)
+                    .accessibilityIdentifier("home-settings")
+            }
         }
         .padding(.horizontal, 80)
         .focusSection()
@@ -149,6 +158,7 @@ private struct PlayerScreen: View {
     HomeView(model: .scripted(pinned: ScriptedCatalogue.results.series),
              search: .scripted(),
              modes: .scripted(),
+             settings: .scripted(),
              seriesModel: { .scripted($0) },
              playerModel: { .scripted($0.playable) })
 }

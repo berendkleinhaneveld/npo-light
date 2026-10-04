@@ -5,7 +5,7 @@ what they were watching last. Prefix `FR-HOME`.
 
 ## FR-HOME-01 — Home is pinned, recently watched, then watch later
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The home page shows three rows, in this order: **pinned**, **recently
 watched**, **watch later**. Search and — in normal mode — settings are

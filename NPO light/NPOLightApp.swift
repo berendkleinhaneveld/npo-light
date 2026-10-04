@@ -22,6 +22,7 @@ struct NPOLightApp: App {
     @State private var appModel: AppModel
     @State private var signInModel: SignInModel
     @State private var modes: ModeModel
+    @State private var settings: SettingsModel
 
     private let backend: Backend
     private let positions: PlaybackCoordinator
@@ -38,6 +39,7 @@ struct NPOLightApp: App {
                                                        clock: SystemClock(),
                                                        onSignedIn: { appModel.admit($0) }))
         _modes = State(initialValue: backend.modes)
+        _settings = State(initialValue: backend.settings { appModel.signOut() })
     }
 
     var body: some Scene {
@@ -45,6 +47,7 @@ struct NPOLightApp: App {
             RootView(appModel: appModel,
                      signInModel: signInModel,
                      modes: modes,
+                     settings: settings,
                      homeModel: { [backend] mode in
                          HomeModel(pins: backend.pins,
                                    watched: backend.watchedState,
@@ -81,16 +84,18 @@ struct NPOLightApp: App {
         #if DEBUG
         // A launch by a test must not reach NPO.
         if let scripted = ScriptedAuthenticator(environment: ProcessInfo.processInfo.environment) {
+            let eraser = ScriptedEraser()
             return Backend(authenticator: scripted,
                            catalogue: ScriptedCatalogue(),
                            playback: ScriptedPlayback(),
                            artwork: NoArtwork(),
-                           searchHistory: ScriptedSearchHistory(),
-                           pins: ScriptedPins(),
-                           progress: ScriptedProgress(),
-                           watched: ScriptedWatchHistory(),
-                           later: ScriptedWatchLater(),
-                           keepsMode: false)
+                           searchHistory: eraser.searches,
+                           pins: eraser.pins,
+                           progress: eraser.progress,
+                           watched: eraser.history,
+                           later: eraser.later,
+                           eraser: eraser,
+                           keepsSettings: false)
         }
         #endif
         let configuration = URLSessionConfiguration.ephemeral
@@ -111,6 +116,7 @@ struct NPOLightApp: App {
                                       licenser: FairPlayLicenser(transport: transport),
                                       clock: clock)
         let playback = simulatorPlayback ?? npoPlayback
+        let progress = ProgressStore.open(in: .cachesDirectory)
         // Every failure behind the boundary is written down on its way out
         // (ADR 0016).
         return Backend(
@@ -121,9 +127,10 @@ struct NPOLightApp: App {
             artwork: ArtworkLoader(transport: URLSessionTransport(session: artworkSession()), log: log),
             searchHistory: SearchHistoryStore(),
             pins: PinStore(),
-            progress: ProgressStore.open(in: .cachesDirectory),
+            progress: progress,
             watched: WatchHistoryStore(),
-            later: WatchLaterStore()
+            later: WatchLaterStore(),
+            eraser: LocalDataEraser(progress: progress)
         )
     }
 
@@ -185,12 +192,26 @@ private struct Backend {
     let watched: any WatchHistory
     let later: any WatchLater
 
-    /// The mode a launch by a test starts in is gone with the process; the
-    /// app's own is kept (FR-MODE-01).
-    var keepsMode = true
+    let eraser: any LocalDataErasing
+
+    /// The mode and the settings of a launch by a test are gone with the
+    /// process; the app's own are kept (FR-MODE-01, FR-SET-02).
+    var keepsSettings = true
+
+    @MainActor
+    func settings(signOut: @escaping () -> Void) -> SettingsModel {
+        guard keepsSettings else {
+            return SettingsModel(timings: Timings(), eraser: eraser, keep: { _, _ in }, signOut: signOut)
+        }
+        let stored = StoredTimings()
+        return SettingsModel(timings: stored.timings,
+                             eraser: eraser,
+                             keep: { stored.keep($0, for: $1) },
+                             signOut: signOut)
+    }
 
     @MainActor var modes: ModeModel {
-        guard keepsMode else {
+        guard keepsSettings else {
             return ModeModel(initial: .normal, catalogue: catalogue, keep: { _ in })
         }
         let stored = StoredMode()

@@ -4,7 +4,7 @@ A short screen, reachable only from normal mode (FR-MODE-06). Prefix `FR-SET`.
 
 ## FR-SET-01 — Settings is a normal-mode screen
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Settings is reachable from the normal-mode home page, and holds only the
 handful of things below.
@@ -37,7 +37,7 @@ Three durations can be changed, with these defaults:
 
 ## FR-SET-03 — Sign out
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Settings offers sign-out (FR-AUTH-04).
 
@@ -48,7 +48,7 @@ Settings offers sign-out (FR-AUTH-04).
 
 ## FR-SET-04 — Erase local data
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Settings can erase locally stored data: pins, recently watched, playback
 positions, search history and the watch later list — for one mode or for both.

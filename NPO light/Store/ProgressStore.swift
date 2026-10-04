@@ -22,6 +22,10 @@ nonisolated protocol ProgressKeeping: Sendable {
     /// the finish: to the store, and to the copy tvOS cannot take
     /// (NFR-REL-04).
     func keep(_ progress: PlaybackProgress, in mode: Mode) async throws
+
+    /// Forgets every position of `mode`, in the store and in the copy
+    /// (FR-SET-04).
+    func erase(in mode: Mode) async
 }
 
 /// The positions the copy in `UserDefaults` holds for one mode, newest first.
@@ -95,6 +99,15 @@ actor ProgressStore: ProgressKeeping, ModelActor {
         fillIfNew()
         try write(progress, in: mode)
         copy(progress, in: mode)
+    }
+
+    func erase(in mode: Mode) {
+        // Nothing is filled from the copy first: what it holds for this mode
+        // is what is being erased.
+        let modeName = mode.rawValue
+        try? modelContext.delete(model: StoredProgress.self, where: #Predicate { $0.mode == modeName })
+        try? modelContext.save()
+        defaults.remove(.positions, in: mode)
     }
 
     // MARK: The store

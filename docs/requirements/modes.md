@@ -104,7 +104,7 @@ a child watches appears on the adult home page, and the other way round.
 
 ## FR-MODE-06 — Settings are a normal-mode screen
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Settings (FR-SET) are reachable only from normal mode. Kids mode offers no
 entry point to them.

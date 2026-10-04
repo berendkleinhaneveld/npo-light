@@ -37,7 +37,7 @@ struct WatchLaterHomeTests {
                  artwork: nil)
     }
 
-    @Test("FR-LATER-05: with nothing saved there is no row, and saving the first item makes it appear")
+    @Test("FR-HOME-01, FR-LATER-05: with nothing saved there is no third row, and the first item makes it appear")
     func rowAppearsWithTheFirstItem() async {
         let model = model()
         await model.refresh()

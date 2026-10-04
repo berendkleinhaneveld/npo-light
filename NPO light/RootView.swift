@@ -11,6 +11,7 @@ struct RootView: View {
     let appModel: AppModel
     let signInModel: SignInModel
     let modes: ModeModel
+    let settings: SettingsModel
 
     /// The screens of a mode are made for that mode, and made again when the
     /// mode changes (FR-MODE-05).
@@ -32,6 +33,7 @@ struct RootView: View {
             SignInView(model: signInModel)
         case .signedIn:
             ModeScreen(modes: modes,
+                       settings: settings,
                        homeModel: homeModel,
                        searchModel: searchModel,
                        seriesModel: seriesModel,
@@ -54,6 +56,7 @@ struct RootView: View {
 /// is in that mode.
 private struct ModeScreen: View {
     let modes: ModeModel
+    let settings: SettingsModel
     let seriesModel: (SeriesSummary, Mode) -> SeriesDetailModel
     let playerModel: (PlayRequest, Mode) -> PlayerModel
 
@@ -61,11 +64,13 @@ private struct ModeScreen: View {
     @State private var search: SearchModel
 
     init(modes: ModeModel,
+         settings: SettingsModel,
          homeModel: (Mode) -> HomeModel,
          searchModel: (Mode) -> SearchModel,
          seriesModel: @escaping (SeriesSummary, Mode) -> SeriesDetailModel,
          playerModel: @escaping (PlayRequest, Mode) -> PlayerModel) {
         self.modes = modes
+        self.settings = settings
         self.seriesModel = seriesModel
         self.playerModel = playerModel
         _home = State(initialValue: homeModel(modes.current))
@@ -76,6 +81,7 @@ private struct ModeScreen: View {
         HomeView(model: home,
                  search: search,
                  modes: modes,
+                 settings: settings,
                  seriesModel: { seriesModel($0, home.mode) },
                  playerModel: { playerModel($0, home.mode) })
     }
@@ -99,6 +105,7 @@ private struct RootPreview: View {
         RootView(appModel: appModel,
                  signInModel: signInModel,
                  modes: .scripted(),
+                 settings: .scripted(),
                  homeModel: { .scripted(mode: $0) },
                  searchModel: { .scripted(mode: $0) },
                  seriesModel: { series, _ in .scripted(series) },

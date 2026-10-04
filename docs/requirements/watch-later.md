@@ -15,7 +15,7 @@ wording that ships is a String Catalog entry (NFR-I18N-01).
 
 ## FR-LATER-01 — Watch later is its own list
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The app keeps a watch later list per mode, separate from pinned items
 (FR-HOME-02) and from recently watched (FR-HOME-06). Saving, unsaving and
@@ -185,7 +185,7 @@ later row itself and from its detail page.
 
 ## FR-LATER-10 — Each mode has its own watch later list
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Watch later is stored per mode, like pins, history and search history
 (FR-MODE-05). What a child saves is not on the adult home page, and the other

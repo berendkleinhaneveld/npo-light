@@ -9,6 +9,7 @@ import Observation
 /// Where the one navigation stack can go (ADR 0011).
 enum Destination: Hashable {
     case search
+    case settings
     case series(SeriesSummary)
 }
 
@@ -143,6 +144,13 @@ final class HomeModel {
 
     func openSearch() {
         path.append(.search)
+    }
+
+    /// Settings are a normal-mode screen: kids mode has no way in
+    /// (FR-MODE-06).
+    func openSettings() {
+        guard mode == .normal else { return }
+        path.append(.settings)
     }
 
     func open(_ series: SeriesSummary) {
