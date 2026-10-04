@@ -60,16 +60,47 @@ struct NPOLightApp: App {
         #endif
         let configuration = URLSessionConfiguration.ephemeral
         configuration.timeoutIntervalForRequest = requestTimeout
-        let transport = URLSessionTransport(session: URLSession(configuration: configuration))
         let clock = SystemClock()
+        let log = SystemLog()
+        let detail = HTTPLogDetail(environment: ProcessInfo.processInfo.environment, allowsFull: allowsFullHTTPLog)
+        let session = URLSession(configuration: configuration)
+        let transport = LoggingTransport(wrapping: URLSessionTransport(session: session),
+                                         detail: detail,
+                                         log: log,
+                                         archive: detail == .full ? httpLogArchive(log: log) : nil,
+                                         clock: clock)
         let authenticator = NPOAuthenticator(transport: transport, tokenStore: KeychainTokenStore(), clock: clock)
         let profiles = NPOProfiles(authenticator: authenticator)
         let streams = NPOStreams(authenticator: authenticator, profiles: profiles, transport: transport)
+        let playback = NPOPlayback(streams: streams, licenser: FairPlayLicenser(transport: transport), clock: clock)
+        // Every failure behind the boundary is written down on its way out
+        // (ADR 0016).
         return Backend(
-            authenticator: authenticator,
-            catalogue: NPOCatalogue(authenticator: authenticator, profiles: profiles),
-            playback: NPOPlayback(streams: streams, licenser: FairPlayLicenser(transport: transport), clock: clock)
+            authenticator: LoggedAuthenticator(wrapping: authenticator, log: log),
+            catalogue: LoggedCatalogue(wrapping: NPOCatalogue(authenticator: authenticator, profiles: profiles),
+                                       log: log),
+            playback: LoggedPlayback(wrapping: playback, log: log)
         )
+    }
+
+    /// Where requests and responses are kept whole, tidied and announced: the
+    /// path is what finds the files on a simulator.
+    private static func httpLogArchive(log: any Logging) -> HTTPLogArchive? {
+        guard let archive = HTTPLogArchive() else { return nil }
+        // Nothing to tidy on a first run, and nothing lost if it fails.
+        try? archive.tidy()
+        log.record("Keeping requests and responses in \(archive.directory.path())", level: .info, category: .http)
+        return archive
+    }
+
+    /// Whether a launch may ask for requests and responses whole, credentials
+    /// and all. Never in the app that ships (NFR-DIAG-03).
+    private static var allowsFullHTTPLog: Bool {
+        #if DEBUG
+        true
+        #else
+        false
+        #endif
     }
 }
 
