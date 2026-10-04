@@ -33,6 +33,10 @@ nonisolated enum BackendError: Error, Equatable {
     /// NPO no longer has the item that was asked for.
     case itemUnavailable
 
+    /// This device cannot play protected streams at all. The simulator is
+    /// the one such device: asking it for a FairPlay session is a crash.
+    case protectionUnsupported
+
     /// NPO answered with something this app cannot read. `status` is `nil` when
     /// the reply was not even HTTP.
     case unexpectedResponse(status: Int?)

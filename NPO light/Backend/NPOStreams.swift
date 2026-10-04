@@ -22,10 +22,12 @@ nonisolated struct StreamProtection: Sendable, Equatable {
     let certificateURL: URL
     let licenceURL: URL
 
-    /// The only credential the licence gateway looks at. Never logged.
-    let credential: String
+    /// The credential the licence gateway looks at, when NPO hands one over
+    /// to be sent as a header. `nil` when the authorisation is already part of
+    /// ``licenceURL``, which is the other shape NPO answers with.
+    let credential: String?
 
-    /// When ``credential`` lapses, if NPO said.
+    /// When the authorisation lapses, if NPO said.
     let expiresAt: Date?
 }
 
@@ -94,8 +96,7 @@ nonisolated struct StreamLinkBody: Decodable {
     var playableStream: PlayableStream? {
         guard let manifest = URL(string: stream.streamURL),
               let certificate = URL(string: stream.drm.certificateUrl),
-              let licence = URL(string: stream.drm.licenseUrl),
-              let credential = stream.drm.httpHeaders?[Self.credentialHeader] else {
+              let licence = URL(string: stream.drm.licenseUrl) else {
             return nil
         }
         return PlayableStream(
@@ -103,7 +104,7 @@ nonisolated struct StreamLinkBody: Decodable {
             protection: StreamProtection(
                 certificateURL: certificate,
                 licenceURL: licence,
-                credential: credential,
+                credential: stream.drm.httpHeaders?[Self.credentialHeader],
                 expiresAt: stream.drm.expirationInSeconds.map(Date.init(timeIntervalSince1970:))
             )
         )

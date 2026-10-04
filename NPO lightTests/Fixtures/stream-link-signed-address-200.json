@@ -1,0 +1,39 @@
+{
+  "stream": {
+    "streamURL": "https://npo-vod.prd.cdn.bcms.kpn.com/sanitised/index.m3u8",
+    "streamProfile": "hls",
+    "drmType": "fairplay",
+    "drmExpirationInSeconds": 1791107859,
+    "drm": {
+      "token": null,
+      "certificateUrl": "https://fairplay.npo.nl/certificate/fairplay.cer",
+      "licenseUrl": "https://drm.npoplayer.nl/proxyEngine.aspx?auth=sanitised.licence.auth&sig=sanitised-signature",
+      "type": "fairplay",
+      "expirationInSeconds": 1791107859,
+      "httpHeaders": null
+    },
+    "avType": "vod",
+    "isLiveStream": false
+  },
+  "assets": {
+    "subtitles": [
+      {
+        "iso": "nl",
+        "name": "Nederlands",
+        "location": "https://cdn.npoplayer.nl/subtitles/nl/POW_00435085.vtt",
+        "aiGenerated": false
+      }
+    ],
+    "scrubbingThumbnail": null,
+    "preroll": null
+  },
+  "metadata": {
+    "prid": "POW_00435085",
+    "hasPreroll": "false",
+    "duration": 628520,
+    "title": "Raad eens hoeveel ik van je hou"
+  },
+  "user": {
+    "type": "plus"
+  }
+}
