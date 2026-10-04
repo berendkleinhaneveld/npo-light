@@ -30,6 +30,7 @@ the old one as superseded instead of rewriting it.
 | [0019](0019-play-a-generated-video-where-fairplay-cannot-run.md) | Play a generated video where FairPlay cannot run | Proposed |
 | [0020](0020-a-series-continues-where-its-page-was-told.md) | A series continues where its page was told | Proposed |
 | [0021](0021-the-system-player-through-its-view-controller.md) | Show the system player through its view controller | Proposed |
+| [0022](0022-a-mode-switch-builds-the-screens-again.md) | A mode switch builds the screens again | Proposed |
 
 ## How to add one
 

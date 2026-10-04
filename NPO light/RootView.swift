@@ -10,10 +10,14 @@ import SwiftUI
 struct RootView: View {
     let appModel: AppModel
     let signInModel: SignInModel
-    let homeModel: HomeModel
-    let searchModel: SearchModel
-    let seriesModel: (SeriesSummary) -> SeriesDetailModel
-    let playerModel: (PlayRequest) -> PlayerModel
+    let modes: ModeModel
+
+    /// The screens of a mode are made for that mode, and made again when the
+    /// mode changes (FR-MODE-05).
+    let homeModel: (Mode) -> HomeModel
+    let searchModel: (Mode) -> SearchModel
+    let seriesModel: (SeriesSummary, Mode) -> SeriesDetailModel
+    let playerModel: (PlayRequest, Mode) -> PlayerModel
 
     var body: some View {
         content
@@ -27,10 +31,15 @@ struct RootView: View {
         case .signedOut:
             SignInView(model: signInModel)
         case .signedIn:
-            HomeView(model: homeModel,
-                     search: searchModel,
-                     seriesModel: seriesModel,
-                     playerModel: playerModel)
+            ModeScreen(modes: modes,
+                       homeModel: homeModel,
+                       searchModel: searchModel,
+                       seriesModel: seriesModel,
+                       playerModel: playerModel)
+                // Another mode is another home page, from the start: nothing
+                // of the mode that was left stays on screen (FR-MODE-02).
+                .id(modes.current)
+                .task { await modes.load() }
         case .plusRequired:
             PlusRequiredView { appModel.acknowledgePlusRequired() }
         case .unreachable:
@@ -38,6 +47,37 @@ struct RootView: View {
                 Task { await appModel.restore() }
             }
         }
+    }
+}
+
+/// The home page of one mode, with models of its own for as long as the app
+/// is in that mode.
+private struct ModeScreen: View {
+    let modes: ModeModel
+    let seriesModel: (SeriesSummary, Mode) -> SeriesDetailModel
+    let playerModel: (PlayRequest, Mode) -> PlayerModel
+
+    @State private var home: HomeModel
+    @State private var search: SearchModel
+
+    init(modes: ModeModel,
+         homeModel: (Mode) -> HomeModel,
+         searchModel: (Mode) -> SearchModel,
+         seriesModel: @escaping (SeriesSummary, Mode) -> SeriesDetailModel,
+         playerModel: @escaping (PlayRequest, Mode) -> PlayerModel) {
+        self.modes = modes
+        self.seriesModel = seriesModel
+        self.playerModel = playerModel
+        _home = State(initialValue: homeModel(modes.current))
+        _search = State(initialValue: searchModel(modes.current))
+    }
+
+    var body: some View {
+        HomeView(model: home,
+                 search: search,
+                 modes: modes,
+                 seriesModel: { seriesModel($0, home.mode) },
+                 playerModel: { playerModel($0, home.mode) })
     }
 }
 
@@ -58,10 +98,11 @@ private struct RootPreview: View {
     var body: some View {
         RootView(appModel: appModel,
                  signInModel: signInModel,
-                 homeModel: .scripted(),
-                 searchModel: SearchModel.scripted(),
-                 seriesModel: { .scripted($0) },
-                 playerModel: { .scripted($0.playable) })
+                 modes: .scripted(),
+                 homeModel: { .scripted(mode: $0) },
+                 searchModel: { .scripted(mode: $0) },
+                 seriesModel: { series, _ in .scripted(series) },
+                 playerModel: { request, _ in .scripted(request.playable) })
     }
 }
 

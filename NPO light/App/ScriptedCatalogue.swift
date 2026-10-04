@@ -39,7 +39,7 @@ nonisolated struct ScriptedCatalogue: Catalogue {
     ]
 
     func availableModes() async throws -> Set<Mode> {
-        [.normal]
+        [.normal, .kids]
     }
 
     func search(for query: String, in mode: Mode) async throws -> SearchResults {

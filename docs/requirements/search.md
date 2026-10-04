@@ -132,7 +132,7 @@ The user can delete a recent search term, and can clear the whole history.
 
 ## FR-SEARCH-08 — Kids mode searches the youth catalogue
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 In kids mode, search returns only youth-catalogue items (FR-MODE-04).
 

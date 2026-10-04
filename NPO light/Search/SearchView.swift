@@ -17,11 +17,16 @@ struct SearchView: View {
     var body: some View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .searchable(text: $model.query, prompt: "Zoek een serie, film of aflevering")
+            .searchable(text: $model.query, prompt: prompt)
             .task { await model.loadRecent() }
             .onDisappear {
                 Task { await model.leave() }
             }
+    }
+
+    /// Kids mode says that it searches its own catalogue (FR-SEARCH-08).
+    private var prompt: LocalizedStringKey {
+        model.mode == .kids ? "Zoek in het aanbod voor kinderen" : "Zoek een serie, film of aflevering"
     }
 
     /// Opens what was picked from the results, and has it remembered.
@@ -40,9 +45,17 @@ struct SearchView: View {
         case .results(let results):
             SearchResultsView(results: results, open: choose, actions: actions)
         case .noResults(let term):
-            Text("Niets gevonden voor “\(term)”.")
-                .font(.headline)
-                .padding(.top, 80)
+            VStack(spacing: 16) {
+                Text("Niets gevonden voor “\(term)”.")
+                    .font(.headline)
+                // Why something an adult would find is not here
+                // (FR-SEARCH-08).
+                if model.mode == .kids {
+                    Text("Je zoekt in het aanbod voor kinderen.")
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.top, 80)
         case .failed:
             failure
         }

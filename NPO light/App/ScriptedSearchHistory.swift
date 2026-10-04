@@ -42,8 +42,9 @@ actor ScriptedSearchHistory: SearchHistory {
 
 extension SearchModel {
     /// A search screen over the scripted catalogue, for previews.
-    static func scripted(history: ScriptedSearchHistory = ScriptedSearchHistory()) -> SearchModel {
-        SearchModel(catalogue: ScriptedCatalogue(), history: history, clock: SystemClock(), mode: .normal)
+    static func scripted(history: ScriptedSearchHistory = ScriptedSearchHistory(),
+                         mode: Mode = .normal) -> SearchModel {
+        SearchModel(catalogue: ScriptedCatalogue(), history: history, clock: SystemClock(), mode: mode)
     }
 }
 #endif

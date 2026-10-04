@@ -21,8 +21,7 @@ struct NPOLightApp: App {
 
     @State private var appModel: AppModel
     @State private var signInModel: SignInModel
-    @State private var homeModel: HomeModel
-    @State private var searchModel: SearchModel
+    @State private var modes: ModeModel
 
     private let backend: Backend
     private let positions: PlaybackCoordinator
@@ -38,35 +37,38 @@ struct NPOLightApp: App {
         _signInModel = State(initialValue: SignInModel(authenticator: backend.authenticator,
                                                        clock: SystemClock(),
                                                        onSignedIn: { appModel.admit($0) }))
-        // Normal mode until the mode switch exists (FR-MODE-02).
-        _homeModel = State(initialValue: HomeModel(pins: backend.pins,
-                                                   watched: backend.watchedState,
-                                                   catalogue: backend.catalogue,
-                                                   clock: SystemClock(),
-                                                   mode: .normal))
-        _searchModel = State(initialValue: SearchModel(catalogue: backend.catalogue,
-                                                       history: backend.searchHistory,
-                                                       clock: SystemClock(),
-                                                       mode: .normal))
+        _modes = State(initialValue: backend.modes)
     }
 
     var body: some Scene {
         WindowGroup {
             RootView(appModel: appModel,
                      signInModel: signInModel,
-                     homeModel: homeModel,
-                     searchModel: searchModel,
-                     seriesModel: { [backend] in
-                         SeriesDetailModel(summary: $0,
+                     modes: modes,
+                     homeModel: { [backend] mode in
+                         HomeModel(pins: backend.pins,
+                                   watched: backend.watchedState,
+                                   catalogue: backend.catalogue,
+                                   clock: SystemClock(),
+                                   mode: mode)
+                     },
+                     searchModel: { [backend] mode in
+                         SearchModel(catalogue: backend.catalogue,
+                                     history: backend.searchHistory,
+                                     clock: SystemClock(),
+                                     mode: mode)
+                     },
+                     seriesModel: { [backend] series, mode in
+                         SeriesDetailModel(summary: series,
                                            catalogue: backend.catalogue,
                                            pins: backend.pins,
                                            watched: backend.watchedState,
-                                           mode: .normal)
+                                           mode: mode)
                      },
-                     playerModel: { [backend, positions] in
-                         PlayerModel(playable: $0.playable,
-                                     origin: $0.origin,
-                                     mode: .normal,
+                     playerModel: { [backend, positions] request, mode in
+                         PlayerModel(playable: request.playable,
+                                     origin: request.origin,
+                                     mode: mode,
                                      starter: backend.playback,
                                      positions: positions,
                                      clock: SystemClock())
@@ -87,7 +89,8 @@ struct NPOLightApp: App {
                            pins: ScriptedPins(),
                            progress: ScriptedProgress(),
                            watched: ScriptedWatchHistory(),
-                           later: ScriptedWatchLater())
+                           later: ScriptedWatchLater(),
+                           keepsMode: false)
         }
         #endif
         let configuration = URLSessionConfiguration.ephemeral
@@ -181,6 +184,18 @@ private struct Backend {
     let progress: any ProgressKeeping
     let watched: any WatchHistory
     let later: any WatchLater
+
+    /// The mode a launch by a test starts in is gone with the process; the
+    /// app's own is kept (FR-MODE-01).
+    var keepsMode = true
+
+    @MainActor var modes: ModeModel {
+        guard keepsMode else {
+            return ModeModel(initial: .normal, catalogue: catalogue, keep: { _ in })
+        }
+        let stored = StoredMode()
+        return ModeModel(initial: stored.mode, catalogue: catalogue, keep: { stored.mode = $0 })
+    }
 
     /// What a page that shows watched state reads.
     var watchedState: WatchedState {

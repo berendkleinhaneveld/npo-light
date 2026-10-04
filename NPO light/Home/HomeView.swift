@@ -12,6 +12,7 @@ import SwiftUI
 struct HomeView: View {
     @Bindable var model: HomeModel
     let search: SearchModel
+    let modes: ModeModel
     let seriesModel: (SeriesSummary) -> SeriesDetailModel
     let playerModel: (PlayRequest) -> PlayerModel
 
@@ -65,6 +66,14 @@ struct HomeView: View {
                 }
             }
         }
+        // On every page of the stack, and not on the player: which mode this
+        // is, in a symbol and in words (FR-MODE-03).
+        .overlay(alignment: .bottomTrailing) {
+            if model.mode == .kids {
+                KidsModeBadge()
+                    .padding(40)
+            }
+        }
         .fullScreenCover(item: $model.playing) { request in
             PlayerScreen(request: request, makeModel: playerModel) {
                 Task { await model.playbackEnded() }
@@ -85,8 +94,10 @@ struct HomeView: View {
             Text(verbatim: "NPO light")
                 .font(.title3)
             Spacer()
+            // Search first: it is what the page opens on (FR-SEARCH-01).
             Button("Zoeken", systemImage: "magnifyingglass") { model.openSearch() }
                 .accessibilityIdentifier("home-search")
+            ModeSwitch(modes: modes)
         }
         .padding(.horizontal, 80)
         .focusSection()
@@ -137,6 +148,7 @@ private struct PlayerScreen: View {
 #Preview("Home") {
     HomeView(model: .scripted(pinned: ScriptedCatalogue.results.series),
              search: .scripted(),
+             modes: .scripted(),
              seriesModel: { .scripted($0) },
              playerModel: { .scripted($0.playable) })
 }
