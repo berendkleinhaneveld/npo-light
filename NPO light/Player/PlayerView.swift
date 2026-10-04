@@ -39,7 +39,12 @@ struct PlayerView: View {
     @ViewBuilder private var content: some View {
         switch model.state {
         case .preparing:
+            // Something has focus from the start. With nothing to focus,
+            // focus stayed on the page underneath, and the Menu button went
+            // there instead of closing the player.
             ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .focusable()
         case .playing(let playback):
             SystemPlayer(player: playback.player, action: stopAction)
                 .ignoresSafeArea()
