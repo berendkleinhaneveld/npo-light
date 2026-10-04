@@ -219,4 +219,46 @@ struct SeriesDetailModelTests {
 
         #expect(await pins.pinned(in: .normal).map(\.title) == [StubCatalogue.detail.title])
     }
+
+    @Test("FR-CONTENT-07: moving focus along the picker shows the season focus is on")
+    func movingAlongThePickerShowsTheSeason() async {
+        let model = model(StubCatalogue())
+        await model.load()
+        await model.pending?.value
+
+        let target = model.pickerFocusMoved(to: Self.second, from: Self.first)
+        await model.pending?.value
+
+        #expect(target == Self.second)
+        #expect(model.shownSeason == Self.second)
+        #expect(model.episodes == .loaded(StubCatalogue.episodes(of: Self.second)))
+    }
+
+    @Test("FR-CONTENT-07: coming into the picker lands on the season being shown, and leaves its episodes in place")
+    func enteringThePickerKeepsTheSeason() async {
+        let catalogue = StubCatalogue()
+        let model = model(catalogue)
+        await model.load()
+        await model.pending?.value
+
+        // The focus engine lands on the nearest season, which is another one.
+        let target = model.pickerFocusMoved(to: Self.second, from: nil)
+
+        #expect(target == Self.first)
+        #expect(model.shownSeason == Self.first)
+        #expect(model.episodes == .loaded(StubCatalogue.episodes(of: Self.first)))
+        #expect(catalogue.seasonRequests == [Self.first])
+    }
+
+    @Test("FR-CONTENT-07: coming into the picker on the season being shown changes nothing")
+    func enteringOnTheShownSeason() async {
+        let catalogue = StubCatalogue()
+        let model = model(catalogue)
+        await model.load()
+        await model.pending?.value
+
+        #expect(model.pickerFocusMoved(to: Self.first, from: nil) == Self.first)
+        #expect(model.episodes == .loaded(StubCatalogue.episodes(of: Self.first)))
+        #expect(catalogue.seasonRequests == [Self.first])
+    }
 }

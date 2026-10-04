@@ -137,6 +137,21 @@ final class SeriesDetailModel {
         }
     }
 
+    /// Focus reached `season` in the picker, from `previous` — `nil` when it
+    /// came from outside the picker. Answers the season that is to have focus.
+    ///
+    /// Moving along the picker shows the season focus is on. Arriving from the
+    /// episodes or the header does not: the focus engine lands on whichever
+    /// season is nearest, and that one would replace the list the user just
+    /// left. Focus goes to the season being shown instead (FR-CONTENT-07).
+    func pickerFocusMoved(to season: SeasonID, from previous: SeasonID?) -> SeasonID {
+        if previous == nil, let shownSeason, shownSeason != season {
+            return shownSeason
+        }
+        show(season)
+        return season
+    }
+
     /// The button on a season that failed to load.
     func retryEpisodes() {
         guard let shownSeason else { return }

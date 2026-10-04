@@ -99,6 +99,64 @@ final class NPOLightUITests: XCTestCase {
         add(attachment)
     }
 
+    // Requirement: FR-CONTENT-07, NFR-A11Y-01
+    @MainActor
+    func testFocusFollowsTheShownSeason() throws {
+        let app = XCUIApplication()
+        let remote = XCUIRemote.shared
+        app.launchEnvironment["NPO_LIGHT_SCENARIO"] = "signed-in"
+        app.launch()
+        XCTAssertTrue(app.buttons["home-search"].waitForExistence(timeout: 10))
+        remote.press(.select)
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 10))
+        field.typeText("fr")
+        XCTAssertTrue(app.buttons["Freeks wilde wereld, serie"].waitForExistence(timeout: 10))
+        remote.press(.down)
+        remote.press(.select)
+        let firstSeason = app.buttons["season-season-1"]
+        XCTAssertTrue(firstSeason.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["episode-season-1-episode-1"].waitForExistence(timeout: 10))
+        remote.press(.right)
+        XCTAssertTrue(app.buttons["episode-season-2-episode-1"].waitForExistence(timeout: 10))
+
+        // Into the second season's list and back out.
+        let secondSeason = app.buttons["season-season-2"]
+        remote.press(.down)
+        remote.press(.down)
+        XCTAssertTrue(app.buttons["episode-season-2-episode-2"].hasFocus)
+        remote.press(.up)
+        remote.press(.up)
+        XCTAssertTrue(secondSeason.hasFocus)
+
+        // Back on a season already seen, its own list takes focus: not the
+        // rows of the list that was there a moment ago.
+        remote.press(.left)
+        XCTAssertTrue(firstSeason.hasFocus)
+        let firstEpisode = app.buttons["episode-season-1-episode-1"]
+        XCTAssertTrue(firstEpisode.waitForExistence(timeout: 10))
+        remote.press(.down)
+        XCTAssertTrue(firstEpisode.hasFocus)
+
+        // Up lands on the season being shown, not on the one that happens to
+        // be above the middle of the list, and the list stays as it is.
+        remote.press(.up)
+        XCTAssertTrue(firstSeason.hasFocus)
+        XCTAssertTrue(firstSeason.isSelected)
+        XCTAssertTrue(firstEpisode.exists)
+
+        // The same from the last season.
+        let thirdSeason = app.buttons["season-season-3"]
+        remote.press(.right)
+        remote.press(.right)
+        XCTAssertTrue(app.buttons["episode-season-3-episode-1"].waitForExistence(timeout: 10))
+        remote.press(.down)
+        XCTAssertTrue(app.buttons["episode-season-3-episode-1"].hasFocus)
+        remote.press(.up)
+        XCTAssertTrue(thirdSeason.hasFocus)
+        XCTAssertTrue(thirdSeason.isSelected)
+    }
+
     // Requirement: FR-SEARCH-04, FR-SEARCH-05, FR-SEARCH-07
     @MainActor
     func testRecentSearchesAreKeptAndCleared() throws {

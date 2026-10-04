@@ -54,10 +54,11 @@ nonisolated struct ScriptedCatalogue: Catalogue {
                      seasons: Self.seasons)
     }
 
-    /// Three episodes that carry their season in their name, so that a test
-    /// can tell which season is on screen.
+    /// Episodes that carry their season in their name, so that a test can
+    /// tell which season is on screen — and more of them than fit on it, as a
+    /// real season has: a list that scrolls is where focus went astray.
     func episodes(of season: SeasonID, in mode: Mode) async throws -> [Playable] {
-        (1...3).map { number in
+        (1...12).map { number in
             Playable(id: EpisodeID(rawValue: "\(season.rawValue)-episode-\(number)"),
                      title: "\(season.rawValue) aflevering \(number)",
                      caption: "Afl. \(number) • 10m",

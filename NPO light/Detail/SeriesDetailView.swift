@@ -45,8 +45,15 @@ struct SeriesDetailView: View {
             ProgressView()
                 .frame(maxWidth: .infinity)
         case .loaded:
-            SeasonPicker(seasons: model.pickerSeasons, shown: model.shownSeason) { model.show($0) }
+            SeasonPicker(seasons: model.pickerSeasons, shown: model.shownSeason) {
+                model.pickerFocusMoved(to: $0, from: $1)
+            }
             SeasonEpisodesView(model: model, play: play)
+                // A list of its own for each season. When a season already
+                // fetched replaced another in the same list, focus went to
+                // rows that were no longer drawn: nothing was highlighted
+                // until it was moved back out.
+                .id(model.shownSeason)
         case .unavailable:
             Text("Deze serie is niet meer beschikbaar.")
                 .font(.headline)
@@ -57,6 +64,10 @@ struct SeriesDetailView: View {
                     Task { await model.load() }
                 }
             }
+            // The whole width takes focus: the button is not underneath the
+            // pin button, and has to be reachable from it (NFR-A11Y-01).
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .focusSection()
         }
     }
 }
@@ -103,11 +114,14 @@ struct SeriesHeaderView: View {
 }
 
 /// One entry per season, in NPO's order. Moving focus along it changes the
-/// season shown, and coming back up lands on the season being shown.
+/// season shown, and coming into it lands on the season being shown.
 struct SeasonPicker: View {
     let seasons: [Season]
     let shown: SeasonID?
-    let show: (SeasonID) -> Void
+
+    /// Focus reached a season, from another or from outside the picker.
+    /// Answers the season that is to have it.
+    let focusMoved: (_ season: SeasonID, _ previous: SeasonID?) -> SeasonID
 
     @FocusState private var focused: SeasonID?
 
@@ -116,7 +130,7 @@ struct SeasonPicker: View {
             ScrollView(.horizontal) {
                 HStack(spacing: 24) {
                     ForEach(seasons) { season in
-                        Button { show(season.id) } label: {
+                        Button { focused = focusMoved(season.id, season.id) } label: {
                             // The mark, not only a colour, says which season
                             // is shown (NFR-A11Y-04).
                             Label {
@@ -136,8 +150,12 @@ struct SeasonPicker: View {
             .scrollClipDisabled()
             .focusSection()
             .defaultFocus($focused, shown)
-            .onChange(of: focused) { _, season in
-                if let season { show(season) }
+            .onChange(of: focused) { previous, season in
+                guard let season else { return }
+                let target = focusMoved(season, previous)
+                // `defaultFocus` is not asked when focus comes in from a
+                // neighbour, so the move to the shown season is made here.
+                if target != season { focused = target }
             }
         }
     }
@@ -160,6 +178,8 @@ struct SeasonEpisodesView: View {
                 Text("De afleveringen konden niet worden opgehaald.")
                 Button("Opnieuw proberen") { model.retryEpisodes() }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .focusSection()
         case .loaded(let episodes):
             HStack(alignment: .top, spacing: 60) {
                 list(episodes)
@@ -240,7 +260,7 @@ struct EpisodePreview: View {
 }
 
 #Preview("Picker") {
-    SeasonPicker(seasons: ScriptedCatalogue.seasons, shown: ScriptedCatalogue.seasons[1].id, show: { _ in })
+    SeasonPicker(seasons: ScriptedCatalogue.seasons, shown: ScriptedCatalogue.seasons[1].id) { season, _ in season }
 }
 
 #Preview("Preview") {
