@@ -27,6 +27,10 @@ final class PlayerModel {
     enum State {
         case preparing
         case playing(Playback)
+
+        /// Kids mode waits before the next episode, and counts the seconds
+        /// down (FR-PLAY-06).
+        case pausing(before: Playable, remaining: Int)
         case failed(Problem)
     }
 
@@ -55,6 +59,7 @@ final class PlayerModel {
     private let starter: any PlaybackStarting
     private let positions: PlaybackCoordinator
     private let clock: any Clocking
+    private let timings: () -> Timings
     /// The wait after which the announcement goes away, while it runs.
     private(set) var announcing: Task<Void, Never>?
     private var isClosed = false
@@ -71,13 +76,15 @@ final class PlayerModel {
          mode: Mode,
          starter: any PlaybackStarting,
          positions: PlaybackCoordinator,
-         clock: any Clocking) {
+         clock: any Clocking,
+         timings: @escaping () -> Timings = { Timings() }) {
         self.playable = playable
         self.origin = origin
         self.mode = mode
         self.starter = starter
         self.positions = positions
         self.clock = clock
+        self.timings = timings
     }
 
     /// The problem on screen, if there is one.
@@ -212,29 +219,47 @@ final class PlayerModel {
         }
     }
 
-    /// What is playing reached its end. In normal mode the next episode of
-    /// its series starts straight away, and the player says so for a while;
-    /// with nothing to go on to, the sitting is over (FR-PLAY-05,
-    /// FR-PLAY-07).
+    /// What is playing reached its end. The next episode of its series
+    /// starts, and the player says so for a while; with nothing to go on to,
+    /// the sitting is over (FR-PLAY-05, FR-PLAY-07).
     ///
-    /// Kids mode is to pause first (FR-PLAY-06). Until it does, it does not
-    /// go on by itself at all.
+    /// Kids mode pauses first, for as long as the settings say now, and
+    /// counts it down: a moment to stop before the next episode carries a
+    /// child along. A pause of nothing is normal mode's way (FR-PLAY-06).
     func ended() async {
         let next = await positions.playedToEnd(playable.id, from: origin, in: mode)
         guard !isClosed else { return }
-        guard mode == .normal, let next else {
+        guard let next else {
             isOver = true
             return
+        }
+        let pause = mode == .kids ? timings()[.kidsPause] : 0
+        if pause > 0 {
+            await countDown(pause, to: next.playable)
+            guard !isClosed, !isOver else { return }
         }
         playable = next.playable
         origin = next.origin
         await start()
-        guard case .playing = state, !isClosed else { return }
+        // After a countdown that named it, it is not named again.
+        guard pause == 0, case .playing = state, !isClosed else { return }
         announce(next.playable)
     }
 
-    /// Somebody chose not to go on with the episode that started by itself:
-    /// back to where playback was started from (FR-PLAY-05).
+    /// Shows the seconds left, one at a time. Stopping, or closing the
+    /// player, ends it early.
+    private func countDown(_ seconds: Int, to next: Playable) async {
+        stopWatching()
+        for remaining in stride(from: seconds, to: 0, by: -1) {
+            state = .pausing(before: next, remaining: remaining)
+            let waited = (try? await clock.wait(for: .seconds(1))) != nil
+            guard waited, !isClosed, !isOver else { return }
+        }
+    }
+
+    /// Somebody chose not to go on — with the episode that started by itself,
+    /// or during the countdown before it: back to where playback was started
+    /// from (FR-PLAY-05, FR-PLAY-06).
     func stopGoingOn() {
         isOver = true
     }

@@ -24,15 +24,18 @@ struct PlayerAutoplayTests {
     private func model(playing playable: Playable,
                        from origin: PlayOrigin,
                        in mode: Mode = .normal,
-                       starter: StubPlayback? = nil) -> PlayerModel {
+                       starter: StubPlayback? = nil,
+                       clock: (any Clocking)? = nil,
+                       timings: @escaping () -> Timings = { Timings() }) -> PlayerModel {
         PlayerModel(playable: playable,
                     origin: origin,
                     mode: mode,
                     starter: starter ?? playback,
                     positions: PlaybackCoordinator(watched: .scripted(),
                                                    order: EpisodeOrder(catalogue: StubCatalogue()),
-                                                   clock: clock),
-                    clock: clock)
+                                                   clock: self.clock),
+                    clock: clock ?? self.clock,
+                    timings: timings)
     }
 
     private static func place(in season: SeasonID) -> PlayOrigin {
@@ -114,15 +117,97 @@ struct PlayerAutoplayTests {
         #expect(playback.requests.count == 1)
     }
 
-    @Test("FR-PLAY-06: kids mode does not go on by itself until it can pause first")
-    func kidsModeDoesNotGoOn() async {
+    // MARK: Kids mode
+
+    private static func pause(_ seconds: Int) -> Timings {
+        var timings = Timings()
+        timings[.kidsPause] = seconds
+        return timings
+    }
+
+    @Test("FR-PLAY-06: kids mode counts the pause down, a second at a time, before the next episode starts")
+    func kidsModePausesFirst() async {
         let model = model(playing: Self.episode(1, of: Self.first), from: Self.place(in: Self.first), in: .kids)
         await model.start()
 
         await model.ended()
 
+        // The default: five seconds.
+        #expect(clock.waits == Array(repeating: .seconds(1), count: 5))
+        #expect(model.playable.id == Self.episode(2, of: Self.first).id)
+        #expect(playback.requests.count == 2)
+        // The countdown named it; it is not announced again.
+        #expect(model.announced == nil)
+    }
+
+    @Test("FR-PLAY-06, FR-SET-02: the pause is as long as the settings say when the episode ends")
+    func pauseComesFromSettings() async {
+        var timings = Self.pause(10)
+        let model = model(playing: Self.episode(1, of: Self.first), from: Self.place(in: Self.first), in: .kids,
+                          timings: { timings })
+        await model.start()
+        // Changed while the episode played.
+        timings = Self.pause(15)
+
+        await model.ended()
+
+        #expect(clock.waits.count == 15)
+    }
+
+    @Test("FR-PLAY-06: a pause of nothing goes on as normal mode does")
+    func noPauseIsNormalMode() async {
+        let model = model(playing: Self.episode(1, of: Self.first), from: Self.place(in: Self.first), in: .kids,
+                          timings: { Self.pause(0) })
+        await model.start()
+
+        await model.ended()
+
+        #expect(model.announced?.id == Self.episode(2, of: Self.first).id)
+        #expect(playback.requests.count == 2)
+    }
+
+    @Test("FR-PLAY-06: stopping during the countdown ends the sitting, and the next episode does not start")
+    func stoppingDuringTheCountdown() async {
+        let hooked = HookClock()
+        let model = model(playing: Self.episode(1, of: Self.first), from: Self.place(in: Self.first), in: .kids,
+                          clock: hooked)
+        await model.start()
+        var shown: [Int] = []
+        hooked.onWait { [model] in
+            if case .pausing(_, let remaining) = model.state { shown.append(remaining) }
+            // Pressed when three seconds are left.
+            if shown.last == 3 { model.stopGoingOn() }
+        }
+
+        await model.ended()
+
+        #expect(shown == [5, 4, 3])
         #expect(model.isOver)
         #expect(playback.requests.count == 1)
+    }
+
+    @Test("FR-PLAY-06, FR-PLAY-07: the last episode ends the sitting in kids mode too, with no countdown")
+    func kidsModeEndsAtTheLastEpisode() async {
+        let model = model(playing: Self.episode(2, of: Self.second), from: Self.place(in: Self.second), in: .kids)
+        await model.start()
+
+        await model.ended()
+
+        #expect(model.isOver)
+        #expect(clock.waits.isEmpty)
+    }
+
+    @Test("FR-PLAY-05: normal mode does not pause, whatever the kids setting says")
+    func normalModeDoesNotPause() async {
+        let model = model(playing: Self.episode(1, of: Self.first), from: Self.place(in: Self.first),
+                          timings: { Self.pause(30) })
+        await model.start()
+
+        await model.ended()
+        #expect(model.announced != nil)
+        await model.announcing?.value
+
+        #expect(clock.waits == [PlayerModel.announcementTime])
     }
 
     @Test("FR-PLAY-10: a next episode that will not start is a problem with a retry, and is not announced")

@@ -100,7 +100,7 @@ away.
 
 ## FR-PLAY-06 — Autoplay in kids mode pauses first
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 In kids mode, the next episode is preceded by a deliberate pause — five seconds
 by default, configurable (FR-SET-02).

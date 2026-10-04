@@ -18,6 +18,10 @@ struct PlayerView: View {
 
     var body: some View {
         content
+            // The player covers the page it was started from in every state,
+            // not only while a picture is on it.
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.black.ignoresSafeArea())
             .task { await model.start() }
             .onDisappear {
                 Task {
@@ -56,6 +60,8 @@ struct PlayerView: View {
                     }
                 }
                 .animation(.default, value: model.announced)
+        case let .pausing(next, remaining):
+            NextEpisodeCountdown(episode: next, remaining: remaining) { model.stopGoingOn() }
         case .failed(let problem):
             PlayerProblemView(title: model.playable.title, problem: problem) {
                 Task { await model.start() }

@@ -57,7 +57,7 @@ and the word, laid over the stack rather than drawn by each page
   root, which is one place to read.
 - The player is not part of the stack and does not show the badge; the switch
   is not offered while it plays.
-- Kids mode does not go on to the next episode by itself yet (FR-PLAY-06),
-  and there are no settings to keep out of it (FR-MODE-06).
+- Settings have no way in from kids mode (FR-MODE-06): the home page of
+  kids mode does not draw it, and its model does not open it.
 - A launch by a test keeps its mode in memory, so that a test cannot leave
   the simulator in kids mode.

@@ -53,7 +53,9 @@ or says that the sitting is over, on which the player goes away.
   the episode. The ten seconds are counted from the start.
 - Between two episodes the player is taken down and put up again, with the
   progress indicator in between, while the next stream's details are fetched.
-- Kids mode does not go on by itself until it can pause first (FR-PLAY-06).
+- Kids mode pauses first (FR-PLAY-06). Its countdown is a screen of the
+  app's own in place of the player, between two episodes, where nothing
+  plays and an ordinary button takes focus.
 - An unavailable next episode is not skipped yet, so FR-PLAY-07 stays
   `Accepted`.
 - The transition cannot be watched against NPO's streams on the simulator. It

@@ -58,7 +58,42 @@ struct NextEpisodeNotice: View {
     }
 }
 
+/// The pause before the next episode in kids mode: which episode is coming,
+/// the seconds left as a number a child can read, and a way to stop
+/// (FR-PLAY-06).
+struct NextEpisodeCountdown: View {
+    let episode: Playable
+    let remaining: Int
+    let stop: () -> Void
+
+    var body: some View {
+        VStack(spacing: 32) {
+            Text("Zo meteen:")
+                .font(.headline)
+                .foregroundStyle(.secondary)
+            Text(verbatim: episode.title)
+                .font(.title2.bold())
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+            Text(verbatim: "\(remaining)")
+                .font(.system(size: 220, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .contentTransition(.numericText(countsDown: true))
+                .animation(.default, value: remaining)
+                .accessibilityIdentifier("next-episode-countdown")
+            Button("Stoppen", systemImage: "stop.fill", action: stop)
+                .accessibilityIdentifier("next-episode-stop")
+        }
+        .frame(maxWidth: 1200)
+        .padding(80)
+    }
+}
+
 #if DEBUG
+#Preview("Countdown") {
+    NextEpisodeCountdown(episode: ScriptedCatalogue.results.episodes[0], remaining: 5, stop: {})
+}
+
 #Preview("Next episode") {
     NextEpisodeNotice(episode: ScriptedCatalogue.results.episodes[0])
 }

@@ -68,13 +68,14 @@ struct NPOLightApp: App {
                                            watched: backend.watchedState,
                                            mode: mode)
                      },
-                     playerModel: { [backend, positions] request, mode in
+                     playerModel: { [backend, positions, settings] request, mode in
                          PlayerModel(playable: request.playable,
                                      origin: request.origin,
                                      mode: mode,
                                      starter: backend.playback,
                                      positions: positions,
-                                     clock: SystemClock())
+                                     clock: SystemClock(),
+                                     timings: { settings.timings })
                      })
                      .environment(\.artwork, backend.artwork)
         }
