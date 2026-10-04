@@ -276,8 +276,9 @@ final class NPOLightUITests: XCTestCase {
         add(attachment)
 
         // Its tile opens the series, where it can be unpinned again.
-        for _ in 0..<3 where !tile.hasFocus {
-            remote.press(.down)
+        // Focus is on the header above the row, or on the row below it.
+        for direction in [XCUIRemote.Button.down, .up, .up] where !tile.hasFocus {
+            remote.press(direction)
         }
         XCTAssertTrue(tile.hasFocus)
         remote.press(.select)

@@ -37,7 +37,10 @@ actor ScriptedPins: Pins {
 extension HomeModel {
     /// A home page with these series pinned, for previews.
     static func scripted(pinned: [SeriesSummary] = []) -> HomeModel {
-        HomeModel(pins: ScriptedPins(pinned), mode: .normal)
+        HomeModel(pins: ScriptedPins(pinned),
+                  watched: WatchedState(progress: ScriptedProgress(), history: ScriptedWatchHistory()),
+                  clock: SystemClock(),
+                  mode: .normal)
     }
 }
 

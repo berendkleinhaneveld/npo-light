@@ -23,9 +23,12 @@ nonisolated struct EpisodeOrder: Sendable {
         if index + 1 < episodes.count {
             return Upcoming(episodes[index + 1], in: place.season)
         }
-        guard let current = place.seasons.firstIndex(of: place.season) else { return nil }
+        // The seasons are asked for at a season's end, and not carried along:
+        // a new one may have been added since the episode was started.
+        let seasons = try await catalogue.series(place.series.id, in: mode).broadcastOrder
+        guard let current = seasons.firstIndex(of: place.season) else { return nil }
         // A season with nothing in it is passed over.
-        for season in place.seasons.dropFirst(current + 1) {
+        for season in seasons.dropFirst(current + 1) {
             if let first = try await catalogue.episodes(of: season, in: mode).first {
                 return Upcoming(first, in: season)
             }

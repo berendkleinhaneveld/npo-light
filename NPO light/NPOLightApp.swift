@@ -40,7 +40,10 @@ struct NPOLightApp: App {
                                                        clock: SystemClock(),
                                                        onSignedIn: { appModel.admit($0) }))
         // Normal mode until the mode switch exists (FR-MODE-02).
-        _homeModel = State(initialValue: HomeModel(pins: backend.pins, mode: .normal))
+        _homeModel = State(initialValue: HomeModel(pins: backend.pins,
+                                                   watched: backend.watchedState,
+                                                   clock: SystemClock(),
+                                                   mode: .normal))
         _searchModel = State(initialValue: SearchModel(catalogue: backend.catalogue,
                                                        history: backend.searchHistory,
                                                        clock: SystemClock(),
@@ -62,7 +65,7 @@ struct NPOLightApp: App {
                      },
                      playerModel: { [backend, positions] in
                          PlayerModel(playable: $0.playable,
-                                     place: $0.place,
+                                     origin: $0.origin,
                                      mode: .normal,
                                      starter: backend.playback,
                                      positions: positions)

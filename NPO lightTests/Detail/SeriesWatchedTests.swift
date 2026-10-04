@@ -176,23 +176,7 @@ struct SeriesWatchedTests {
         let named = model.request(for: Self.episode(1, of: Self.first), in: Self.first)
 
         #expect(listed.playable == episode)
-        #expect(listed.place?.series == Self.series)
-        #expect(listed.place?.seasons == [Self.first, Self.second])
-        #expect(listed.place?.season == Self.second)
-        #expect(named.place?.season == Self.first)
-    }
-
-    @Test("FR-CONTENT-02: a series listed latest season first hands over its seasons from the first to the latest")
-    func placeIsInBroadcastOrder() async {
-        var detail = StubCatalogue.detail
-        detail.listsNewestFirst = true
-        let model = await loaded(StubCatalogue(detail: { [detail] _ in detail }))
-
-        let request = model.request(for: Self.episode(1, of: Self.first))
-
-        // Listed first, and so shown first; broadcast last.
-        #expect(model.shownSeason == Self.first)
-        #expect(request.place?.seasons == [Self.second, Self.first])
-        #expect(request.place?.season == Self.first)
+        #expect(listed.origin == .series(SeriesPlace(series: Self.series, season: Self.second)))
+        #expect(named.origin == .series(SeriesPlace(series: Self.series, season: Self.first)))
     }
 }

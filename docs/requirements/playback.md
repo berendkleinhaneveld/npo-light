@@ -153,7 +153,7 @@ there: one hour in kids mode, three hours in normal mode, both configurable
 
 ## FR-PLAY-09 — Watching updates the home page
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Playing something is what fills the recently watched row (FR-HOME-06).
 
@@ -162,6 +162,7 @@ Playing something is what fills the recently watched row (FR-HOME-06).
 - Starting playback records the item as most recently watched, per mode.
 - A series records once, updated per episode, rather than one entry per
   episode.
+- A single programme records as an item of its own.
 - Finishing an episode leaves the item pointing at the next one (FR-HOME-07).
 - An episode started from a list that does not name its series — a search
   result

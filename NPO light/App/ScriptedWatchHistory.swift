@@ -28,6 +28,10 @@ actor ScriptedWatchHistory: WatchHistory {
     func record(_ entry: WatchedEntry, in mode: Mode) {
         lists[mode, default: WatchedList()].record(entry)
     }
+
+    func hide(_ id: ItemID, in mode: Mode) {
+        lists[mode]?.hide(id)
+    }
 }
 
 extension PlaybackCoordinator {

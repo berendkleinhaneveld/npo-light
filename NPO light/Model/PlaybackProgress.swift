@@ -22,7 +22,17 @@ nonisolated struct PlaybackProgress: Sendable, Equatable, Codable {
     /// When this was last written, which is what orders positions by age.
     var updatedAt: Date
 
+    /// How long the item is, when the player knew: what turns the offset
+    /// into how far in it is (FR-HOME-06).
+    var duration: TimeInterval?
+
     var isFinished: Bool { finishedAt != nil }
+
+    /// How far in the resume point is, from 0 to 1, when both are known.
+    var fraction: Double? {
+        guard let offset, let duration, duration > 0 else { return nil }
+        return min(1, max(0, offset / duration))
+    }
 }
 
 /// The one definition of "finished" (FR-PLAY-04): playback passed the later

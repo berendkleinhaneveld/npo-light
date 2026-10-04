@@ -31,8 +31,8 @@ final class PlayerModel {
 
     let playable: Playable
 
-    /// Where in its series it is, when whoever started it knew.
-    let place: SeriesPlace?
+    /// What whoever started it knew about it.
+    let origin: PlayOrigin
     let mode: Mode
 
     private(set) var state = State.preparing
@@ -48,12 +48,12 @@ final class PlayerModel {
     private(set) var writing: Task<Void, Never>?
 
     init(playable: Playable,
-         place: SeriesPlace? = nil,
+         origin: PlayOrigin = .unknown,
          mode: Mode,
          starter: any PlaybackStarting,
          positions: PlaybackCoordinator) {
         self.playable = playable
-        self.place = place
+        self.origin = origin
         self.mode = mode
         self.starter = starter
         self.positions = positions
@@ -74,7 +74,7 @@ final class PlayerModel {
         do {
             let playback = try await starter.playback(of: playable, in: mode)
             await resume(playback.player)
-            await positions.started(playable, at: place, in: mode)
+            await positions.started(playable, from: origin, in: mode)
             watch(playback.player)
             state = .playing(playback)
             playback.player.play()
@@ -127,8 +127,8 @@ final class PlayerModel {
         guard case .playing(let playback) = state, let item = playback.player.currentItem else { return }
         let position = playback.player.currentTime().seconds
         let duration = item.duration.seconds
-        writing = Task { [positions, id = playable.id, place, mode] in
-            await positions.played(id, at: place, to: position, of: duration, in: mode, resting: resting)
+        writing = Task { [positions, id = playable.id, origin, mode] in
+            await positions.played(id, from: origin, to: position, of: duration, in: mode, resting: resting)
         }
     }
 
@@ -181,8 +181,8 @@ final class PlayerModel {
     }
 
     private func playedToEnd() {
-        writing = Task { [positions, id = playable.id, place, mode] in
-            await positions.playedToEnd(id, at: place, in: mode)
+        writing = Task { [positions, id = playable.id, origin, mode] in
+            await positions.playedToEnd(id, from: origin, in: mode)
         }
     }
 

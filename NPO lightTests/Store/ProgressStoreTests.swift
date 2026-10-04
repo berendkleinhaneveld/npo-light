@@ -61,6 +61,19 @@ struct ProgressStoreTests {
         }
     }
 
+    @Test("FR-HOME-06: the length of what was played is kept with its position")
+    func durationIsStored() async throws {
+        try await withStorage { directory, suite in
+            var progress = Self.progress("one", at: 150)
+            progress.duration = 600
+            try await ProgressStore.open(in: directory, suite: suite).keep(progress, in: .normal)
+
+            let read = await ProgressStore.open(in: directory, suite: suite).progress(of: progress.id, in: .normal)
+
+            #expect(read?.fraction == 0.25)
+        }
+    }
+
     @Test("ADR 0012: a finish and a position are kept as two facts in one record")
     func finishAndOffsetAreIndependent() async throws {
         try await withStorage { directory, suite in

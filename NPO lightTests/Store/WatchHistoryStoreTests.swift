@@ -38,7 +38,7 @@ struct WatchHistoryStoreTests {
             try await store.record(Self.entry("first"), in: .normal)
             try await store.record(Self.entry("second"), in: .normal)
 
-            #expect(await store.entries(in: .normal).map(\.series.title) == ["second", "first"])
+            #expect(await store.entries(in: .normal).map(\.title) == ["second", "first"])
         }
     }
 
@@ -52,7 +52,7 @@ struct WatchHistoryStoreTests {
             try await store.record(Self.entry("series", episode: "two", played: 10), in: .normal)
 
             let entries = await store.entries(in: .normal)
-            #expect(entries.map(\.series.title) == ["series", "other"])
+            #expect(entries.map(\.title) == ["series", "other"])
             #expect(entries.first?.next?.title == "two")
             #expect(await store.entry(for: ItemID(rawValue: "series"), in: .normal) == entries.first)
         }
@@ -98,6 +98,38 @@ struct WatchHistoryStoreTests {
             }
 
             #expect(await store.entries(in: .normal).isEmpty)
+        }
+    }
+
+    @Test("FR-HOME-08: an item taken off the row stays off across a relaunch, with what it continues with")
+    func hidingIsKept() async throws {
+        try await withSuite { suite in
+            let entry = Self.entry("series")
+            let store = WatchHistoryStore(suite: suite)
+            try await store.record(entry, in: .normal)
+            try await store.record(Self.entry("other"), in: .normal)
+
+            try await store.hide(entry.id, in: .normal)
+
+            let read = await WatchHistoryStore(suite: suite).entry(for: entry.id, in: .normal)
+            #expect(read?.isHidden == true)
+            #expect(read?.next == entry.next)
+            #expect(await store.entries(in: .normal).map(\.title) == ["other", "series"])
+        }
+    }
+
+    @Test("FR-PLAY-09: a single programme is kept as an item of its own")
+    func singleProgrammeIsKept() async throws {
+        try await withSuite { suite in
+            let film = Playable(id: EpisodeID(rawValue: "film"), title: "Film", caption: "1u 25m", synopsis: nil,
+                                duration: nil, artwork: nil)
+            let entry = WatchedEntry(single: film, playedAt: Date(timeIntervalSince1970: 0))
+
+            try await WatchHistoryStore(suite: suite).record(entry, in: .normal)
+
+            let read = await WatchHistoryStore(suite: suite).entry(for: ItemID(rawValue: "film"), in: .normal)
+            #expect(read == entry)
+            #expect(read?.origin == .single)
         }
     }
 }

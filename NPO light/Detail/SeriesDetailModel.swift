@@ -95,12 +95,12 @@ final class SeriesDetailModel {
     /// was watched to its end: an episode is played again from the list.
     var primary: Primary? {
         guard !isFullyWatched, let seasons = loadedSeasons else { return nil }
-        if let upNext, seasons.contains(where: { $0.id == upNext.season }) {
+        if let upNext, let season = upNext.season, seasons.contains(where: { $0.id == season }) {
             // The list's own episode when it is on the page: it has the
             // description the kept one lacks.
-            let listed = fetched[upNext.season]?.first { $0.id == upNext.id }
+            let listed = fetched[season]?.first { $0.id == upNext.id }
             return Primary(episode: listed ?? upNext.playable,
-                           season: upNext.season,
+                           season: season,
                            resumes: positions[upNext.id]?.offset != nil)
         }
         guard let first = seasons.first, let episode = fetched[first.id]?.first else { return nil }
@@ -118,11 +118,10 @@ final class SeriesDetailModel {
     /// is, so that the series can move on when it is finished (FR-PLAY-09).
     /// `season` is the one being shown unless another is named.
     func request(for episode: Playable, in season: SeasonID? = nil) -> PlayRequest {
-        guard case .loaded(let detail) = page, let season = season ?? shownSeason else {
+        guard loadedSeasons != nil, let season = season ?? shownSeason else {
             return PlayRequest(playable: episode)
         }
-        return PlayRequest(playable: episode,
-                           place: SeriesPlace(series: current, seasons: detail.broadcastOrder, season: season))
+        return PlayRequest(playable: episode, origin: .series(SeriesPlace(series: current, season: season)))
     }
 
     private var loadedSeasons: [Season]? {

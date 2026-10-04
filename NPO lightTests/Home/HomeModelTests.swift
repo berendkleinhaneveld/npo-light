@@ -19,7 +19,7 @@ struct HomeModelTests {
 
         await model.refresh()
 
-        #expect(model.pinned == [Self.klokhuis, Self.freek])
+        #expect(model.pinned.map(\.id) == [Self.klokhuis.id, Self.freek.id])
     }
 
     @Test("FR-HOME-09: with nothing pinned the row is empty, for the page to explain")
@@ -43,7 +43,7 @@ struct HomeModelTests {
         model.path.removeAll()
         await model.refresh()
 
-        #expect(model.pinned == [Self.freek])
+        #expect(model.pinned.map(\.id) == [Self.freek.id])
     }
 
     @Test("FR-HOME-05: unpinning from home removes the tile at once, without leaving the page")
@@ -52,9 +52,9 @@ struct HomeModelTests {
         let model = HomeModel(pins: pins, mode: .normal)
         await model.refresh()
 
-        await model.unpin(Self.klokhuis)
+        await model.unpin(Self.klokhuis.id)
 
-        #expect(model.pinned == [Self.freek])
+        #expect(model.pinned.map(\.id) == [Self.freek.id])
         #expect(model.path.isEmpty)
         #expect(await pins.pinned(in: .normal) == [Self.freek])
     }
@@ -69,7 +69,7 @@ struct HomeModelTests {
         await kids.refresh()
 
         #expect(normal.pinned.isEmpty)
-        #expect(kids.pinned == [Self.freek])
+        #expect(kids.pinned.map(\.id) == [Self.freek.id])
     }
 
     @Test("FR-SEARCH-01: search is one action from home, and a picked series opens its page")

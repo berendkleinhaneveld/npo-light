@@ -16,3 +16,14 @@ extension PlayerModel {
                   positions: .scripted())
     }
 }
+
+extension HomeModel {
+    /// A home page where nothing was watched, for the tests that are about
+    /// something else.
+    convenience init(pins: any Pins, mode: Mode) {
+        self.init(pins: pins,
+                  watched: WatchedState(progress: ScriptedProgress(), history: ScriptedWatchHistory()),
+                  clock: TestClock(),
+                  mode: mode)
+    }
+}

@@ -88,8 +88,13 @@ struct PlayerModelTests {
         home.playing = nil
         home.open(.playable(Self.episode))
 
-        #expect(home.playing?.playable == Self.episode)
+        #expect(home.playing == PlayRequest(playable: Self.episode, origin: .unknown))
         #expect(home.path.isEmpty)
+
+        // A programme that belongs to no series is played as one (FR-PLAY-09).
+        home.open(.single(Self.episode))
+
+        #expect(home.playing == PlayRequest(playable: Self.episode, origin: .single))
     }
 
     // MARK: With something to play
@@ -97,10 +102,10 @@ struct PlayerModelTests {
     /// A model that plays the test card, over positions a test can read.
     private func cardModel(_ store: ScriptedProgress,
                            history: ScriptedWatchHistory = ScriptedWatchHistory(),
-                           place: SeriesPlace? = nil,
+                           origin: PlayOrigin = .unknown,
                            mode: Mode = .normal) -> PlayerModel {
         PlayerModel(playable: Self.episode,
-                    place: place,
+                    origin: origin,
                     mode: mode,
                     starter: ScriptedPlayback(),
                     positions: PlaybackCoordinator(progress: store,
@@ -195,10 +200,8 @@ struct PlayerModelTests {
     @Test("FR-PLAY-09: a stream that starts makes its series continue with that episode")
     func startingRecordsTheSeries() async {
         let history = ScriptedWatchHistory()
-        let place = SeriesPlace(series: StubCatalogue.results.series[0],
-                                seasons: StubCatalogue.seasons.map(\.id),
-                                season: StubCatalogue.seasons[0].id)
-        let model = cardModel(ScriptedProgress(), history: history, place: place)
+        let place = SeriesPlace(series: StubCatalogue.results.series[0], season: StubCatalogue.seasons[0].id)
+        let model = cardModel(ScriptedProgress(), history: history, origin: .series(place))
 
         await model.start()
         model.stop()
@@ -209,11 +212,9 @@ struct PlayerModelTests {
     @Test("FR-PLAY-09: a stream that does not start records nothing")
     func failedStartRecordsNothing() async {
         let history = ScriptedWatchHistory()
-        let place = SeriesPlace(series: StubCatalogue.results.series[0],
-                                seasons: StubCatalogue.seasons.map(\.id),
-                                season: StubCatalogue.seasons[0].id)
+        let place = SeriesPlace(series: StubCatalogue.results.series[0], season: StubCatalogue.seasons[0].id)
         let model = PlayerModel(playable: Self.episode,
-                                place: place,
+                                origin: .series(place),
                                 mode: .normal,
                                 starter: StubPlayback { _, _ in throw BackendError.unreachable },
                                 positions: PlaybackCoordinator(progress: ScriptedProgress(),

@@ -149,4 +149,17 @@ struct PlaybackCoordinatorTests {
 
         #expect(await coordinator.resumePoint(of: Self.episode, in: .normal) == 1200)
     }
+
+    @Test("FR-HOME-06: a position is kept with the length of what was played, and keeps it when the player forgets")
+    func durationIsKept() async {
+        let coordinator = coordinator
+
+        await coordinator.played(Self.episode, to: 900, of: Self.hour, in: .normal, resting: true)
+        #expect(await store.progress(of: Self.episode, in: .normal)?.fraction == 0.25)
+
+        await coordinator.played(Self.episode, to: 1800, of: .nan, in: .normal, resting: true)
+
+        #expect(await store.progress(of: Self.episode, in: .normal)?.duration == Self.hour)
+        #expect(await store.progress(of: Self.episode, in: .normal)?.fraction == 0.5)
+    }
 }

@@ -74,7 +74,7 @@ the next unwatched one — and playing it starts that episode.
 
 ## FR-HOME-05 — Unpin
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 A pinned item can be unpinned directly from the home page, as well as from its
 detail page.
@@ -85,11 +85,12 @@ detail page.
 - Unpinning does not remove the item from recently watched, and does not
   discard its playback position.
 - The action is discoverable from the remote without a hidden gesture being the
-  only route (NFR-A11Y-01).
+  only route (NFR-A11Y-01): holding the select button on a tile offers it, and
+  so does the series' own page, which the same menu opens.
 
 ## FR-HOME-06 — Recently watched holds twenty items per mode
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The row shows what the family has not finished, plus what it finished in the
 last seven days (FR-HOME-07), most recently played first, each showing how far
@@ -144,7 +145,8 @@ asked days later, and whoever was not in the room never sees it.
   the app was opened in between: it filters, rather than relying on a sweep.
 - The seven days are one named constant, alongside the cap (FR-HOME-06).
 - Selecting a finished tile opens the detail page instead of replaying silently
-  (FR-HOME-04).
+  (FR-HOME-04). A single programme has no page yet (FR-CONTENT-03): until it
+  has, its finished tile plays it again.
 - Playing it again puts it back as a live entry at the front, from the
   beginning (FR-PLAY-02).
 - Leaving the row discards nothing: the episodes stay marked watched, so
@@ -157,7 +159,7 @@ asked days later, and whoever was not in the room never sees it.
 
 ## FR-HOME-08 — Remove from recently watched
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 An item can be removed from the recently watched row. It is hidden from the row
 and nothing else: playback positions and watched marks are untouched, and
@@ -183,7 +185,7 @@ would be throwing away exactly what the row exists to protect.
 
 ## FR-HOME-09 — Empty states say what to do
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 With nothing pinned or nothing watched, the row explains itself instead of
 showing an empty band.
@@ -210,7 +212,7 @@ shows the current state without a manual refresh.
 
 ## FR-HOME-11 — Falling off the row does not forget where you were
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 An entry pushed off the end of the row by the cap keeps its stored playback
 position. Finding the item again resumes it.

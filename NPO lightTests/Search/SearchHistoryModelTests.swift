@@ -140,6 +140,9 @@ struct SearchHistoryModelTests {
 
         #expect(PickedItem(.series(Self.series)).pick == .series(Self.series))
         #expect(PickedItem(.playable(episode)).pick == .playable(episode))
+        // A single programme stays one: that is what lets it be recorded as
+        // an item of its own when it is played (FR-PLAY-09).
+        #expect(PickedItem(.single(episode)).pick == .single(episode))
         #expect(catalogue.searches.isEmpty)
     }
 

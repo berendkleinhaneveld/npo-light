@@ -13,8 +13,13 @@ nonisolated protocol WatchHistory: Sendable {
 
     func entry(for id: ItemID, in mode: Mode) async -> WatchedEntry?
 
-    /// Keeps `entry` in place of what was kept for its series, at the front.
+    /// Keeps `entry` in place of what was kept for its item, at the front.
     func record(_ entry: WatchedEntry, in mode: Mode) async throws
+
+    /// Takes an item off the row and nothing else: the entry stays, and so
+    /// does every position. Playing the item again brings it back
+    /// (FR-HOME-08).
+    func hide(_ id: ItemID, in mode: Mode) async throws
 }
 
 /// What was watched, as a page reads it: how far each episode was played,
@@ -44,6 +49,12 @@ actor WatchHistoryStore: WatchHistory {
     func record(_ entry: WatchedEntry, in mode: Mode) throws {
         var list = list(in: mode)
         list.record(entry)
+        try defaults.keep(list, for: .watched, in: mode)
+    }
+
+    func hide(_ id: ItemID, in mode: Mode) throws {
+        var list = list(in: mode)
+        list.hide(id)
         try defaults.keep(list, for: .watched, in: mode)
     }
 

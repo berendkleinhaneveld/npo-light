@@ -31,8 +31,7 @@ Three facts limit the options:
 
 **Playback writes the entry, and whoever starts playback says where in the
 series the episode is.** The series' page hands the player a `SeriesPlace` —
-the series, its seasons from the first to the latest, and the episode's
-season. `PlaybackCoordinator` then:
+the series and the episode's season. `PlaybackCoordinator` then:
 
 - records the series as continuing with that episode when its stream starts,
   whichever episode it continued with before;
@@ -40,12 +39,25 @@ season. `PlaybackCoordinator` then:
   catalogue which episode follows (`EpisodeOrder`) and records that one, or
   records the series as finished when none does.
 
-Something played without a place — an episode from search results — keeps its
-position and moves no series.
+A single programme is an item of its own: search results say that it stands
+alone, it is recorded under its own identifier, and finishing it finishes the
+item without asking NPO anything. An episode from search results, whose series
+nobody named, keeps its position and moves no series.
+
+**The row is a query, as ADR 0015 said.** *Kijk verder* is worked out from the
+entries when the home page is drawn — not hidden, not finished more than seven
+days ago, newest first, twenty — and a pinned series' tile is read from the
+same entry. Taking an item off the row marks its entry and touches nothing
+else; starting it again writes a new entry, which is not marked.
+
+**A position keeps the length of what was played**, so that a tile can show
+how far in it is without asking NPO: a season's list does not carry it.
 
 **The boundary says which way NPO's list of seasons runs.** `SeriesDetail`
 keeps the seasons as listed, for the picker, and answers the broadcast order
-from them. The next season is taken from that order, never from the list's.
+from them. The next season is taken from that order, never from the list's,
+and the series is asked for it at a season's end rather than carried along
+from when the episode was started.
 
 **When NPO cannot say what follows, nothing is recorded.** The series stays on
 the finished episode until another is played. Not knowing is not the end of
@@ -71,8 +83,14 @@ the series.
 
 - The series' page opens on the right season and names the right episode
   without asking NPO for anything but the page and that season.
-- Finishing an episode costs one request for its season's list, two at a
-  season's end. It is made while the stream is still playing.
+- Finishing an episode costs one request for its season's list, and two more
+  at a season's end. They are made while the stream is still playing.
+- A pinned series nobody started has no entry, so its tile cannot name its
+  first episode without the network: it opens the series' page, and FR-HOME-04
+  stays `Accepted`.
+- The position's `@Model` gained an optional attribute. SwiftData adds it to
+  a store that is already there; a store it cannot open is started over and
+  filled from the copy, as before.
 - **An episode started from search does not move its series on**, and its
   series does not appear as started. FR-PLAY-09 says so. It stays `Accepted`,
   as does FR-CONTENT-03, whose single programme has no page yet.

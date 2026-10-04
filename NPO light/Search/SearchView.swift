@@ -78,18 +78,20 @@ struct SearchResultsView: View {
                 }
                 // Before the episodes: a search for a film's name is answered
                 // with every episode of every series that shares a word with it.
-                playables("Films en losse programma's", results.singleProgrammes)
-                playables("Afleveringen", results.episodes)
+                playables("Films en losse programma's", results.singleProgrammes) { .single($0) }
+                playables("Afleveringen", results.episodes) { .playable($0) }
             }
         }
     }
 
     @ViewBuilder
-    private func playables(_ title: LocalizedStringKey, _ items: [Playable]) -> some View {
+    private func playables(_ title: LocalizedStringKey,
+                           _ items: [Playable],
+                           pick: @escaping (Playable) -> SearchPick) -> some View {
         if !items.isEmpty {
             row(title) {
                 ForEach(items) { playable in
-                    Button { open(.playable(playable)) } label: {
+                    Button { open(pick(playable)) } label: {
                         CatalogueTile(artwork: playable.artwork,
                                       title: playable.title,
                                       caption: playable.caption)

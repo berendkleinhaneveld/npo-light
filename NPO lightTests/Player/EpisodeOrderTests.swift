@@ -11,8 +11,8 @@ struct EpisodeOrderTests {
     private static let first = StubCatalogue.seasons[0].id
     private static let second = StubCatalogue.seasons[1].id
 
-    private static func place(in season: SeasonID, of seasons: [SeasonID] = [first, second]) -> SeriesPlace {
-        SeriesPlace(series: StubCatalogue.results.series[0], seasons: seasons, season: season)
+    private static func place(in season: SeasonID) -> SeriesPlace {
+        SeriesPlace(series: StubCatalogue.results.series[0], season: season)
     }
 
     private static func episode(_ number: Int, of season: SeasonID) -> Playable {
@@ -54,16 +54,39 @@ struct EpisodeOrderTests {
 
     @Test("FR-CONTENT-02: a season with nothing in it is passed over")
     func emptySeasonIsPassedOver() async throws {
-        let empty = SeasonID(rawValue: "empty")
-        let order = EpisodeOrder(catalogue: StubCatalogue(season: { season in
-            season == empty ? [] : StubCatalogue.episodes(of: season)
+        let empty = Season(id: SeasonID(rawValue: "empty"), title: "Leeg")
+        let detail = SeriesDetail(id: StubCatalogue.detail.id,
+                                  title: "Freeks wilde wereld",
+                                  synopsis: nil,
+                                  artwork: nil,
+                                  seasons: [StubCatalogue.seasons[0], empty, StubCatalogue.seasons[1]])
+        let order = EpisodeOrder(catalogue: StubCatalogue(detail: { _ in detail }, season: { season in
+            season == empty.id ? [] : StubCatalogue.episodes(of: season)
         }))
 
         let next = try await order.following(Self.episode(2, of: Self.first).id,
-                                             at: Self.place(in: Self.first, of: [Self.first, empty, Self.second]),
+                                             at: Self.place(in: Self.first),
                                              in: .normal)
 
         #expect(next?.season == Self.second)
+    }
+
+    @Test("FR-CONTENT-02: in a series NPO lists latest season first, the next season is still the later one")
+    func newestFirstIsFollowedForwards() async throws {
+        var detail = StubCatalogue.detail
+        detail.listsNewestFirst = true
+        let order = EpisodeOrder(catalogue: StubCatalogue(detail: { [detail] _ in detail }))
+
+        // Listed first, broadcast last: nothing follows its last episode.
+        let afterTheLatest = try await order.following(Self.episode(2, of: Self.first).id,
+                                                       at: Self.place(in: Self.first),
+                                                       in: .normal)
+        let afterTheEarlier = try await order.following(Self.episode(2, of: Self.second).id,
+                                                        at: Self.place(in: Self.second),
+                                                        in: .normal)
+
+        #expect(afterTheLatest == nil)
+        #expect(afterTheEarlier == Upcoming(Self.episode(1, of: Self.first), in: Self.first))
     }
 
     @Test("FR-CONTENT-02: when NPO cannot say what follows, that is not the same as nothing following")

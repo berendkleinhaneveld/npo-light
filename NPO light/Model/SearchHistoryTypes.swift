@@ -8,7 +8,19 @@ import Foundation
 /// What was chosen from a set of results.
 nonisolated enum SearchPick: Sendable, Equatable {
     case series(SeriesSummary)
+
+    /// A programme that belongs to no series (FR-CONTENT-01).
+    case single(Playable)
+
+    /// An episode of a series the list did not name (Q-10).
     case playable(Playable)
+}
+
+nonisolated extension SearchPick {
+    var isSingle: Bool {
+        if case .single = self { return true }
+        return false
+    }
 }
 
 /// Something picked from a search, as it is kept: enough to draw its tile and
@@ -19,7 +31,9 @@ nonisolated enum SearchPick: Sendable, Equatable {
 nonisolated struct PickedItem: Sendable, Hashable, Codable, Identifiable {
     enum Kind: String, Sendable, Codable {
         case series
-        /// A single programme or an episode. A list does not name the series
+        /// A programme that belongs to no series.
+        case single
+        /// An episode, or something picked before the two were told apart. A list does not name the series
         /// an episode belongs to (Q-10), so the episode is what is kept.
         case playable
     }
@@ -40,8 +54,8 @@ nonisolated struct PickedItem: Sendable, Hashable, Codable, Identifiable {
             title = series.title
             caption = nil
             artwork = series.artwork
-        case .playable(let playable):
-            kind = .playable
+        case .single(let playable), .playable(let playable):
+            kind = pick.isSingle ? .single : .playable
             identifier = playable.id.rawValue
             title = playable.title
             caption = playable.caption
@@ -55,14 +69,20 @@ nonisolated struct PickedItem: Sendable, Hashable, Codable, Identifiable {
         switch kind {
         case .series:
             .series(SeriesSummary(id: ItemID(rawValue: identifier), title: title, artwork: artwork))
+        case .single:
+            .single(playable)
         case .playable:
-            .playable(Playable(id: EpisodeID(rawValue: identifier),
-                               title: title,
-                               caption: caption,
-                               synopsis: nil,
-                               duration: nil,
-                               artwork: artwork))
+            .playable(playable)
         }
+    }
+
+    private var playable: Playable {
+        Playable(id: EpisodeID(rawValue: identifier),
+                 title: title,
+                 caption: caption,
+                 synopsis: nil,
+                 duration: nil,
+                 artwork: artwork)
     }
 }
 

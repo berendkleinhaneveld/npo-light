@@ -13,18 +13,26 @@ import Foundation
 nonisolated struct SeriesPlace: Sendable, Equatable {
     let series: SeriesSummary
 
-    /// Every season of the series, from the first to the latest: not always
-    /// the order NPO lists them in.
-    let seasons: [SeasonID]
-
     /// The season the episode is in.
     let season: SeasonID
 }
 
-/// Something to play, and where in its series it is when that is known.
+/// What is known about something that is played, by whoever starts it.
+nonisolated enum PlayOrigin: Sendable, Equatable {
+    /// An episode, and where in its series it is.
+    case series(SeriesPlace)
+
+    /// A programme that belongs to no series (FR-CONTENT-01).
+    case single
+
+    /// An episode of a series that was not named (Q-10).
+    case unknown
+}
+
+/// Something to play, and what is known about it.
 nonisolated struct PlayRequest: Sendable, Equatable, Identifiable {
     let playable: Playable
-    var place: SeriesPlace?
+    var origin = PlayOrigin.unknown
 
     var id: EpisodeID { playable.id }
 }
@@ -36,9 +44,11 @@ nonisolated struct Upcoming: Sendable, Equatable, Codable {
     let title: String
     let caption: String?
     let artwork: URL?
-    let season: SeasonID
 
-    init(_ playable: Playable, in season: SeasonID) {
+    /// The season it is in. A single programme has none.
+    let season: SeasonID?
+
+    init(_ playable: Playable, in season: SeasonID?) {
         id = playable.id
         title = playable.title
         caption = playable.caption
@@ -52,16 +62,26 @@ nonisolated struct Upcoming: Sendable, Equatable, Codable {
     }
 }
 
-/// What is kept about a series somebody started: which episode it continues
-/// with (ADR 0012's `RecentlyWatchedEntry`, FR-PLAY-09).
+/// What is kept about an item somebody started — a series or a single
+/// programme: what it continues with (ADR 0012's `RecentlyWatchedEntry`,
+/// FR-PLAY-09).
 ///
-/// The series is kept as a tile needs it, so that the entry can be drawn when
-/// NPO no longer has the series (FR-CONTENT-05).
+/// The item is kept as a tile needs it, so that the entry can be drawn when
+/// NPO no longer has it (FR-CONTENT-05).
 nonisolated struct WatchedEntry: Sendable, Equatable, Codable, Identifiable {
-    let series: SeriesSummary
+    enum Kind: String, Sendable, Codable {
+        case series
+        case single
+    }
 
-    /// The episode to continue with: the one being watched, or the one after
-    /// it once that is finished. `nil` when nothing is left to watch.
+    let id: ItemID
+    let kind: Kind
+    var title: String
+    var artwork: URL?
+
+    /// What to continue with: the episode being watched, or the one after it
+    /// once that is finished; for a single programme, the programme. `nil`
+    /// when nothing is left to watch.
     var next: Upcoming?
 
     /// When the last episode was finished. Absent while something is left.
@@ -72,7 +92,36 @@ nonisolated struct WatchedEntry: Sendable, Equatable, Codable, Identifiable {
 
     var playedAt: Date
 
-    var id: ItemID { series.id }
+    /// A series, continuing with `next`.
+    init(series: SeriesSummary, next: Upcoming?, playedAt: Date) {
+        id = series.id
+        kind = .series
+        title = series.title
+        artwork = series.artwork
+        self.next = next
+        self.playedAt = playedAt
+    }
+
+    /// A single programme: an item of its own, under its own identifier.
+    init(single playable: Playable, playedAt: Date) {
+        id = ItemID(rawValue: playable.id.rawValue)
+        kind = .single
+        title = playable.title
+        artwork = playable.artwork
+        next = Upcoming(playable, in: nil)
+        self.playedAt = playedAt
+    }
+
+    /// The series as a list shows it. Only meaningful for a series.
+    var series: SeriesSummary {
+        SeriesSummary(id: id, title: title, artwork: artwork)
+    }
+
+    /// What playing ``next`` needs to be told.
+    var origin: PlayOrigin {
+        guard kind == .series, let season = next?.season else { return kind == .single ? .single : .unknown }
+        return .series(SeriesPlace(series: series, season: season))
+    }
 }
 
 /// One mode's entries, most recently played first, and the rules for the
@@ -85,9 +134,15 @@ nonisolated struct WatchedList: Sendable, Equatable, Codable {
         entries.first { $0.id == id }
     }
 
-    /// Puts `entry` at the front, in place of what was kept for its series.
+    /// Puts `entry` at the front, in place of what was kept for its item.
     mutating func record(_ entry: WatchedEntry) {
         entries.removeAll { $0.id == entry.id }
         entries.insert(entry, at: 0)
+    }
+
+    /// Marks the entry for `id` as taken off the row, where it is.
+    mutating func hide(_ id: ItemID) {
+        guard let index = entries.firstIndex(where: { $0.id == id }) else { return }
+        entries[index].isHidden = true
     }
 }
