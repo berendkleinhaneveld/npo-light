@@ -31,7 +31,10 @@ Session tokens and credential material live in the Keychain and nowhere else
 - No token appears in `UserDefaults`, the SwiftData store, a file in the
   container, or a crash report.
 - No token, password or authorisation header is logged, at any log level, in
-  debug or release.
+  a release build.
+- A debug build keeps them only when it was launched to keep whole requests
+  and responses (NFR-DIAG-03), and then only in files on the device: never in
+  the system log, which other tools read.
 
 ## NFR-PRIV-03 — No third-party analytics or tracking
 

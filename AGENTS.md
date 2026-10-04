@@ -197,6 +197,11 @@ SwiftLint settles formatting; these are the conventions it cannot check.
 - **Concurrency.** UI state is `@MainActor`. Do not add `@unchecked Sendable`
   or `nonisolated(unsafe)` to silence the compiler — model the isolation
   properly.
+- **Logging.** As decided in ADR 0016, nothing calls `Logger` or `print`
+  directly: a line goes through the injected `Logging`, and failures are
+  logged by the decorators around the NPO boundary, not by screen models. A
+  line that is always written carries no credential, body, title or search
+  term.
 - **Errors.** No `try!`, no force unwraps (`force_unwrapping` is enforced), no
   implicitly unwrapped optionals. `fatalError` is for genuinely unrecoverable
   programmer error only, and always with a message.
