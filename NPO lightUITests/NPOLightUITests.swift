@@ -125,6 +125,9 @@ final class NPOLightUITests: XCTestCase {
         remote.press(.down)
         remote.press(.right)
         XCTAssertTrue(app.buttons["episode-season-2-episode-1"].waitForExistence(timeout: 10))
+        // The page moved to its seasons and stays there when focus goes
+        // along them: the picker is at the top of the screen, not a row down.
+        XCTAssertLessThan(firstSeason.frame.minY, 120)
 
         // Into the second season's list and back out.
         let secondSeason = app.buttons["season-season-2"]

@@ -46,6 +46,10 @@ struct SeriesDetailView: View {
             .scrollTargetLayout()
         }
         .scrollPosition($scroll)
+        // The page moves between its two screens and nowhere else. Left to
+        // itself the system also scrolls for whatever has focus, which moved
+        // the seasons down again when focus went along the picker.
+        .scrollDisabled(true)
         .onChange(of: isBrowsing) { _, isBrowsing in
             withAnimation {
                 scroll.scrollTo(id: isBrowsing ? Part.seasons : Part.hero, anchor: .top)
@@ -62,6 +66,8 @@ struct SeriesDetailView: View {
         VStack(alignment: .leading, spacing: 24) {
             content
         }
+        // The lists inside still scroll: only the page is held.
+        .scrollDisabled(false)
         .padding(.horizontal, 80)
         .padding(.vertical, 60)
         .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -123,9 +129,9 @@ struct SeriesHero: View {
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            // The top of the image: that is where the faces are, and the
-            // bottom is under the title anyway.
-            ArtworkView(url: detail?.artwork ?? fallbackArtwork, size: .full, alignment: .top)
+            // Whole, on the right: the images are anything from square to
+            // a wide banner, and filling the strip showed a slice of some.
+            ArtworkView(url: detail?.artwork ?? fallbackArtwork, size: .full, placement: .wholeAtTrailingEdge)
             shade
             info
         }
@@ -142,13 +148,13 @@ struct SeriesHero: View {
     /// the page; the image itself to the right.
     private var shade: some View {
         ZStack {
-            LinearGradient(stops: [.init(color: .black, location: 0),
-                                   .init(color: .black.opacity(0.85), location: 0.38),
-                                   .init(color: .black.opacity(0.15), location: 0.78)],
+            LinearGradient(stops: [.init(color: .black.opacity(0.7), location: 0),
+                                   .init(color: .black.opacity(0.5), location: 0.4),
+                                   .init(color: .clear, location: 0.7)],
                            startPoint: .leading,
                            endPoint: .trailing)
             LinearGradient(stops: [.init(color: .black, location: 0),
-                                   .init(color: .clear, location: 0.45)],
+                                   .init(color: .clear, location: 0.3)],
                            startPoint: .bottom,
                            endPoint: .top)
         }
