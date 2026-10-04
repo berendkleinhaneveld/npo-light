@@ -73,7 +73,7 @@ positions do not.
 
 ## NFR-REL-05 — A broken store recovers instead of crash-looping
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 If the local store cannot be opened — corruption, or a schema the app no longer
 understands — the app recovers by resetting local data and continues, rather

@@ -23,6 +23,7 @@ struct NPOLightApp: App {
     @State private var signInModel: SignInModel
     @State private var modes: ModeModel
     @State private var settings: SettingsModel
+    @State private var notice: LaunchNotice
 
     private let backend: Backend
     private let positions: PlaybackCoordinator
@@ -39,6 +40,7 @@ struct NPOLightApp: App {
                                                        clock: SystemClock(),
                                                        onSignedIn: { appModel.admit($0) }))
         _modes = State(initialValue: backend.modes)
+        _notice = State(initialValue: LaunchNotice(positionsWereReset: backend.positionsWereReset))
         _settings = State(initialValue: backend.settings { appModel.signOut() })
     }
 
@@ -84,8 +86,12 @@ struct NPOLightApp: App {
                                      timings: { settings.timings })
                      })
                      .environment(\.artwork, backend.artwork)
+                     .environment(notice)
         }
     }
+
+    /// Set by a test that wants a launch to say that the store was reset.
+    private static let storeResetKey = "NPO_LIGHT_STORE_RESET"
 
     private static func makeBackend() -> Backend {
         #if DEBUG
@@ -102,6 +108,7 @@ struct NPOLightApp: App {
                            watched: eraser.history,
                            later: eraser.later,
                            eraser: eraser,
+                           positionsWereReset: ProcessInfo.processInfo.environment[storeResetKey] != nil,
                            keepsSettings: false)
         }
         #endif
@@ -137,7 +144,8 @@ struct NPOLightApp: App {
             progress: progress,
             watched: WatchHistoryStore(),
             later: WatchLaterStore(),
-            eraser: LocalDataEraser(progress: progress)
+            eraser: LocalDataEraser(progress: progress),
+            positionsWereReset: progress.wasReset
         )
     }
 
@@ -200,6 +208,10 @@ private struct Backend {
     let later: any WatchLater
 
     let eraser: any LocalDataErasing
+
+    /// The store of positions could not be read and was started over
+    /// (NFR-REL-05).
+    var positionsWereReset = false
 
     /// The mode and the settings of a launch by a test are gone with the
     /// process; the app's own are kept (FR-MODE-01, FR-SET-02).

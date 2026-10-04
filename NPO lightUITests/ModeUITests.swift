@@ -48,4 +48,28 @@ final class ModeUITests: XCTestCase {
         XCTAssertTrue(toKids.waitForExistence(timeout: 10))
         XCTAssertFalse(badge.exists)
     }
+
+    // Requirement: NFR-REL-05
+    @MainActor
+    func testResetIsToldOnce() throws {
+        let app = XCUIApplication()
+        let remote = XCUIRemote.shared
+        app.launchEnvironment["NPO_LIGHT_SCENARIO"] = "signed-in"
+        app.launchEnvironment["NPO_LIGHT_STORE_RESET"] = "1"
+        app.launch()
+
+        // The app works, and says what happened.
+        let acknowledge = app.buttons["reset-notice-ok"]
+        XCTAssertTrue(acknowledge.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["home-search"].exists)
+
+        for direction in [XCUIRemote.Button.up, .up, .up, .down] where !acknowledge.hasFocus {
+            remote.press(direction)
+        }
+        XCTAssertTrue(acknowledge.hasFocus)
+        remote.press(.select)
+
+        XCTAssertFalse(acknowledge.exists)
+        XCTAssertTrue(app.buttons["home-search"].exists)
+    }
 }

@@ -70,8 +70,9 @@ store says that it was reset.
   like anything else.
 - A position of zero is never written: a stream that failed before it started
   leaves the stored position alone (FR-PLAY-10).
-- Nobody is told yet when the store was reset. NFR-REL-05 asks for that, and
-  it stays `Accepted` until a screen says it.
+- When the store was reset the home page says so, once, until it is
+  acknowledged (NFR-REL-05). It says what was not lost: the lists are kept
+  elsewhere.
 - The player's part — seeking to the resume point, the periodic observer, the
   pause and end notifications — cannot run against NPO's streams on the
   simulator, which has no FairPlay. It runs there against a generated video

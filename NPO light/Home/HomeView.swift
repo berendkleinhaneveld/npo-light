@@ -18,10 +18,16 @@ struct HomeView: View {
     let programmeModel: (Playable) -> ProgrammeDetailModel
     let playerModel: (PlayRequest) -> PlayerModel
 
+    /// Absent in a preview, which has nothing to say.
+    @Environment(LaunchNotice.self) private var notice: LaunchNotice?
+
     var body: some View {
         NavigationStack(path: $model.path) {
             VStack(alignment: .leading, spacing: 48) {
                 header
+                if let notice, notice.positionsWereReset {
+                    ResetNotice { notice.acknowledge() }
+                }
                 ScrollView {
                     VStack(alignment: .leading, spacing: 32) {
                         HomeRow(kind: .pinned,
@@ -121,6 +127,27 @@ struct HomeView: View {
     }
 }
 
+/// Says that the positions were started over, and what was not lost
+/// (NFR-REL-05). It stays until it is acknowledged.
+struct ResetNotice: View {
+    let acknowledge: () -> Void
+
+    var body: some View {
+        HStack(spacing: 40) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("De kijkposities konden niet worden gelezen en zijn opnieuw begonnen.")
+                    .font(.body.bold())
+                Text("Wat je hebt vastgezet, bewaard en gezocht is er nog. Je bent ook nog ingelogd.")
+                    .foregroundStyle(.secondary)
+            }
+            Button("OK", action: acknowledge)
+                .accessibilityIdentifier("reset-notice-ok")
+        }
+        .padding(.horizontal, 80)
+        .focusSection()
+    }
+}
+
 /// Keeps one model for as long as the page is on the stack, so that a redraw
 /// of the stack does not start the page over.
 private struct SeriesDetailScreen: View {
@@ -190,6 +217,10 @@ private struct PlayerScreen: View {
 }
 
 #if DEBUG
+#Preview("Reset notice") {
+    ResetNotice(acknowledge: {})
+}
+
 #Preview("Home") {
     HomeView(model: .scripted(pinned: ScriptedCatalogue.results.series),
              search: .scripted(),
