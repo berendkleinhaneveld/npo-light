@@ -13,6 +13,6 @@ extension PlayerModel {
         self.init(playable: playable,
                   mode: mode,
                   starter: starter,
-                  positions: PlaybackCoordinator(progress: ScriptedProgress(), clock: TestClock()))
+                  positions: .scripted())
     }
 }

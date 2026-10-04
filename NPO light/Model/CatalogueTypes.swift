@@ -60,11 +60,25 @@ nonisolated struct Season: Sendable, Equatable, Identifiable {
     let title: String
 }
 
-/// A series and its seasons, in broadcast order (FR-CONTENT-02).
+/// A series and its seasons (FR-CONTENT-02).
 nonisolated struct SeriesDetail: Sendable, Equatable, Identifiable {
     let id: ItemID
     let title: String
     let synopsis: String?
     let artwork: URL?
+
+    /// As NPO lists them, which is how the picker shows them: the first
+    /// season first for most series, the latest first for a programme that
+    /// has a season for each year.
     let seasons: [Season]
+
+    /// ``seasons`` runs from the latest back to the first.
+    var listsNewestFirst = false
+
+    /// The seasons from the first to the latest: the order in which one
+    /// follows another.
+    var broadcastOrder: [SeasonID] {
+        let listed = seasons.map(\.id)
+        return listsNewestFirst ? listed.reversed() : listed
+    }
 }

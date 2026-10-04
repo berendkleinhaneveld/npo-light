@@ -223,6 +223,19 @@ final class NPOLightUITests: XCTestCase {
         XCTAssertFalse(app.buttons["recent-term-fr"].exists)
     }
 
+    /// Moves focus to the pin action at the top of a series' page: up to the
+    /// actions, where it lands on the play button, and along to the pin.
+    @MainActor
+    private func moveFocus(to pin: XCUIElement, in app: XCUIApplication) {
+        let play = app.buttons["series-play"]
+        for _ in 0..<3 where !pin.hasFocus && !play.hasFocus {
+            XCUIRemote.shared.press(.up)
+        }
+        if !pin.hasFocus {
+            XCUIRemote.shared.press(.right)
+        }
+    }
+
     // Requirement: FR-HOME-02, FR-HOME-03, FR-HOME-05, FR-HOME-09, FR-HOME-10
     @MainActor
     func testSeriesIsPinnedAndUnpinned() throws {
@@ -246,9 +259,7 @@ final class NPOLightUITests: XCTestCase {
         let pin = app.buttons["series-pin"]
         XCTAssertTrue(pin.waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["season-season-1"].waitForExistence(timeout: 10))
-        for _ in 0..<3 where !pin.hasFocus {
-            remote.press(.up)
-        }
+        moveFocus(to: pin, in: app)
         XCTAssertTrue(pin.hasFocus)
         remote.press(.select)
         XCTAssertTrue(app.buttons["series-unpin"].waitForExistence(timeout: 10))
@@ -273,9 +284,8 @@ final class NPOLightUITests: XCTestCase {
         let unpin = app.buttons["series-unpin"]
         XCTAssertTrue(unpin.waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["season-season-1"].waitForExistence(timeout: 10))
-        for _ in 0..<3 where !unpin.hasFocus {
-            remote.press(.up)
-        }
+        moveFocus(to: unpin, in: app)
+        XCTAssertTrue(unpin.hasFocus)
         remote.press(.select)
         XCTAssertTrue(app.buttons["series-pin"].waitForExistence(timeout: 10))
         remote.press(.menu)

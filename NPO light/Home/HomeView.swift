@@ -14,7 +14,7 @@ struct HomeView: View {
     @Bindable var model: HomeModel
     let search: SearchModel
     let seriesModel: (SeriesSummary) -> SeriesDetailModel
-    let playerModel: (Playable) -> PlayerModel
+    let playerModel: (PlayRequest) -> PlayerModel
 
     var body: some View {
         NavigationStack(path: $model.path) {
@@ -38,12 +38,14 @@ struct HomeView: View {
                 case .search:
                     SearchView(model: search) { model.open($0) }
                 case .series(let series):
-                    SeriesDetailScreen(series: series, makeModel: seriesModel) { model.play($0) }
+                    SeriesDetailScreen(series: series,
+                                       playbacksEnded: model.playbacksEnded,
+                                       makeModel: seriesModel) { model.play($0) }
                 }
             }
         }
-        .fullScreenCover(item: $model.playing) { playable in
-            PlayerScreen(playable: playable, makeModel: playerModel)
+        .fullScreenCover(item: $model.playing) { request in
+            PlayerScreen(request: request, makeModel: playerModel) { model.playbackEnded() }
         }
     }
 
@@ -129,30 +131,39 @@ struct PinnedRow: View {
 /// of the stack does not start the page over.
 private struct SeriesDetailScreen: View {
     @State private var model: SeriesDetailModel
-    private let play: (Playable) -> Void
+    private let playbacksEnded: Int
+    private let play: (PlayRequest) -> Void
 
     init(series: SeriesSummary,
+         playbacksEnded: Int,
          makeModel: (SeriesSummary) -> SeriesDetailModel,
-         play: @escaping (Playable) -> Void) {
+         play: @escaping (PlayRequest) -> Void) {
         _model = State(initialValue: makeModel(series))
+        self.playbacksEnded = playbacksEnded
         self.play = play
     }
 
     var body: some View {
         SeriesDetailView(model: model, play: play)
+            .onChange(of: playbacksEnded) {
+                // Back from the player: what was watched has changed.
+                Task { await model.readWatched() }
+            }
     }
 }
 
 /// Keeps one model for as long as the player is presented.
 private struct PlayerScreen: View {
     @State private var model: PlayerModel
+    private let closed: () -> Void
 
-    init(playable: Playable, makeModel: (Playable) -> PlayerModel) {
-        _model = State(initialValue: makeModel(playable))
+    init(request: PlayRequest, makeModel: (PlayRequest) -> PlayerModel, closed: @escaping () -> Void) {
+        _model = State(initialValue: makeModel(request))
+        self.closed = closed
     }
 
     var body: some View {
-        PlayerView(model: model)
+        PlayerView(model: model, closed: closed)
     }
 }
 
@@ -161,7 +172,7 @@ private struct PlayerScreen: View {
     HomeView(model: .scripted(pinned: ScriptedCatalogue.results.series),
              search: .scripted(),
              seriesModel: { .scripted($0) },
-             playerModel: { .scripted($0) })
+             playerModel: { .scripted($0.playable) })
 }
 
 #Preview("Nothing pinned") {

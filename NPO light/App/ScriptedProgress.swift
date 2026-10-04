@@ -26,6 +26,10 @@ actor ScriptedProgress: ProgressKeeping {
         positions[mode]?[id]
     }
 
+    func progress(of ids: [EpisodeID], in mode: Mode) -> [EpisodeID: PlaybackProgress] {
+        (positions[mode] ?? [:]).filter { ids.contains($0.key) }
+    }
+
     func note(_ progress: PlaybackProgress, in mode: Mode) {
         noted.append(progress)
         positions[mode, default: [:]][progress.id] = progress
@@ -43,7 +47,7 @@ extension PlayerModel {
         PlayerModel(playable: playable,
                     mode: .normal,
                     starter: ScriptedPlayback(),
-                    positions: PlaybackCoordinator(progress: ScriptedProgress(), clock: SystemClock()))
+                    positions: .scripted())
     }
 }
 #endif

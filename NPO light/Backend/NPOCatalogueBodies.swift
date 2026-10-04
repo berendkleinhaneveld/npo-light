@@ -104,7 +104,13 @@ nonisolated struct SeriesPageBody: Decodable {
     struct Tab: Decodable {
         static let seasonsType = "seasons"
 
+        /// What ``programSort`` says for a programme that is followed as it
+        /// is broadcast — a daily one, with a season for each year. NPO then
+        /// lists the latest season first, as well as the latest episode.
+        static let newestFirst = "desc"
+
         let type: String?
+        let programSort: String?
         let seasons: [SeasonBody]?
     }
 
@@ -118,7 +124,8 @@ nonisolated struct SeriesPageBody: Decodable {
     let tabs: [Tab]?
 
     var detail: SeriesDetail {
-        let seasons = tabs?.first { $0.type == Tab.seasonsType }?.seasons ?? []
+        let tab = tabs?.first { $0.type == Tab.seasonsType }
+        let seasons = tab?.seasons ?? []
         let artwork = header.images?
             .first { $0.role == ImageBody.artworkRole }?.url
             .flatMap(URL.init(string:))
@@ -127,7 +134,8 @@ nonisolated struct SeriesPageBody: Decodable {
             title: header.title,
             synopsis: header.subtitle,
             artwork: artwork,
-            seasons: seasons.map { Season(id: SeasonID(rawValue: $0.guid), title: $0.title) }
+            seasons: seasons.map { Season(id: SeasonID(rawValue: $0.guid), title: $0.title) },
+            listsNewestFirst: tab?.programSort == Tab.newestFirst
         )
     }
 }

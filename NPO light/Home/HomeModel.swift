@@ -24,7 +24,11 @@ final class HomeModel {
 
     /// What is playing. The player is presented over the stack rather than
     /// pushed onto it (ADR 0011).
-    var playing: Playable?
+    var playing: PlayRequest?
+
+    /// Counts the playbacks that ended. A page that shows what was watched
+    /// reads it again when this changes (FR-HOME-10).
+    private(set) var playbacksEnded = 0
 
     /// The pinned series, most recently pinned first (FR-HOME-02).
     private(set) var pinned: [SeriesSummary] = []
@@ -71,6 +75,15 @@ final class HomeModel {
     }
 
     func play(_ playable: Playable) {
-        playing = playable
+        play(PlayRequest(playable: playable))
+    }
+
+    func play(_ request: PlayRequest) {
+        playing = request
+    }
+
+    /// The player closed, and where it stopped has been written down.
+    func playbackEnded() {
+        playbacksEnded += 1
     }
 }

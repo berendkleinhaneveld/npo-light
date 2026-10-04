@@ -10,6 +10,10 @@ import SwiftData
 nonisolated protocol ProgressKeeping: Sendable {
     func progress(of id: EpisodeID, in mode: Mode) async -> PlaybackProgress?
 
+    /// The positions of those of `ids` that have one: a season's worth in
+    /// one question.
+    func progress(of ids: [EpisodeID], in mode: Mode) async -> [EpisodeID: PlaybackProgress]
+
     /// Writes a position while something plays: to the store, and no further
     /// (ADR 0018).
     func note(_ progress: PlaybackProgress, in mode: Mode) async throws
@@ -69,6 +73,17 @@ actor ProgressStore: ProgressKeeping, ModelActor {
     func progress(of id: EpisodeID, in mode: Mode) -> PlaybackProgress? {
         fillIfNew()
         return stored(id, in: mode)?.progress
+    }
+
+    func progress(of ids: [EpisodeID], in mode: Mode) -> [EpisodeID: PlaybackProgress] {
+        fillIfNew()
+        let episodes = ids.map(\.rawValue)
+        let modeName = mode.rawValue
+        let request = FetchDescriptor<StoredProgress>(
+            predicate: #Predicate { $0.mode == modeName && episodes.contains($0.episode) }
+        )
+        let found = (try? modelContext.fetch(request)) ?? []
+        return Dictionary(found.map { ($0.progress.id, $0.progress) }) { _, last in last }
     }
 
     func note(_ progress: PlaybackProgress, in mode: Mode) throws {

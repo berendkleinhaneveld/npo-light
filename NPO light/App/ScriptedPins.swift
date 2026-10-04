@@ -44,7 +44,11 @@ extension HomeModel {
 extension SeriesDetailModel {
     /// A series page over the scripted catalogue, for previews.
     static func scripted(_ summary: SeriesSummary) -> SeriesDetailModel {
-        SeriesDetailModel(summary: summary, catalogue: ScriptedCatalogue(), pins: ScriptedPins(), mode: .normal)
+        SeriesDetailModel(summary: summary,
+                          catalogue: ScriptedCatalogue(),
+                          pins: ScriptedPins(),
+                          watched: WatchedState(progress: ScriptedProgress(), history: ScriptedWatchHistory()),
+                          mode: .normal)
     }
 }
 #endif

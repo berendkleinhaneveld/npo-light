@@ -163,6 +163,12 @@ Playing something is what fills the recently watched row (FR-HOME-06).
 - A series records once, updated per episode, rather than one entry per
   episode.
 - Finishing an episode leaves the item pointing at the next one (FR-HOME-07).
+- An episode started from a list that does not name its series — a search
+  result
+  ([Q-10](open-questions.md#q-10--does-a-programme-in-a-list-belong-to-a-series))
+  — keeps its position, and does not move its series on: only an episode
+  started from the series' own page does
+  ([ADR 0020](../adr/0020-a-series-continues-where-its-page-was-told.md)).
 
 ## FR-PLAY-10 — Playback errors are recoverable
 

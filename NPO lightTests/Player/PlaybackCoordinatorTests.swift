@@ -16,7 +16,10 @@ struct PlaybackCoordinatorTests {
     private let clock = TestClock(now: Date(timeIntervalSince1970: 1_000_000))
 
     private var coordinator: PlaybackCoordinator {
-        PlaybackCoordinator(progress: store, clock: clock)
+        PlaybackCoordinator(progress: store,
+                            history: ScriptedWatchHistory(),
+                            order: EpisodeOrder(catalogue: StubCatalogue()),
+                            clock: clock)
     }
 
     @Test("FR-PLAY-02: something never played starts at the beginning")

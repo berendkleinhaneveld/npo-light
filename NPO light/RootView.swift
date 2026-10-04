@@ -13,7 +13,7 @@ struct RootView: View {
     let homeModel: HomeModel
     let searchModel: SearchModel
     let seriesModel: (SeriesSummary) -> SeriesDetailModel
-    let playerModel: (Playable) -> PlayerModel
+    let playerModel: (PlayRequest) -> PlayerModel
 
     var body: some View {
         content
@@ -61,7 +61,7 @@ private struct RootPreview: View {
                  homeModel: .scripted(),
                  searchModel: SearchModel.scripted(),
                  seriesModel: { .scripted($0) },
-                 playerModel: { .scripted($0) })
+                 playerModel: { .scripted($0.playable) })
     }
 }
 

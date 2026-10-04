@@ -17,7 +17,7 @@ nonisolated protocol Catalogue: Sendable {
     /// Series and playable items matching `query`, from the mode's catalogue.
     func search(for query: String, in mode: Mode) async throws -> SearchResults
 
-    /// A series with its seasons in broadcast order.
+    /// A series with its seasons as NPO lists them, and which way that runs.
     ///
     /// Throws ``BackendError/itemUnavailable`` when NPO no longer has it.
     func series(_ id: ItemID, in mode: Mode) async throws -> SeriesDetail

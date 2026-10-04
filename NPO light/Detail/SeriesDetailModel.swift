@@ -6,8 +6,9 @@
 import Foundation
 import Observation
 
-/// A series' detail page: the series, one season's episodes at a time, and the
-/// episode being looked at (FR-CONTENT-07, FR-CONTENT-08).
+/// A series' detail page: the series, one season's episodes at a time, the
+/// episode being looked at, and what was watched of it (FR-CONTENT-03,
+/// FR-CONTENT-07, FR-CONTENT-08).
 @MainActor
 @Observable
 final class SeriesDetailModel {
@@ -26,6 +27,23 @@ final class SeriesDetailModel {
         case loading
         case loaded([Playable])
         case failed
+    }
+
+    /// How far an episode was watched, as a list shows it.
+    enum Watched: Equatable {
+        case notStarted
+        case started
+        case finished
+    }
+
+    /// What the page's main action plays (FR-CONTENT-03).
+    struct Primary: Equatable {
+        let episode: Playable
+        let season: SeasonID
+
+        /// It has a position to carry on from: the action reads
+        /// *Verder kijken* rather than *Afspelen*.
+        let resumes: Bool
     }
 
     /// What the list that led here already knew, shown while the rest loads.
@@ -51,14 +69,65 @@ final class SeriesDetailModel {
 
     private var focused: EpisodeID?
 
+    /// The episode the series continues with, once one was played.
+    private var upNext: Upcoming?
+
+    /// Every episode of the series was watched (FR-HOME-04).
+    private(set) var isFullyWatched = false
+
+    /// The positions of the episodes on this page that have one.
+    private var positions: [EpisodeID: PlaybackProgress] = [:]
+
     private let catalogue: any Catalogue
     private let pins: any Pins
+    private let watched: WatchedState
 
-    init(summary: SeriesSummary, catalogue: any Catalogue, pins: any Pins, mode: Mode) {
+    init(summary: SeriesSummary, catalogue: any Catalogue, pins: any Pins, watched: WatchedState, mode: Mode) {
         self.summary = summary
         self.catalogue = catalogue
         self.pins = pins
+        self.watched = watched
         self.mode = mode
+    }
+
+    /// The episode the main action plays: the one the series continues with,
+    /// or its very first while none was played. Nothing for a series that
+    /// was watched to its end: an episode is played again from the list.
+    var primary: Primary? {
+        guard !isFullyWatched, let seasons = loadedSeasons else { return nil }
+        if let upNext, seasons.contains(where: { $0.id == upNext.season }) {
+            // The list's own episode when it is on the page: it has the
+            // description the kept one lacks.
+            let listed = fetched[upNext.season]?.first { $0.id == upNext.id }
+            return Primary(episode: listed ?? upNext.playable,
+                           season: upNext.season,
+                           resumes: positions[upNext.id]?.offset != nil)
+        }
+        guard let first = seasons.first, let episode = fetched[first.id]?.first else { return nil }
+        return Primary(episode: episode, season: first.id, resumes: positions[episode.id]?.offset != nil)
+    }
+
+    func watched(_ episode: EpisodeID) -> Watched {
+        guard let position = positions[episode] else { return .notStarted }
+        // Watched stays watched while it is watched again (FR-PLAY-02).
+        if position.isFinished { return .finished }
+        return position.offset == nil ? .notStarted : .started
+    }
+
+    /// What playing `episode` needs: the episode, and where in the series it
+    /// is, so that the series can move on when it is finished (FR-PLAY-09).
+    /// `season` is the one being shown unless another is named.
+    func request(for episode: Playable, in season: SeasonID? = nil) -> PlayRequest {
+        guard case .loaded(let detail) = page, let season = season ?? shownSeason else {
+            return PlayRequest(playable: episode)
+        }
+        return PlayRequest(playable: episode,
+                           place: SeriesPlace(series: current, seasons: detail.broadcastOrder, season: season))
+    }
+
+    private var loadedSeasons: [Season]? {
+        guard case .loaded(let detail) = page else { return nil }
+        return detail.seasons
     }
 
     /// The seasons to pick from. A series with one season has no picker.
@@ -74,18 +143,19 @@ final class SeriesDetailModel {
         return list.first { $0.id == focused } ?? list.first
     }
 
-    /// Fetches the series and opens its first season.
-    ///
-    /// The page is meant to open on the season holding the next unwatched
-    /// episode. Nothing records what was watched yet, so that is the first.
+    /// Fetches the series and opens the season that holds the episode the
+    /// main action plays: the first, for a series nobody started or one
+    /// watched to its end (FR-CONTENT-07).
     func load() async {
         page = .loading
         isPinned = await pins.isPinned(summary.id, in: mode)
         do {
             let detail = try await catalogue.series(summary.id, in: mode)
+            await readWatched()
             page = .loaded(detail)
-            if let first = detail.seasons.first {
-                show(first.id)
+            let continued = detail.seasons.first { $0.id == upNext?.season }
+            if let opening = continued ?? detail.seasons.first {
+                show(opening.id)
             } else {
                 episodes = .loaded([])
             }
@@ -96,6 +166,16 @@ final class SeriesDetailModel {
         } catch {
             page = .failed
         }
+    }
+
+    /// Reads what was watched of the series as it is kept now: when the page
+    /// opens, and again when the player closes (FR-HOME-10).
+    func readWatched() async {
+        let entry = await watched.history.entry(for: summary.id, in: mode)
+        upNext = entry?.next
+        isFullyWatched = entry.map { $0.next == nil } ?? false
+        let listed = fetched.values.flatMap { $0.map(\.id) }
+        positions = await watched.progress.progress(of: listed + [upNext?.id].compactMap(\.self), in: mode)
     }
 
     /// Pins the series, or takes its pin away (FR-HOME-03, FR-HOME-05).
@@ -168,6 +248,8 @@ final class SeriesDetailModel {
         do {
             let list = try await catalogue.episodes(of: season, in: mode)
             fetched[season] = list
+            let known = await watched.progress.progress(of: list.map(\.id), in: mode)
+            positions.merge(known) { _, read in read }
             outcome = .loaded(list)
         } catch is CancellationError {
             return

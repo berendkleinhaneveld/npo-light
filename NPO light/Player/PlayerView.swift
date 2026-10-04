@@ -10,12 +10,20 @@ import SwiftUI
 struct PlayerView: View {
     let model: PlayerModel
 
+    /// The player went away, after its last position was written.
+    var closed: () -> Void = {}
+
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         content
             .task { await model.start() }
-            .onDisappear { model.stop() }
+            .onDisappear {
+                Task {
+                    await model.close()
+                    closed()
+                }
+            }
             .onChange(of: scenePhase) { _, phase in
                 // The television went to its home screen, or to sleep.
                 if phase != .active { model.rest() }

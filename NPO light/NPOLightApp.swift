@@ -8,9 +8,8 @@ import SwiftUI
 /// The composition root (ADR 0011): the one place that names a concrete type
 /// and hands it down, so that the seams ADR 0009 relies on stay reachable.
 ///
-/// The search history, the pins and the positions are the first of the
-/// stores. Where each keeps its data
-/// is ADR 0015.
+/// The search history, the pins, the positions and what was watched are the
+/// stores so far. Where each keeps its data is ADR 0015.
 @main
 struct NPOLightApp: App {
     /// How long a request to NPO may stay unanswered before it fails, so that
@@ -31,7 +30,10 @@ struct NPOLightApp: App {
     init() {
         let backend = Self.makeBackend()
         self.backend = backend
-        positions = PlaybackCoordinator(progress: backend.progress, clock: SystemClock())
+        positions = PlaybackCoordinator(progress: backend.progress,
+                                        history: backend.watched,
+                                        order: EpisodeOrder(catalogue: backend.catalogue),
+                                        clock: SystemClock())
         let appModel = AppModel(authenticator: backend.authenticator)
         _appModel = State(initialValue: appModel)
         _signInModel = State(initialValue: SignInModel(authenticator: backend.authenticator,
@@ -52,10 +54,18 @@ struct NPOLightApp: App {
                      homeModel: homeModel,
                      searchModel: searchModel,
                      seriesModel: { [backend] in
-                         SeriesDetailModel(summary: $0, catalogue: backend.catalogue, pins: backend.pins, mode: .normal)
+                         SeriesDetailModel(summary: $0,
+                                           catalogue: backend.catalogue,
+                                           pins: backend.pins,
+                                           watched: backend.watchedState,
+                                           mode: .normal)
                      },
                      playerModel: { [backend, positions] in
-                         PlayerModel(playable: $0, mode: .normal, starter: backend.playback, positions: positions)
+                         PlayerModel(playable: $0.playable,
+                                     place: $0.place,
+                                     mode: .normal,
+                                     starter: backend.playback,
+                                     positions: positions)
                      })
                      .environment(\.artwork, backend.artwork)
         }
@@ -71,7 +81,8 @@ struct NPOLightApp: App {
                            artwork: NoArtwork(),
                            searchHistory: ScriptedSearchHistory(),
                            pins: ScriptedPins(),
-                           progress: ScriptedProgress())
+                           progress: ScriptedProgress(),
+                           watched: ScriptedWatchHistory())
         }
         #endif
         let configuration = URLSessionConfiguration.ephemeral
@@ -102,7 +113,8 @@ struct NPOLightApp: App {
             artwork: ArtworkLoader(transport: URLSessionTransport(session: artworkSession()), log: log),
             searchHistory: SearchHistoryStore(),
             pins: PinStore(),
-            progress: ProgressStore.open(in: .cachesDirectory)
+            progress: ProgressStore.open(in: .cachesDirectory),
+            watched: WatchHistoryStore()
         )
     }
 
@@ -161,4 +173,10 @@ private struct Backend {
     let searchHistory: any SearchHistory
     let pins: any Pins
     let progress: any ProgressKeeping
+    let watched: any WatchHistory
+
+    /// What a page that shows watched state reads.
+    var watchedState: WatchedState {
+        WatchedState(progress: progress, history: watched)
+    }
 }

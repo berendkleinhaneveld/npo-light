@@ -16,7 +16,16 @@ struct SeriesDetailModelTests {
         SeriesDetailModel(summary: StubCatalogue.results.series[0],
                           catalogue: catalogue,
                           pins: ScriptedPins(),
+                          watched: WatchedState(progress: ScriptedProgress(), history: ScriptedWatchHistory()),
                           mode: .normal)
+    }
+
+    private func pinning(_ summary: SeriesSummary, _ pins: ScriptedPins, in mode: Mode) -> SeriesDetailModel {
+        SeriesDetailModel(summary: summary,
+                          catalogue: StubCatalogue(),
+                          pins: pins,
+                          watched: WatchedState(progress: ScriptedProgress(), history: ScriptedWatchHistory()),
+                          mode: mode)
     }
 
     @Test("FR-CONTENT-07: the page opens on a season and shows that season's episodes only")
@@ -181,7 +190,7 @@ struct SeriesDetailModelTests {
     func pinActionToggles() async {
         let pins = ScriptedPins()
         let summary = StubCatalogue.results.series[0]
-        let model = SeriesDetailModel(summary: summary, catalogue: StubCatalogue(), pins: pins, mode: .normal)
+        let model = pinning(summary, pins, in: .normal)
         await model.load()
         #expect(!model.isPinned)
 
@@ -198,8 +207,8 @@ struct SeriesDetailModelTests {
     func pinnedStateIsReadOnLoad() async {
         let summary = StubCatalogue.results.series[0]
         let pins = ScriptedPins([summary])
-        let normal = SeriesDetailModel(summary: summary, catalogue: StubCatalogue(), pins: pins, mode: .normal)
-        let kids = SeriesDetailModel(summary: summary, catalogue: StubCatalogue(), pins: pins, mode: .kids)
+        let normal = pinning(summary, pins, in: .normal)
+        let kids = pinning(summary, pins, in: .kids)
 
         await normal.load()
         await kids.load()
@@ -212,7 +221,7 @@ struct SeriesDetailModelTests {
     func pinCarriesTheCurrentTitle() async {
         let pins = ScriptedPins()
         let stale = SeriesSummary(id: StubCatalogue.detail.id, title: "Old title", artwork: nil)
-        let model = SeriesDetailModel(summary: stale, catalogue: StubCatalogue(), pins: pins, mode: .normal)
+        let model = pinning(stale, pins, in: .normal)
         await model.load()
 
         await model.togglePin()

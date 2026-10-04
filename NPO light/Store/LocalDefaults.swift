@@ -26,6 +26,7 @@ nonisolated struct LocalDefaults {
     enum Record: String, CaseIterable, Sendable {
         case searchHistory = "search-history"
         case pins
+        case watched = "recently-watched"
         case positions
     }
 

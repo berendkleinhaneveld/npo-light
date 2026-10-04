@@ -49,6 +49,9 @@ order, so that "the next episode" is well defined.
 - An episode that is in the catalogue but not playable (expired rights) is
   skipped when looking for the next episode, and is shown as unavailable in an
   episode list.
+- NPO lists the seasons of some programmes latest first — one that has a
+  season for each year. The next season is still the later one, whichever way
+  the list runs.
 
 ## FR-CONTENT-03 — Item detail page
 
@@ -66,6 +69,9 @@ a standalone episode adds a save action instead (FR-HOME-03, FR-LATER-03).
   for one with a stored position (FR-PLAY-02).
 - For a series, the primary action plays the next unwatched episode
   (FR-HOME-04).
+- For a series, the page names the episode the primary action plays.
+- A series with every episode watched says so and has no primary action: an
+  episode is played again from the list.
 - On a series, the pin action reflects the current pinned state and toggles
   it (FR-HOME-03, FR-HOME-05).
 

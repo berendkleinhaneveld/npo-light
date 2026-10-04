@@ -30,6 +30,9 @@ final class PlayerModel {
     }
 
     let playable: Playable
+
+    /// Where in its series it is, when whoever started it knew.
+    let place: SeriesPlace?
     let mode: Mode
 
     private(set) var state = State.preparing
@@ -44,8 +47,13 @@ final class PlayerModel {
     /// The latest write of the position, while it is under way.
     private(set) var writing: Task<Void, Never>?
 
-    init(playable: Playable, mode: Mode, starter: any PlaybackStarting, positions: PlaybackCoordinator) {
+    init(playable: Playable,
+         place: SeriesPlace? = nil,
+         mode: Mode,
+         starter: any PlaybackStarting,
+         positions: PlaybackCoordinator) {
         self.playable = playable
+        self.place = place
         self.mode = mode
         self.starter = starter
         self.positions = positions
@@ -66,6 +74,7 @@ final class PlayerModel {
         do {
             let playback = try await starter.playback(of: playable, in: mode)
             await resume(playback.player)
+            await positions.started(playable, at: place, in: mode)
             watch(playback.player)
             state = .playing(playback)
             playback.player.play()
@@ -78,6 +87,13 @@ final class PlayerModel {
         } catch {
             state = .failed(.failed)
         }
+    }
+
+    /// The player was closed, and what it had to write is written: whoever
+    /// reads positions after this sees where playback stopped.
+    func close() async {
+        stop()
+        await writing?.value
     }
 
     /// The player was closed.
@@ -111,8 +127,8 @@ final class PlayerModel {
         guard case .playing(let playback) = state, let item = playback.player.currentItem else { return }
         let position = playback.player.currentTime().seconds
         let duration = item.duration.seconds
-        writing = Task { [positions, id = playable.id, mode] in
-            await positions.played(id, to: position, of: duration, in: mode, resting: resting)
+        writing = Task { [positions, id = playable.id, place, mode] in
+            await positions.played(id, at: place, to: position, of: duration, in: mode, resting: resting)
         }
     }
 
@@ -165,8 +181,8 @@ final class PlayerModel {
     }
 
     private func playedToEnd() {
-        writing = Task { [positions, id = playable.id, mode] in
-            await positions.playedToEnd(id, in: mode)
+        writing = Task { [positions, id = playable.id, place, mode] in
+            await positions.playedToEnd(id, at: place, in: mode)
         }
     }
 

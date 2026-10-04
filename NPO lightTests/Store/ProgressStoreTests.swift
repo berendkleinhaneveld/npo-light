@@ -46,6 +46,21 @@ struct ProgressStoreTests {
         }
     }
 
+    @Test("FR-CONTENT-08, FR-MODE-05: a season's positions are read in one question, for one mode")
+    func positionsAreReadTogether() async throws {
+        try await withStorage { directory, suite in
+            let store = ProgressStore.open(in: directory, suite: suite)
+            try await store.note(Self.progress("one", at: 10), in: .normal)
+            try await store.note(Self.progress("two", at: 20), in: .normal)
+            try await store.note(Self.progress("three", at: 30), in: .kids)
+            let ids = ["one", "two", "three", "four"].map(EpisodeID.init(rawValue:))
+
+            let read = await store.progress(of: ids, in: .normal)
+
+            #expect(read == [ids[0]: Self.progress("one", at: 10), ids[1]: Self.progress("two", at: 20)])
+        }
+    }
+
     @Test("ADR 0012: a finish and a position are kept as two facts in one record")
     func finishAndOffsetAreIndependent() async throws {
         try await withStorage { directory, suite in

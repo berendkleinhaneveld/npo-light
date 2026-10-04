@@ -83,23 +83,30 @@ struct PlayerModelTests {
         let home = HomeModel(pins: ScriptedPins(), mode: .normal)
 
         home.play(Self.episode)
-        #expect(home.playing == Self.episode)
+        #expect(home.playing?.playable == Self.episode)
 
         home.playing = nil
         home.open(.playable(Self.episode))
 
-        #expect(home.playing == Self.episode)
+        #expect(home.playing?.playable == Self.episode)
         #expect(home.path.isEmpty)
     }
 
     // MARK: With something to play
 
     /// A model that plays the test card, over positions a test can read.
-    private func cardModel(_ store: ScriptedProgress, mode: Mode = .normal) -> PlayerModel {
+    private func cardModel(_ store: ScriptedProgress,
+                           history: ScriptedWatchHistory = ScriptedWatchHistory(),
+                           place: SeriesPlace? = nil,
+                           mode: Mode = .normal) -> PlayerModel {
         PlayerModel(playable: Self.episode,
+                    place: place,
                     mode: mode,
                     starter: ScriptedPlayback(),
-                    positions: PlaybackCoordinator(progress: store, clock: TestClock()))
+                    positions: PlaybackCoordinator(progress: store,
+                                                   history: history,
+                                                   order: EpisodeOrder(catalogue: StubCatalogue()),
+                                                   clock: TestClock()))
     }
 
     private func playhead(of model: PlayerModel) -> TimeInterval? {
@@ -183,5 +190,51 @@ struct PlayerModelTests {
 
         #expect(isPlayable)
         #expect(abs(duration - TimeInterval(TestCard.duration)) < 1)
+    }
+
+    @Test("FR-PLAY-09: a stream that starts makes its series continue with that episode")
+    func startingRecordsTheSeries() async {
+        let history = ScriptedWatchHistory()
+        let place = SeriesPlace(series: StubCatalogue.results.series[0],
+                                seasons: StubCatalogue.seasons.map(\.id),
+                                season: StubCatalogue.seasons[0].id)
+        let model = cardModel(ScriptedProgress(), history: history, place: place)
+
+        await model.start()
+        model.stop()
+
+        #expect(await history.entry(for: place.series.id, in: .normal)?.next?.id == Self.episode.id)
+    }
+
+    @Test("FR-PLAY-09: a stream that does not start records nothing")
+    func failedStartRecordsNothing() async {
+        let history = ScriptedWatchHistory()
+        let place = SeriesPlace(series: StubCatalogue.results.series[0],
+                                seasons: StubCatalogue.seasons.map(\.id),
+                                season: StubCatalogue.seasons[0].id)
+        let model = PlayerModel(playable: Self.episode,
+                                place: place,
+                                mode: .normal,
+                                starter: StubPlayback { _, _ in throw BackendError.unreachable },
+                                positions: PlaybackCoordinator(progress: ScriptedProgress(),
+                                                               history: history,
+                                                               order: EpisodeOrder(catalogue: StubCatalogue()),
+                                                               clock: TestClock()))
+
+        await model.start()
+
+        #expect(await history.entries(in: .normal).isEmpty)
+    }
+
+    @Test("FR-HOME-10: once the player has closed, where it stopped has been written")
+    func closingWritesBeforeItReturns() async throws {
+        let store = ScriptedProgress([Self.stopped(at: 60)])
+        let model = cardModel(store)
+        await model.start()
+
+        await model.close()
+
+        let offset = try #require(await store.kept.last?.offset)
+        #expect(offset >= 59)
     }
 }
