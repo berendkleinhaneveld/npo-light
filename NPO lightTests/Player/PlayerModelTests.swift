@@ -100,6 +100,14 @@ struct PlayerModelTests {
     // MARK: With something to play
 
     /// A model that plays the test card, over positions a test can read.
+    private static func coordinator(_ store: ScriptedProgress,
+                                    _ history: ScriptedWatchHistory,
+                                    catalogue: StubCatalogue = StubCatalogue()) -> PlaybackCoordinator {
+        PlaybackCoordinator(watched: WatchedState(progress: store, history: history, later: ScriptedWatchLater()),
+                            order: EpisodeOrder(catalogue: catalogue),
+                            clock: TestClock())
+    }
+
     private func cardModel(_ store: ScriptedProgress,
                            history: ScriptedWatchHistory = ScriptedWatchHistory(),
                            origin: PlayOrigin = .unknown,
@@ -108,10 +116,7 @@ struct PlayerModelTests {
                     origin: origin,
                     mode: mode,
                     starter: ScriptedPlayback(),
-                    positions: PlaybackCoordinator(progress: store,
-                                                   history: history,
-                                                   order: EpisodeOrder(catalogue: StubCatalogue()),
-                                                   clock: TestClock()),
+                    positions: Self.coordinator(store, history),
                     clock: TestClock())
     }
 
@@ -218,10 +223,7 @@ struct PlayerModelTests {
                                 origin: .series(place),
                                 mode: .normal,
                                 starter: StubPlayback { _, _ in throw BackendError.unreachable },
-                                positions: PlaybackCoordinator(progress: ScriptedProgress(),
-                                                               history: history,
-                                                               order: EpisodeOrder(catalogue: StubCatalogue()),
-                                                               clock: TestClock()),
+                                positions: Self.coordinator(ScriptedProgress(), history),
                                 clock: TestClock())
 
         await model.start()
@@ -239,5 +241,23 @@ struct PlayerModelTests {
 
         let offset = try #require(await store.kept.last?.offset)
         #expect(offset >= 59)
+    }
+
+    @Test("FR-PLAY-09: an episode started from search joins its series once it plays")
+    func episodeFromSearchJoinsItsSeries() async {
+        let history = ScriptedWatchHistory()
+        let place = SeriesPlace(series: StubCatalogue.results.series[0], season: StubCatalogue.seasons[0].id)
+        let catalogue = StubCatalogue(place: { _ in place })
+        let model = PlayerModel(playable: Self.episode,
+                                origin: .unknown,
+                                mode: .normal,
+                                starter: StubPlayback(),
+                                positions: Self.coordinator(ScriptedProgress(), history, catalogue: catalogue),
+                                clock: TestClock())
+
+        await model.start()
+
+        #expect(model.origin == .series(place))
+        #expect(await history.entry(for: place.series.id, in: .normal)?.next?.id == Self.episode.id)
     }
 }

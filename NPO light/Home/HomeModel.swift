@@ -37,15 +37,24 @@ final class HomeModel {
     /// The *Kijk verder* row (FR-HOME-06).
     private(set) var continuing: [HomeTile] = []
 
+    /// What was saved for later, most recently saved first (FR-LATER-04).
+    private(set) var later: [HomeTile] = []
+
+    /// What is on the watch later list, for an action that says whether it
+    /// saves or removes (FR-LATER-03).
+    private(set) var saved: Set<EpisodeID> = []
+
     let mode: Mode
 
     private let pins: any Pins
     private let watched: WatchedState
+    private let catalogue: any Catalogue
     private let clock: any Clocking
 
-    init(pins: any Pins, watched: WatchedState, clock: any Clocking, mode: Mode) {
+    init(pins: any Pins, watched: WatchedState, catalogue: any Catalogue, clock: any Clocking, mode: Mode) {
         self.pins = pins
         self.watched = watched
+        self.catalogue = catalogue
         self.clock = clock
         self.mode = mode
     }
@@ -58,7 +67,8 @@ final class HomeModel {
         // A pinned series keeps its tile when it has left the row
         // (FR-HOME-07), so its entry is looked for among all of them.
         let pinnedEntries = series.compactMap { pin in entries.first { $0.id == pin.id } }
-        let continued = (row + pinnedEntries).compactMap(\.next?.id)
+        let kept = await watched.later.saved(in: mode)
+        let continued = (row + pinnedEntries).compactMap(\.next?.id) + kept.map(\.id)
         let positions = await watched.progress.progress(of: continued, in: mode)
         pinned = series.map { pin in
             guard let entry = entries.first(where: { $0.id == pin.id }), entry.kind == .series else {
@@ -67,6 +77,44 @@ final class HomeModel {
             return HomeTile(entry, positions: positions)
         }
         continuing = row.map { HomeTile($0, positions: positions) }
+        later = kept.map { HomeTile($0, positions: positions) }
+        saved = Set(kept.map(\.id))
+    }
+
+    /// Saves something for later, or takes it off the list when it is on it
+    /// (FR-LATER-03). `origin` is what is known about it where it is shown.
+    func toggleSave(_ playable: Playable, origin: PlayOrigin) async {
+        await toggleSave(SavedItem(playable, origin: origin))
+    }
+
+    /// The same, for what a tile plays.
+    func toggleSave(_ tile: HomeTile) async {
+        guard let item = tile.saving else { return }
+        await toggleSave(item)
+    }
+
+    private func toggleSave(_ item: SavedItem) async {
+        // A list that could not be written is shown as it is kept.
+        if saved.contains(item.id) {
+            try? await watched.later.remove(item.id, in: mode)
+        } else {
+            try? await watched.later.save(item, in: mode)
+        }
+        await refresh()
+    }
+
+    /// Takes a tile off the watch later row, by hand (FR-LATER-09).
+    func removeSaved(_ tile: HomeTile) async {
+        guard let item = tile.saving else { return }
+        try? await watched.later.remove(item.id, in: mode)
+        await refresh()
+    }
+
+    /// Opens the series an episode belongs to, which a list does not name:
+    /// NPO is asked (Q-10). An episode it cannot place opens nothing.
+    func openSeries(of episode: Playable) async {
+        guard let place = try? await catalogue.place(of: episode.id, in: mode) else { return }
+        open(place.series)
     }
 
     /// Takes a series off the pinned row, from the row itself (FR-HOME-05).

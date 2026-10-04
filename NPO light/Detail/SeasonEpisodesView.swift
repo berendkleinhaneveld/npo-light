@@ -31,7 +31,15 @@ struct SeasonEpisodesView: View {
             HStack(alignment: .top, spacing: 60) {
                 list(episodes)
                 if let previewed = model.previewed {
-                    EpisodePreview(episode: previewed, watched: model.watched(previewed.id))
+                    VStack(alignment: .leading, spacing: 32) {
+                        EpisodePreview(episode: previewed, watched: model.watched(previewed.id))
+                        // The long press is not the only way to learn it
+                        // exists (NFR-A11Y-01).
+                        Text("Houd de selectieknop ingedrukt op een aflevering om hem voor later te bewaren.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .frame(width: 560, alignment: .leading)
+                    }
                 }
             }
         }
@@ -60,6 +68,19 @@ struct SeasonEpisodesView: View {
                         .frame(maxWidth: .infinity)
                     }
                     .focused($focused, equals: episode.id)
+                    .contextMenu {
+                        // The label says which of the two it does
+                        // (FR-LATER-03).
+                        if model.saved.contains(episode.id) {
+                            Button("Verwijderen uit Later kijken", systemImage: "bookmark.slash") {
+                                Task { await model.toggleSave(episode) }
+                            }
+                        } else {
+                            Button("Later kijken", systemImage: "bookmark") {
+                                Task { await model.toggleSave(episode) }
+                            }
+                        }
+                    }
                     // The description is read out with the episode, since the
                     // preview beside the list is not where VoiceOver is.
                     .accessibilityValue(Text(verbatim: episode.synopsis ?? ""))

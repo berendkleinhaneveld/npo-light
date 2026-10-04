@@ -20,12 +20,14 @@ final class PlaybackCoordinator {
 
     private let progress: any ProgressKeeping
     private let history: any WatchHistory
+    private let later: any WatchLater
     private let order: EpisodeOrder
     private let clock: any Clocking
 
-    init(progress: any ProgressKeeping, history: any WatchHistory, order: EpisodeOrder, clock: any Clocking) {
-        self.progress = progress
-        self.history = history
+    init(watched: WatchedState, order: EpisodeOrder, clock: any Clocking) {
+        progress = watched.progress
+        history = watched.history
+        later = watched.later
         self.order = order
         self.clock = clock
     }
@@ -88,7 +90,7 @@ final class PlaybackCoordinator {
                                       duration: Self.known(duration) ?? known?.duration)
         await write(update, in: mode, resting: resting || finishing)
         if passedThreshold {
-            await moveOn(from: id, origin, in: mode)
+            await finished(id, origin, in: mode)
         }
     }
 
@@ -108,11 +110,28 @@ final class PlaybackCoordinator {
                                       updatedAt: clock.now,
                                       duration: known?.duration)
         await write(update, in: mode, resting: true)
-        await moveOn(from: id, origin, in: mode)
+        await finished(id, origin, in: mode)
         guard case .series(let place) = origin,
               let entry = await history.entry(for: place.series.id, in: mode),
               let next = entry.next, next.id != id else { return nil }
         return PlayRequest(playable: next.playable, origin: entry.origin)
+    }
+
+    /// Where an episode sits in its series, for one started from a list that
+    /// did not say: NPO is asked, once it plays. Anything else is answered
+    /// as it was given, and so is an episode NPO could not place.
+    func origin(of playable: Playable, given origin: PlayOrigin, in mode: Mode) async -> PlayOrigin {
+        guard origin == .unknown else { return origin }
+        guard let place = try? await order.catalogue.place(of: playable.id, in: mode) else { return .unknown }
+        return .series(place)
+    }
+
+    /// Everything that finishing `id` sets off, from the one place that sees
+    /// the threshold passed (ADR 0006): its series moves on, and it leaves
+    /// the watch later list (FR-LATER-07).
+    private func finished(_ id: EpisodeID, _ origin: PlayOrigin, in mode: Mode) async {
+        await moveOn(from: id, origin, in: mode)
+        try? await later.remove(id, in: mode)
     }
 
     /// A duration worth keeping: the player answers with something that is

@@ -35,14 +35,17 @@ nonisolated final class StubCatalogue: Catalogue {
     private let answer: @Sendable (String) async throws -> SearchResults
     private let detail: @Sendable (ItemID) async throws -> SeriesDetail
     private let season: @Sendable (SeasonID) async throws -> [Playable]
+    private let place: @Sendable (EpisodeID) async throws -> SeriesPlace?
     private let asked = Mutex<[Search]>([])
     private let askedSeasons = Mutex<[SeasonID]>([])
 
     init(
         answer: @escaping @Sendable (String) async throws -> SearchResults = { _ in StubCatalogue.results },
         detail: @escaping @Sendable (ItemID) async throws -> SeriesDetail = { _ in StubCatalogue.detail },
-        season: @escaping @Sendable (SeasonID) async throws -> [Playable] = { StubCatalogue.episodes(of: $0) }
+        season: @escaping @Sendable (SeasonID) async throws -> [Playable] = { StubCatalogue.episodes(of: $0) },
+        place: @escaping @Sendable (EpisodeID) async throws -> SeriesPlace? = { _ in nil }
     ) {
+        self.place = place
         self.answer = answer
         self.detail = detail
         self.season = season
@@ -82,5 +85,9 @@ nonisolated final class StubCatalogue: Catalogue {
     func episodes(of season: SeasonID, in mode: Mode) async throws -> [Playable] {
         askedSeasons.withLock { $0.append(season) }
         return try await self.season(season)
+    }
+
+    func place(of episode: EpisodeID, in mode: Mode) async throws -> SeriesPlace? {
+        try await place(episode)
     }
 }

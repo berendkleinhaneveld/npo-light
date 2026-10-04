@@ -58,6 +58,9 @@ nonisolated struct HomeTile: Sendable, Equatable, Identifiable {
     /// What playing the tile needs to be told about what it plays.
     let origin: PlayOrigin
 
+    /// The series whose page the tile can open, when it is of one.
+    let series: SeriesSummary?
+
     /// A pinned series nobody started.
     init(pinned series: SeriesSummary) {
         id = series.id
@@ -67,6 +70,20 @@ nonisolated struct HomeTile: Sendable, Equatable, Identifiable {
         itemArtwork = series.artwork
         state = .notStarted
         origin = .unknown
+        self.series = series
+    }
+
+    /// Something saved for later: the tile is that exact thing, never the
+    /// episode after it (FR-LATER-12).
+    init(_ saved: SavedItem, positions: [EpisodeID: PlaybackProgress]) {
+        id = ItemID(rawValue: saved.id.rawValue)
+        kind = saved.isSingle ? .single : .series
+        title = saved.series?.title ?? saved.episode.title
+        artwork = saved.episode.artwork ?? saved.series?.artwork
+        itemArtwork = saved.series?.artwork
+        state = .continues(saved.episode, fraction: positions[saved.id]?.fraction)
+        origin = saved.origin
+        series = saved.series
     }
 
     /// An item somebody started. `positions` holds the position of what it
@@ -77,6 +94,7 @@ nonisolated struct HomeTile: Sendable, Equatable, Identifiable {
         title = entry.title
         origin = entry.origin
         itemArtwork = entry.artwork
+        series = entry.kind == .series ? entry.series : nil
         if let next = entry.next {
             // The episode's own image: it is the episode that will play.
             artwork = next.artwork ?? entry.artwork
@@ -94,7 +112,9 @@ nonisolated struct HomeTile: Sendable, Equatable, Identifiable {
         return PlayRequest(playable: next.playable, origin: origin)
     }
 
-    var series: SeriesSummary? {
-        kind == .series ? SeriesSummary(id: id, title: title, artwork: itemArtwork) : nil
+    /// What the tile plays, as the watch later list keeps it.
+    var saving: SavedItem? {
+        guard case .continues(let next, _) = state else { return nil }
+        return SavedItem(next.playable, origin: origin)
     }
 }

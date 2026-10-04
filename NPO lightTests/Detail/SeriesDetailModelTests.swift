@@ -16,7 +16,7 @@ struct SeriesDetailModelTests {
         SeriesDetailModel(summary: StubCatalogue.results.series[0],
                           catalogue: catalogue,
                           pins: ScriptedPins(),
-                          watched: WatchedState(progress: ScriptedProgress(), history: ScriptedWatchHistory()),
+                          watched: .scripted(),
                           mode: .normal)
     }
 
@@ -24,7 +24,7 @@ struct SeriesDetailModelTests {
         SeriesDetailModel(summary: summary,
                           catalogue: StubCatalogue(),
                           pins: pins,
-                          watched: WatchedState(progress: ScriptedProgress(), history: ScriptedWatchHistory()),
+                          watched: .scripted(),
                           mode: mode)
     }
 

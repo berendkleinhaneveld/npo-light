@@ -23,7 +23,8 @@ extension HomeModel {
     /// something else.
     convenience init(pins: any Pins, mode: Mode) {
         self.init(pins: pins,
-                  watched: WatchedState(progress: ScriptedProgress(), history: ScriptedWatchHistory()),
+                  watched: .scripted(),
+                  catalogue: StubCatalogue(),
                   clock: TestClock(),
                   mode: mode)
     }

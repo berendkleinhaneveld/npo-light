@@ -29,8 +29,7 @@ struct PlayerAutoplayTests {
                     origin: origin,
                     mode: mode,
                     starter: starter ?? playback,
-                    positions: PlaybackCoordinator(progress: ScriptedProgress(),
-                                                   history: ScriptedWatchHistory(),
+                    positions: PlaybackCoordinator(watched: .scripted(),
                                                    order: EpisodeOrder(catalogue: StubCatalogue()),
                                                    clock: clock),
                     clock: clock)

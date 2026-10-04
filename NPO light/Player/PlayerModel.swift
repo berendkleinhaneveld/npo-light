@@ -95,10 +95,13 @@ final class PlayerModel {
         do {
             let playback = try await starter.playback(of: playable, in: mode)
             await resume(playback.player)
-            await positions.started(playable, from: origin, in: mode)
             watch(playback.player)
             state = .playing(playback)
             playback.player.play()
+            // After it plays, so that asking NPO which series an episode
+            // from search belongs to does not hold the picture up.
+            origin = await positions.origin(of: playable, given: origin, in: mode)
+            await positions.started(playable, from: origin, in: mode)
         } catch is CancellationError {
             // The player was closed while it was still preparing.
         } catch BackendError.itemUnavailable {

@@ -8,8 +8,8 @@ import SwiftUI
 /// The composition root (ADR 0011): the one place that names a concrete type
 /// and hands it down, so that the seams ADR 0009 relies on stay reachable.
 ///
-/// The search history, the pins, the positions and what was watched are the
-/// stores so far. Where each keeps its data is ADR 0015.
+/// The search history, the pins, the positions, what was watched and what
+/// was saved for later are the stores. Where each keeps its data is ADR 0015.
 @main
 struct NPOLightApp: App {
     /// How long a request to NPO may stay unanswered before it fails, so that
@@ -30,8 +30,7 @@ struct NPOLightApp: App {
     init() {
         let backend = Self.makeBackend()
         self.backend = backend
-        positions = PlaybackCoordinator(progress: backend.progress,
-                                        history: backend.watched,
+        positions = PlaybackCoordinator(watched: backend.watchedState,
                                         order: EpisodeOrder(catalogue: backend.catalogue),
                                         clock: SystemClock())
         let appModel = AppModel(authenticator: backend.authenticator)
@@ -42,6 +41,7 @@ struct NPOLightApp: App {
         // Normal mode until the mode switch exists (FR-MODE-02).
         _homeModel = State(initialValue: HomeModel(pins: backend.pins,
                                                    watched: backend.watchedState,
+                                                   catalogue: backend.catalogue,
                                                    clock: SystemClock(),
                                                    mode: .normal))
         _searchModel = State(initialValue: SearchModel(catalogue: backend.catalogue,
@@ -86,7 +86,8 @@ struct NPOLightApp: App {
                            searchHistory: ScriptedSearchHistory(),
                            pins: ScriptedPins(),
                            progress: ScriptedProgress(),
-                           watched: ScriptedWatchHistory())
+                           watched: ScriptedWatchHistory(),
+                           later: ScriptedWatchLater())
         }
         #endif
         let configuration = URLSessionConfiguration.ephemeral
@@ -118,7 +119,8 @@ struct NPOLightApp: App {
             searchHistory: SearchHistoryStore(),
             pins: PinStore(),
             progress: ProgressStore.open(in: .cachesDirectory),
-            watched: WatchHistoryStore()
+            watched: WatchHistoryStore(),
+            later: WatchLaterStore()
         )
     }
 
@@ -178,9 +180,10 @@ private struct Backend {
     let pins: any Pins
     let progress: any ProgressKeeping
     let watched: any WatchHistory
+    let later: any WatchLater
 
     /// What a page that shows watched state reads.
     var watchedState: WatchedState {
-        WatchedState(progress: progress, history: watched)
+        WatchedState(progress: progress, history: watched, later: later)
     }
 }

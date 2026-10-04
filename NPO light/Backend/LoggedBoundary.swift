@@ -102,4 +102,10 @@ nonisolated struct LoggedCatalogue: Catalogue {
             try await wrapped.episodes(of: season, in: mode)
         }
     }
+
+    func place(of episode: EpisodeID, in mode: Mode) async throws -> SeriesPlace? {
+        try await LoggedCall.run("place of \(episode.rawValue) in \(mode)", in: .catalogue, log: log) {
+            try await wrapped.place(of: episode, in: mode)
+        }
+    }
 }

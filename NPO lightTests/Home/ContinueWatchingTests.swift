@@ -21,7 +21,8 @@ struct ContinueWatchingTests {
 
     private func model(in mode: Mode = .normal) -> HomeModel {
         HomeModel(pins: pins,
-                  watched: WatchedState(progress: progress, history: history),
+                  watched: WatchedState(progress: progress, history: history, later: ScriptedWatchLater()),
+                  catalogue: StubCatalogue(),
                   clock: TestClock(now: Self.now),
                   mode: mode)
     }

@@ -70,6 +70,8 @@ a standalone episode adds a save action instead (FR-HOME-03, FR-LATER-03).
 - For a series, the primary action plays the next unwatched episode
   (FR-HOME-04).
 - For a series, the page names the episode the primary action plays.
+- An episode shown in a list — a search result — offers the way to the page
+  of the series it belongs to, beside playing it.
 - A series with every episode watched says so and has no primary action: an
   episode is played again from the list.
 - On a series, the pin action reflects the current pinned state and toggles

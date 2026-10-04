@@ -31,7 +31,7 @@ playing a saved item never change what is pinned.
 
 ## FR-LATER-02 — Only films and single episodes can be saved
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 What can be saved is one playable thing: a **film**, a **standalone episode**,
 or **one episode of a series**. A series itself cannot be saved — a series is
@@ -71,11 +71,12 @@ navigating somewhere else first.
 - In every one of those places the action toggles: it saves an unsaved item and
   removes a saved one, and its label says which it will do.
 - The action is reachable from the remote without a hidden gesture being the
-  only route (NFR-A11Y-01).
+  only route (NFR-A11Y-01): it is in the menu that holding the select button
+  opens, and the page says that the menu is there.
 
 ## FR-LATER-04 — Most recently saved first
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The list is ordered by when each item was saved, most recent first — the same
 convention as the pinned row (FR-HOME-02).
@@ -112,7 +113,7 @@ FR-HOME-09.
 
 ## FR-LATER-06 — The list is not capped
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Watch later holds as many items as the family saves. Nothing is dropped to make
 room.
@@ -130,7 +131,7 @@ not a bug.
 
 ## FR-LATER-07 — Finishing an item removes it
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 When playback of a saved item passes the completion threshold (FR-PLAY-04), it
 leaves the watch later list. The list empties itself as the family works
@@ -152,7 +153,7 @@ through it.
 
 ## FR-LATER-08 — A started item stays until it is finished
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Playing part of a saved item does not remove it. It remains on the list, with
 its progress, until it passes the completion threshold or is removed by hand.
@@ -217,7 +218,7 @@ That must not break the home page (FR-CONTENT-05).
 
 ## FR-LATER-12 — Playing from the row
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 A tile in the watch later row plays that exact item.
 

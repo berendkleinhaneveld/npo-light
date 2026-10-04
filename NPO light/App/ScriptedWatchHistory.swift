@@ -37,8 +37,7 @@ actor ScriptedWatchHistory: WatchHistory {
 extension PlaybackCoordinator {
     /// A coordinator whose positions and entries go nowhere, for previews.
     static func scripted() -> PlaybackCoordinator {
-        PlaybackCoordinator(progress: ScriptedProgress(),
-                            history: ScriptedWatchHistory(),
+        PlaybackCoordinator(watched: .scripted(),
                             order: EpisodeOrder(catalogue: ScriptedCatalogue()),
                             clock: SystemClock())
     }

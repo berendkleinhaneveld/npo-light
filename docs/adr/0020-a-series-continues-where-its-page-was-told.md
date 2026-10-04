@@ -41,8 +41,20 @@ the series and the episode's season. `PlaybackCoordinator` then:
 
 A single programme is an item of its own: search results say that it stands
 alone, it is recorded under its own identifier, and finishing it finishes the
-item without asking NPO anything. An episode from search results, whose series
-nobody named, keeps its position and moves no series.
+item without asking NPO anything.
+
+**An episode whose series nobody named is placed by asking NPO.** What NPO
+answers to playing an episode names its series and its season, and
+`/series/page/by/slug/…` turns that name into the series as the app knows it.
+`Catalogue.place(of:)` asks both. The player asks once the picture is on
+screen, so that it holds nothing up; the same question opens an episode's
+series from search results. An episode NPO cannot place keeps its position and
+moves no series.
+
+**Finishing has one place.** The coordinator sees the threshold passed
+([ADR 0006](0006-recently-watched-holds-unfinished-items.md)) and from there
+moves the series on and takes the item off the watch later list
+(FR-LATER-07), wherever it was played from.
 
 **The row is a query, as ADR 0015 said.** *Kijk verder* is worked out from the
 entries when the home page is drawn — not hidden, not finished more than seven
@@ -91,9 +103,10 @@ the series.
 - The position's `@Model` gained an optional attribute. SwiftData adds it to
   a store that is already there; a store it cannot open is started over and
   filled from the copy, as before.
-- **An episode started from search does not move its series on**, and its
-  series does not appear as started. FR-PLAY-09 says so. It stays `Accepted`,
-  as does FR-CONTENT-03, whose single programme has no page yet.
+- An episode started from search costs two more requests, after it has
+  started playing. Seen to work against NPO from the simulator's session; the
+  route by name is one NPO's own app was not seen to use.
+- FR-CONTENT-03 stays `Accepted`: a single programme has no page yet.
 - **Which way the seasons run is inferred from `programSort`**, which is
   about episodes. The two agreed on the two series looked at; a series where
   they differ would be followed in the wrong direction at a season's end.

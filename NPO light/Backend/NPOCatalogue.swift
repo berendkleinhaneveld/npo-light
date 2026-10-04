@@ -62,6 +62,23 @@ nonisolated final class NPOCatalogue: Catalogue {
         return try await body([CatalogueItemBody].self, from: call).compactMap(\.playable)
     }
 
+    /// Two questions: what playing the episode answers, which names its
+    /// series and its season, and that series' page, for the series as the
+    /// app knows one.
+    @concurrent
+    func place(of episode: EpisodeID, in mode: Mode) async throws -> SeriesPlace? {
+        let profile = try await profiles.profile(for: mode)
+        let player = BackendCall(path: NPOWire.playerPath(episode),
+                                 query: [URLQueryItem(name: "player-environment", value: "production")],
+                                 profile: profile)
+        guard let program = try await body(PlayerBody.self, from: player).program,
+              let series = program.seriesSlug, let season = program.seasonSlug else { return nil }
+        let page = BackendCall(path: NPOWire.seriesPath(slug: series), profile: profile)
+        let detail = try await body(SeriesPageBody.self, from: page).detail
+        return SeriesPlace(series: SeriesSummary(id: detail.id, title: detail.title, artwork: detail.artwork),
+                           season: SeasonID(rawValue: season))
+    }
+
     // MARK: the wire
 
     private func body<Body: Decodable>(_ type: Body.Type, from call: BackendCall) async throws -> Body {

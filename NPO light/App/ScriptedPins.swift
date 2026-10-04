@@ -38,7 +38,8 @@ extension HomeModel {
     /// A home page with these series pinned, for previews.
     static func scripted(pinned: [SeriesSummary] = []) -> HomeModel {
         HomeModel(pins: ScriptedPins(pinned),
-                  watched: WatchedState(progress: ScriptedProgress(), history: ScriptedWatchHistory()),
+                  watched: .scripted(),
+                  catalogue: ScriptedCatalogue(),
                   clock: SystemClock(),
                   mode: .normal)
     }
@@ -50,7 +51,7 @@ extension SeriesDetailModel {
         SeriesDetailModel(summary: summary,
                           catalogue: ScriptedCatalogue(),
                           pins: ScriptedPins(),
-                          watched: WatchedState(progress: ScriptedProgress(), history: ScriptedWatchHistory()),
+                          watched: .scripted(),
                           mode: .normal)
     }
 }

@@ -54,6 +54,15 @@ nonisolated struct ScriptedCatalogue: Catalogue {
                      seasons: Self.seasons)
     }
 
+    /// The scripted episodes carry their season in their identifier; anything
+    /// else stands alone.
+    func place(of episode: EpisodeID, in mode: Mode) async throws -> SeriesPlace? {
+        guard let season = Self.seasons.first(where: { episode.rawValue.hasPrefix($0.id.rawValue) }) else {
+            return nil
+        }
+        return SeriesPlace(series: Self.results.series[0], season: season.id)
+    }
+
     /// Episodes that carry their season in their name, so that a test can
     /// tell which season is on screen — and more of them than fit on it, as a
     /// real season has: a list that scrolls is where focus went astray.

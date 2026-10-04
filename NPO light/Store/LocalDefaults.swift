@@ -27,6 +27,7 @@ nonisolated struct LocalDefaults {
         case searchHistory = "search-history"
         case pins
         case watched = "recently-watched"
+        case later = "watch-later"
         case positions
     }
 

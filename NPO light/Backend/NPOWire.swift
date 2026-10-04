@@ -38,6 +38,12 @@ nonisolated enum NPOWire {
         "/series/page/\(series.rawValue)"
     }
 
+    /// A series' page by the name NPO gives the series where it has no
+    /// identifier to give: in what it answers to playing an episode.
+    static func seriesPath(slug: String) -> String {
+        "/series/page/by/slug/\(slug)"
+    }
+
     static func playerPath(_ episode: EpisodeID) -> String {
         "/programs/player/\(episode.rawValue)"
     }

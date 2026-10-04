@@ -78,6 +78,9 @@ final class SeriesDetailModel {
     /// The positions of the episodes on this page that have one.
     private var positions: [EpisodeID: PlaybackProgress] = [:]
 
+    /// What is on this mode's watch later list (FR-LATER-03).
+    private(set) var saved: Set<EpisodeID> = []
+
     private let catalogue: any Catalogue
     private let pins: any Pins
     private let watched: WatchedState
@@ -191,6 +194,20 @@ final class SeriesDetailModel {
         hasNothingNext = entry.map { $0.next == nil } ?? false
         let listed = fetched.values.flatMap { $0.map(\.id) }
         positions = await watched.progress.progress(of: listed + [upNext?.id].compactMap(\.self), in: mode)
+        saved = Set(await watched.later.saved(in: mode).map(\.id))
+    }
+
+    /// Saves an episode of the shown season for later, or takes it off the
+    /// list when it is on it. The series itself is pinned, never saved
+    /// (FR-LATER-02).
+    func toggleSave(_ episode: Playable) async {
+        // A list that could not be written is shown as it is kept.
+        if saved.contains(episode.id) {
+            try? await watched.later.remove(episode.id, in: mode)
+        } else {
+            try? await watched.later.save(SavedItem(episode, origin: request(for: episode).origin), in: mode)
+        }
+        saved = Set(await watched.later.saved(in: mode).map(\.id))
     }
 
     /// Pins the series, or takes its pin away (FR-HOME-03, FR-HOME-05).

@@ -17,12 +17,13 @@ struct SeriesWatchedTests {
 
     private let progress = ScriptedProgress()
     private let history = ScriptedWatchHistory()
+    private let later = ScriptedWatchLater()
 
     private func model(_ catalogue: StubCatalogue = StubCatalogue()) -> SeriesDetailModel {
         SeriesDetailModel(summary: Self.series,
                           catalogue: catalogue,
                           pins: ScriptedPins(),
-                          watched: WatchedState(progress: progress, history: history),
+                          watched: WatchedState(progress: progress, history: history, later: later),
                           mode: .normal)
     }
 
@@ -178,6 +179,37 @@ struct SeriesWatchedTests {
         #expect(listed.playable == episode)
         #expect(listed.origin == .series(SeriesPlace(series: Self.series, season: Self.second)))
         #expect(named.origin == .series(SeriesPlace(series: Self.series, season: Self.first)))
+    }
+
+    // MARK: Watch later
+
+    @Test("FR-LATER-03: an episode is saved from the series' list, as an episode of that series, and removed again")
+    func episodeIsSavedFromTheList() async {
+        let model = await loaded()
+        let episode = Self.episode(2, of: Self.first)
+        #expect(model.saved.isEmpty)
+
+        await model.toggleSave(episode)
+
+        let place = PlayOrigin.series(SeriesPlace(series: Self.series, season: Self.first))
+        #expect(model.saved == [episode.id])
+        #expect(await later.saved(in: .normal).map(\.origin) == [place])
+
+        await model.toggleSave(episode)
+
+        #expect(model.saved.isEmpty)
+        #expect(await later.saved(in: .normal).isEmpty)
+    }
+
+    @Test("FR-LATER-03, FR-LATER-10: the page knows what is already saved, in its own mode")
+    func pageKnowsWhatIsSaved() async {
+        let episode = Self.episode(1, of: Self.first)
+        await later.save(SavedItem(episode, origin: .unknown), in: .normal)
+        await later.save(SavedItem(Self.episode(2, of: Self.first), origin: .unknown), in: .kids)
+
+        let model = await loaded()
+
+        #expect(model.saved == [episode.id])
     }
 
     // MARK: A programme listed latest season first

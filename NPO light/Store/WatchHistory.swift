@@ -22,11 +22,13 @@ nonisolated protocol WatchHistory: Sendable {
     func hide(_ id: ItemID, in mode: Mode) async throws
 }
 
-/// What was watched, as a page reads it: how far each episode was played,
-/// and where each series continues.
+/// What was watched and what is still to watch, as a page reads it: how far
+/// each episode was played, where each series continues, and what was saved
+/// for later.
 nonisolated struct WatchedState: Sendable {
     let progress: any ProgressKeeping
     let history: any WatchHistory
+    let later: any WatchLater
 }
 
 /// The entries as they are kept on the television: in `UserDefaults`, where

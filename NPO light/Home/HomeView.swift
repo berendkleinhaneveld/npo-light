@@ -7,9 +7,8 @@ import SwiftUI
 
 /// The root of the navigation stack: search, and the rows.
 ///
-/// Of the three rows the home page is for, pinned and recently watched are
-/// here (FR-HOME-02, FR-HOME-06). Watch later arrives with the store that
-/// keeps it (FR-HOME-01).
+/// The three rows the home page is for: pinned, recently watched, and watch
+/// later while something is saved (FR-HOME-01).
 struct HomeView: View {
     @Bindable var model: HomeModel
     let search: SearchModel
@@ -26,14 +25,26 @@ struct HomeView: View {
                                 tiles: model.pinned,
                                 select: { model.select($0) },
                                 open: { model.open($0) },
-                                remove: { id in Task { await model.unpin(id) } },
+                                remove: { tile in Task { await model.unpin(tile.id) } },
                                 search: { model.openSearch() })
                         HomeRow(kind: .continuing,
                                 tiles: model.continuing,
                                 select: { model.select($0) },
                                 open: { model.open($0) },
-                                remove: { id in Task { await model.remove(id) } },
-                                search: { model.openSearch() })
+                                remove: { tile in Task { await model.remove(tile.id) } },
+                                search: { model.openSearch() },
+                                saved: model.saved,
+                                toggleSave: { tile in Task { await model.toggleSave(tile) } })
+                        // Absent, heading and all, while nothing is saved
+                        // (FR-LATER-05).
+                        if !model.later.isEmpty {
+                            HomeRow(kind: .later,
+                                    tiles: model.later,
+                                    select: { model.select($0) },
+                                    open: { model.open($0) },
+                                    remove: { tile in Task { await model.removeSaved(tile) } },
+                                    search: { model.openSearch() })
+                        }
                     }
                 }
             }
@@ -46,7 +57,7 @@ struct HomeView: View {
             .navigationDestination(for: Destination.self) { destination in
                 switch destination {
                 case .search:
-                    SearchView(model: search) { model.open($0) }
+                    SearchView(model: search, open: { model.open($0) }, actions: playableActions)
                 case .series(let series):
                     SeriesDetailScreen(series: series,
                                        playbacksEnded: model.playbacksEnded,
@@ -59,6 +70,12 @@ struct HomeView: View {
                 Task { await model.playbackEnded() }
             }
         }
+    }
+
+    private var playableActions: PlayableActions {
+        PlayableActions(isSaved: { model.saved.contains($0) },
+                        toggleSave: { playable, origin in Task { await model.toggleSave(playable, origin: origin) } },
+                        openSeries: { episode in Task { await model.openSeries(of: episode) } })
     }
 
     /// Search without a menu first (FR-SEARCH-01).

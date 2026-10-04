@@ -24,4 +24,9 @@ nonisolated protocol Catalogue: Sendable {
 
     /// The episodes of one season, in broadcast order.
     func episodes(of season: SeasonID, in mode: Mode) async throws -> [Playable]
+
+    /// Where `episode` sits in its series, or `nil` for a programme that
+    /// belongs to none. A list does not say (Q-10); NPO's answer to playing
+    /// the episode does.
+    func place(of episode: EpisodeID, in mode: Mode) async throws -> SeriesPlace?
 }

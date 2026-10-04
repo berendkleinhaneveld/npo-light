@@ -11,6 +11,9 @@ struct SearchView: View {
     @Bindable var model: SearchModel
     let open: (SearchPick) -> Void
 
+    /// What holding the select button on something playable offers.
+    var actions = PlayableActions.none
+
     var body: some View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -35,7 +38,7 @@ struct SearchView: View {
             ProgressView()
                 .padding(.top, 80)
         case .results(let results):
-            SearchResultsView(results: results, open: choose)
+            SearchResultsView(results: results, open: choose, actions: actions)
         case .noResults(let term):
             Text("Niets gevonden voor “\(term)”.")
                 .font(.headline)
@@ -57,11 +60,58 @@ struct SearchView: View {
     }
 }
 
+/// What can be done with something playable besides playing it, from the
+/// place that shows it (FR-LATER-03).
+struct PlayableActions {
+    /// Whether it is on the watch later list now.
+    let isSaved: (EpisodeID) -> Bool
+
+    /// Saves it, or takes it off the list.
+    let toggleSave: (Playable, PlayOrigin) -> Void
+
+    /// Opens the series an episode belongs to.
+    let openSeries: (Playable) -> Void
+
+    static let none = PlayableActions(isSaved: { _ in false }, toggleSave: { _, _ in }, openSeries: { _ in })
+}
+
+/// The menu on a search result that plays: saving it for later, and for an
+/// episode the way to its series, which selecting it does not offer. The
+/// label of the first says which of the two it will do (FR-LATER-03).
+struct PlayableMenu: View {
+    let pick: SearchPick
+    let actions: PlayableActions
+
+    var body: some View {
+        switch pick {
+        case .series:
+            EmptyView()
+        case .single(let playable):
+            save(playable, origin: .single)
+        case .playable(let playable):
+            save(playable, origin: .unknown)
+            Button("Naar de serie", systemImage: "rectangle.stack") { actions.openSeries(playable) }
+        }
+    }
+
+    @ViewBuilder
+    private func save(_ playable: Playable, origin: PlayOrigin) -> some View {
+        if actions.isSaved(playable.id) {
+            Button("Verwijderen uit Later kijken", systemImage: "bookmark.slash") {
+                actions.toggleSave(playable, origin)
+            }
+        } else {
+            Button("Later kijken", systemImage: "bookmark") { actions.toggleSave(playable, origin) }
+        }
+    }
+}
+
 /// A row for each kind: series, then what stands alone, then episodes
 /// (FR-SEARCH-10).
 struct SearchResultsView: View {
     let results: SearchResults
     let open: (SearchPick) -> Void
+    var actions = PlayableActions.none
 
     var body: some View {
         ScrollView {
@@ -80,6 +130,14 @@ struct SearchResultsView: View {
                 // with every episode of every series that shares a word with it.
                 playables("Films en losse programma's", results.singleProgrammes) { .single($0) }
                 playables("Afleveringen", results.episodes) { .playable($0) }
+                // The long press is not the only way to learn it exists
+                // (NFR-A11Y-01).
+                if !results.singleProgrammes.isEmpty || !results.episodes.isEmpty {
+                    Text("Houd de selectieknop ingedrukt op een programma om het voor later te bewaren.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 80)
+                }
             }
         }
     }
@@ -95,6 +153,9 @@ struct SearchResultsView: View {
                         CatalogueTile(artwork: playable.artwork,
                                       title: playable.title,
                                       caption: playable.caption)
+                    }
+                    .contextMenu {
+                        PlayableMenu(pick: pick(playable), actions: actions)
                     }
                 }
             }

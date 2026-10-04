@@ -13,11 +13,13 @@ struct PlaybackCoordinatorTests {
     private static let hour: TimeInterval = 3600
 
     private let store = ScriptedProgress()
+    private let later = ScriptedWatchLater()
     private let clock = TestClock(now: Date(timeIntervalSince1970: 1_000_000))
 
     private var coordinator: PlaybackCoordinator {
-        PlaybackCoordinator(progress: store,
-                            history: ScriptedWatchHistory(),
+        PlaybackCoordinator(watched: WatchedState(progress: store,
+                                                  history: ScriptedWatchHistory(),
+                                                  later: later),
                             order: EpisodeOrder(catalogue: StubCatalogue()),
                             clock: clock)
     }

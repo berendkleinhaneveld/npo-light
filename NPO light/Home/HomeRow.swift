@@ -15,14 +15,20 @@ struct HomeRow: View {
     enum Kind {
         case pinned
         case continuing
+        case later
     }
 
     let kind: Kind
     let tiles: [HomeTile]
     let select: (HomeTile) -> Void
     let open: (SeriesSummary) -> Void
-    let remove: (ItemID) -> Void
+    let remove: (HomeTile) -> Void
     let search: () -> Void
+
+    /// What is on the watch later list, and the way to put a tile's episode
+    /// on it or take it off. Only *Kijk verder* offers it (FR-LATER-03).
+    var saved: Set<EpisodeID> = []
+    var toggleSave: ((HomeTile) -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -43,6 +49,7 @@ struct HomeRow: View {
         switch kind {
         case .pinned: "pinned"
         case .continuing: "continue"
+        case .later: "later"
         }
     }
 
@@ -50,6 +57,7 @@ struct HomeRow: View {
         switch kind {
         case .pinned: "Vastgezet"
         case .continuing: "Kijk verder"
+        case .later: "Later kijken"
         }
     }
 
@@ -57,6 +65,9 @@ struct HomeRow: View {
         switch kind {
         case .pinned: "Nog niets vastgezet."
         case .continuing: "Nog niets bekeken."
+        // Never shown: the row is absent while its list is empty
+        // (FR-LATER-05).
+        case .later: ""
         }
     }
 
@@ -64,6 +75,7 @@ struct HomeRow: View {
         switch kind {
         case .pinned: "Zoek een serie en zet hem vast. Dan staat hij hier, met de volgende aflevering klaar."
         case .continuing: "Wat je gaat kijken, komt hier te staan. Zoek iets om te beginnen."
+        case .later: ""
         }
     }
 
@@ -71,6 +83,28 @@ struct HomeRow: View {
         switch kind {
         case .pinned: "Losmaken"
         case .continuing: "Verwijderen uit Kijk verder"
+        case .later: "Verwijderen uit Later kijken"
+        }
+    }
+
+    private var removalSymbol: String {
+        switch kind {
+        case .pinned: "pin.slash"
+        case .continuing: "xmark"
+        case .later: "bookmark.slash"
+        }
+    }
+
+    /// Saving what the tile plays, or taking it off the list: the label says
+    /// which.
+    @ViewBuilder
+    private func saveButton(for tile: HomeTile) -> some View {
+        if let toggleSave, let item = tile.saving {
+            if saved.contains(item.id) {
+                Button("Verwijderen uit Later kijken", systemImage: "bookmark.slash") { toggleSave(tile) }
+            } else {
+                Button("Later kijken", systemImage: "bookmark") { toggleSave(tile) }
+            }
         }
     }
 
@@ -100,7 +134,8 @@ struct HomeRow: View {
                         if let series = tile.series {
                             Button("Details", systemImage: "info.circle") { open(series) }
                         }
-                        Button(removal, systemImage: kind == .pinned ? "pin.slash" : "xmark") { remove(tile.id) }
+                        saveButton(for: tile)
+                        Button(removal, systemImage: removalSymbol) { remove(tile) }
                     }
                     .accessibilityIdentifier("\(name)-\(tile.id.rawValue)")
                 }
@@ -157,7 +192,9 @@ struct HomeTileView: View {
         case .notStarted:
             Text("Serie")
         case .continues(let next, _):
-            Text(verbatim: tile.kind == .series ? Self.name(of: next) : next.caption ?? "")
+            // An episode saved from search carries its series' name as its
+            // title: it is not said twice.
+            Text(verbatim: tile.kind == .series && next.title != tile.title ? Self.name(of: next) : next.caption ?? "")
         case .finished:
             Label(tile.kind == .series ? Self.seriesWatched : Self.watched, systemImage: "checkmark.circle.fill")
         }

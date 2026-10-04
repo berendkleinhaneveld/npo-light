@@ -16,11 +16,11 @@ struct WatchedThreadTests {
     private static let second = StubCatalogue.seasons[1].id
 
     private let history = ScriptedWatchHistory()
+    private let later = ScriptedWatchLater()
     private let clock = TestClock(now: Date(timeIntervalSince1970: 1_000_000))
 
     private func coordinator(_ catalogue: StubCatalogue = StubCatalogue()) -> PlaybackCoordinator {
-        PlaybackCoordinator(progress: ScriptedProgress(),
-                            history: history,
+        PlaybackCoordinator(watched: WatchedState(progress: ScriptedProgress(), history: history, later: later),
                             order: EpisodeOrder(catalogue: catalogue),
                             clock: clock)
     }
@@ -259,5 +259,80 @@ struct WatchedThreadTests {
 
         #expect(await entry?.next?.id == Self.episode(2, of: Self.first).id)
         #expect(await entry?.isHidden == true)
+    }
+
+    // MARK: Watch later
+
+    @Test("FR-LATER-07: finishing a saved item takes it off the list, wherever it was played from")
+    func finishingRemovesFromWatchLater() async {
+        let coordinator = coordinator()
+        await later.save(SavedItem(Self.film, origin: .single), in: .normal)
+        let episode = Self.episode(1, of: Self.first)
+        await later.save(SavedItem(episode, origin: .unknown), in: .normal)
+
+        await coordinator.played(Self.film.id, from: .single, to: 5090, of: 5100, in: .normal, resting: false)
+        await coordinator.playedToEnd(episode.id, from: .unknown, in: .normal)
+
+        #expect(await later.saved(in: .normal).isEmpty)
+    }
+
+    @Test("FR-LATER-08: a saved item played part of the way stays on the list")
+    func partlyWatchedStaysSaved() async {
+        let coordinator = coordinator()
+        await later.save(SavedItem(Self.film, origin: .single), in: .normal)
+
+        await coordinator.started(Self.film, from: .single, in: .normal)
+        await coordinator.played(Self.film.id, from: .single, to: 2000, of: 5100, in: .normal, resting: true)
+
+        #expect(await later.saved(in: .normal).count == 1)
+    }
+
+    @Test("FR-LATER-07: finishing a saved episode does not save the next one, and leaves the other mode's list alone")
+    func finishingSavesNothingElse() async {
+        let coordinator = coordinator()
+        let episode = Self.episode(1, of: Self.first)
+        let place = PlayOrigin.series(Self.place(in: Self.first))
+        await later.save(SavedItem(episode, origin: place), in: .normal)
+        await later.save(SavedItem(episode, origin: place), in: .kids)
+        await coordinator.started(episode, from: place, in: .normal)
+
+        await coordinator.playedToEnd(episode.id, from: place, in: .normal)
+
+        #expect(await later.saved(in: .normal).isEmpty)
+        #expect(await later.saved(in: .kids).count == 1)
+        // The series moved on, as for any episode.
+        #expect(await entry?.next?.id == Self.episode(2, of: Self.first).id)
+    }
+
+    // MARK: An episode whose series was not named
+
+    @Test("FR-PLAY-09: an episode started from a list is placed in its series by asking NPO")
+    func unknownOriginIsResolved() async {
+        let place = Self.place(in: Self.first)
+        let coordinator = coordinator(StubCatalogue(place: { _ in place }))
+        let episode = Self.episode(1, of: Self.first)
+
+        let origin = await coordinator.origin(of: episode, given: .unknown, in: .normal)
+
+        #expect(origin == .series(place))
+    }
+
+    @Test("FR-PLAY-09: what is already known about something played is not asked for again")
+    func knownOriginIsKept() async {
+        let coordinator = coordinator(StubCatalogue(place: { _ in
+            Issue.record("NPO was asked for a place that was known")
+            return nil
+        }))
+
+        #expect(await coordinator.origin(of: Self.film, given: .single, in: .normal) == .single)
+    }
+
+    @Test("NFR-REL-02: an episode NPO cannot place plays on, as one whose series is not known")
+    func unplaceableStaysUnknown() async {
+        let failing = coordinator(StubCatalogue(place: { _ in throw BackendError.unreachable }))
+        let alone = coordinator(StubCatalogue(place: { _ in nil }))
+
+        #expect(await failing.origin(of: Self.film, given: .unknown, in: .normal) == .unknown)
+        #expect(await alone.origin(of: Self.film, given: .unknown, in: .normal) == .unknown)
     }
 }

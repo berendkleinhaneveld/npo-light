@@ -70,10 +70,21 @@ nonisolated final class NPOStreams: Sendable {
     }
 }
 
-/// `GET /programs/player/{guid}`: the player token. The programme it names and
-/// the next one come with it, and are not read yet.
+/// `GET /programs/player/{guid}`: the player token, and the programme it is
+/// for. The next programme comes with it, and is not read: which episode
+/// follows is taken from the season's list (ADR 0020).
 nonisolated struct PlayerBody: Decodable {
+    struct Program: Decodable {
+        /// The series' name in NPO's addresses. Absent for a programme that
+        /// belongs to no series.
+        let seriesSlug: String?
+
+        /// The season's identifier, whatever the field is called.
+        let seasonSlug: String?
+    }
+
     let token: String
+    let program: Program?
 }
 
 /// `POST /stream-link` on the player host.
