@@ -29,6 +29,7 @@ the old one as superseded instead of rewriting it.
 | [0018](0018-when-a-position-is-written-and-where.md) | When a position is written, and where | Proposed |
 | [0019](0019-play-a-generated-video-where-fairplay-cannot-run.md) | Play a generated video where FairPlay cannot run | Proposed |
 | [0020](0020-a-series-continues-where-its-page-was-told.md) | A series continues where its page was told | Proposed |
+| [0021](0021-the-system-player-through-its-view-controller.md) | Show the system player through its view controller | Proposed |
 
 ## How to add one
 

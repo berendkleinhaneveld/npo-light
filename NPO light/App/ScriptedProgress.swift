@@ -47,7 +47,8 @@ extension PlayerModel {
         PlayerModel(playable: playable,
                     mode: .normal,
                     starter: ScriptedPlayback(),
-                    positions: .scripted())
+                    positions: .scripted(),
+                    clock: SystemClock())
     }
 }
 #endif

@@ -68,7 +68,8 @@ struct NPOLightApp: App {
                                      origin: $0.origin,
                                      mode: .normal,
                                      starter: backend.playback,
-                                     positions: positions)
+                                     positions: positions,
+                                     clock: SystemClock())
                      })
                      .environment(\.artwork, backend.artwork)
         }

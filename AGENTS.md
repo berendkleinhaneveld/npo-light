@@ -202,6 +202,9 @@ SwiftLint settles formatting; these are the conventions it cannot check.
   with the real catalogue and stores around it. Use it to see and to test
   what happens while something plays; the licence exchange itself is only
   ever seen on a television.
+- **The player.** As decided in ADR 0021, video is shown by `SystemPlayer`,
+  not by SwiftUI's `VideoPlayer`: a button the remote can reach while
+  something plays is one of the system player's contextual actions.
 - **Concurrency.** UI state is `@MainActor`. Do not add `@unchecked Sendable`
   or `nonisolated(unsafe)` to silence the compiler — model the isolation
   properly.

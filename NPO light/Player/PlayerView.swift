@@ -14,6 +14,7 @@ struct PlayerView: View {
     var closed: () -> Void = {}
 
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         content
@@ -23,6 +24,11 @@ struct PlayerView: View {
                     await model.close()
                     closed()
                 }
+            }
+            .onChange(of: model.isOver) { _, isOver in
+                // The last episode ended, or going on was stopped: back to
+                // where playback was started from (FR-PLAY-05, FR-PLAY-07).
+                if isOver { dismiss() }
             }
             .onChange(of: scenePhase) { _, phase in
                 // The television went to its home screen, or to sleep.
@@ -35,13 +41,30 @@ struct PlayerView: View {
         case .preparing:
             ProgressView()
         case .playing(let playback):
-            VideoPlayer(player: playback.player)
+            SystemPlayer(player: playback.player, action: stopAction)
                 .ignoresSafeArea()
+                .overlay(alignment: .topLeading) {
+                    if let announced = model.announced {
+                        NextEpisodeNotice(episode: announced)
+                            .padding(80)
+                            .transition(.opacity)
+                    }
+                }
+                .animation(.default, value: model.announced)
         case .failed(let problem):
             PlayerProblemView(title: model.playable.title, problem: problem) {
                 Task { await model.start() }
             }
         }
+    }
+}
+
+extension PlayerView {
+    /// While the player says that an episode started by itself, it offers
+    /// to stop (FR-PLAY-05).
+    private var stopAction: (title: String, run: () -> Void)? {
+        guard model.announced != nil else { return nil }
+        return (String(localized: "Stoppen"), { model.stopGoingOn() })
     }
 }
 

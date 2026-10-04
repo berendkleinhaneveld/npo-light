@@ -168,6 +168,38 @@ struct WatchedThreadTests {
         #expect(await entry?.finishedAt == nil)
     }
 
+    // MARK: What plays next
+
+    @Test("FR-PLAY-05, FR-PLAY-07: an episode that reaches its end is followed by the next, also across seasons")
+    func endAnswersTheNextEpisode() async {
+        let coordinator = coordinator()
+        let episode = Self.episode(2, of: Self.first)
+        let place = Self.place(in: Self.first)
+        await coordinator.started(episode, from: .series(place), in: .normal)
+
+        let next = await coordinator.playedToEnd(episode.id, from: .series(place), in: .normal)
+
+        #expect(next?.playable.id == Self.episode(1, of: Self.second).id)
+        #expect(next?.origin == .series(Self.place(in: Self.second)))
+    }
+
+    @Test("FR-PLAY-07: nothing follows the last episode, a single programme, or an episode whose follower is not known")
+    func endAnswersNothing() async {
+        let last = Self.episode(2, of: Self.second)
+        let coordinator = coordinator()
+        await coordinator.started(last, from: .series(Self.place(in: Self.second)), in: .normal)
+        await coordinator.started(Self.film, from: .single, in: .normal)
+        let unreachable = self.coordinator(StubCatalogue(season: { _ in throw BackendError.unreachable }))
+
+        #expect(await coordinator.playedToEnd(last.id, from: .series(Self.place(in: Self.second)), in: .normal) == nil)
+        #expect(await coordinator.playedToEnd(Self.film.id, from: .single, in: .normal) == nil)
+        #expect(await coordinator.playedToEnd(last.id, from: .unknown, in: .normal) == nil)
+
+        let first = Self.episode(1, of: Self.first)
+        await unreachable.started(first, from: .series(Self.place(in: Self.first)), in: .normal)
+        #expect(await unreachable.playedToEnd(first.id, from: .series(Self.place(in: Self.first)), in: .normal) == nil)
+    }
+
     // MARK: A single programme
 
     private static let film = Playable(id: EpisodeID(rawValue: "film"),

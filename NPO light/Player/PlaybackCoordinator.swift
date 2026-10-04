@@ -95,7 +95,12 @@ final class PlaybackCoordinator {
     /// Playback of `id` reached its end. That finishes it whatever its
     /// duration, which is the only way an item of unknown duration is
     /// finished.
-    func playedToEnd(_ id: EpisodeID, from origin: PlayOrigin = .unknown, in mode: Mode) async {
+    ///
+    /// Answers what plays after it: the episode its series now continues
+    /// with. Nothing after a single programme, after a series' last episode,
+    /// or when what follows is not known (FR-PLAY-07).
+    @discardableResult
+    func playedToEnd(_ id: EpisodeID, from origin: PlayOrigin = .unknown, in mode: Mode) async -> PlayRequest? {
         let known = await progress.progress(of: id, in: mode)
         let update = PlaybackProgress(id: id,
                                       offset: nil,
@@ -104,6 +109,10 @@ final class PlaybackCoordinator {
                                       duration: known?.duration)
         await write(update, in: mode, resting: true)
         await moveOn(from: id, origin, in: mode)
+        guard case .series(let place) = origin,
+              let entry = await history.entry(for: place.series.id, in: mode),
+              let next = entry.next, next.id != id else { return nil }
+        return PlayRequest(playable: next.playable, origin: entry.origin)
     }
 
     /// A duration worth keeping: the player answers with something that is

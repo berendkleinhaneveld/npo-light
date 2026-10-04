@@ -84,7 +84,7 @@ point, chosen to be adjusted once the family has lived with it
 
 ## FR-PLAY-05 — Autoplay in normal mode
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 In normal mode, finishing an episode of a series plays the next one straight
 away.
@@ -93,7 +93,8 @@ away.
 
 - The next episode starts without the user pressing anything.
 - An overlay names the next episode and offers to stop, for long enough to be
-  used.
+  used: ten seconds
+  ([ADR 0021](../adr/0021-the-system-player-through-its-view-controller.md)).
 - Choosing to stop returns to where playback was started from, not to a dead
   screen.
 

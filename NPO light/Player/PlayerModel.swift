@@ -7,8 +7,9 @@ import AVFoundation
 import Foundation
 import Observation
 
-/// One playback: getting a stream, playing it, and what to say when that does
-/// not work (FR-PLAY-10).
+/// One sitting at the player: getting a stream, playing it, what to say when
+/// that does not work (FR-PLAY-10), and going on to the next episode when one
+/// ends (FR-PLAY-05, FR-PLAY-07).
 @MainActor
 @Observable
 final class PlayerModel {
@@ -29,16 +30,34 @@ final class PlayerModel {
         case failed(Problem)
     }
 
-    let playable: Playable
+    /// How long the player says that the next episode started by itself,
+    /// and offers to stop: long enough to find the remote (FR-PLAY-05).
+    static let announcementTime = Duration.seconds(10)
+
+    /// What is playing: what was asked for, and after it the episodes that
+    /// followed by themselves.
+    private(set) var playable: Playable
 
     /// What whoever started it knew about it.
-    let origin: PlayOrigin
+    private(set) var origin: PlayOrigin
     let mode: Mode
 
     private(set) var state = State.preparing
 
+    /// The episode that started by itself a moment ago, while the player
+    /// says so (FR-PLAY-05).
+    private(set) var announced: Playable?
+
+    /// The sitting is over, and the player is to go away: the last episode
+    /// ended, or somebody stopped it from going on (FR-PLAY-07).
+    private(set) var isOver = false
+
     private let starter: any PlaybackStarting
     private let positions: PlaybackCoordinator
+    private let clock: any Clocking
+    /// The wait after which the announcement goes away, while it runs.
+    private(set) var announcing: Task<Void, Never>?
+    private var isClosed = false
     private var itemStatus: NSKeyValueObservation?
     private var pauses: NSKeyValueObservation?
     private var ticks: (player: AVPlayer, token: Any)?
@@ -51,12 +70,14 @@ final class PlayerModel {
          origin: PlayOrigin = .unknown,
          mode: Mode,
          starter: any PlaybackStarting,
-         positions: PlaybackCoordinator) {
+         positions: PlaybackCoordinator,
+         clock: any Clocking) {
         self.playable = playable
         self.origin = origin
         self.mode = mode
         self.starter = starter
         self.positions = positions
+        self.clock = clock
     }
 
     /// The problem on screen, if there is one.
@@ -98,6 +119,8 @@ final class PlayerModel {
 
     /// The player was closed.
     func stop() {
+        isClosed = true
+        announcing?.cancel()
         rest()
         stopWatching()
         if case .playing(let playback) = state {
@@ -181,8 +204,45 @@ final class PlayerModel {
     }
 
     private func playedToEnd() {
-        writing = Task { [positions, id = playable.id, origin, mode] in
-            await positions.playedToEnd(id, from: origin, in: mode)
+        writing = Task {
+            await self.ended()
+        }
+    }
+
+    /// What is playing reached its end. In normal mode the next episode of
+    /// its series starts straight away, and the player says so for a while;
+    /// with nothing to go on to, the sitting is over (FR-PLAY-05,
+    /// FR-PLAY-07).
+    ///
+    /// Kids mode is to pause first (FR-PLAY-06). Until it does, it does not
+    /// go on by itself at all.
+    func ended() async {
+        let next = await positions.playedToEnd(playable.id, from: origin, in: mode)
+        guard !isClosed else { return }
+        guard mode == .normal, let next else {
+            isOver = true
+            return
+        }
+        playable = next.playable
+        origin = next.origin
+        await start()
+        guard case .playing = state, !isClosed else { return }
+        announce(next.playable)
+    }
+
+    /// Somebody chose not to go on with the episode that started by itself:
+    /// back to where playback was started from (FR-PLAY-05).
+    func stopGoingOn() {
+        isOver = true
+    }
+
+    private func announce(_ playable: Playable) {
+        announcing?.cancel()
+        announced = playable
+        announcing = Task { [clock] in
+            // Cancelled when the next announcement, or the end, comes first.
+            guard (try? await clock.wait(for: Self.announcementTime)) != nil else { return }
+            self.announced = nil
         }
     }
 

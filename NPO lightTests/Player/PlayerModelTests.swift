@@ -111,7 +111,8 @@ struct PlayerModelTests {
                     positions: PlaybackCoordinator(progress: store,
                                                    history: history,
                                                    order: EpisodeOrder(catalogue: StubCatalogue()),
-                                                   clock: TestClock()))
+                                                   clock: TestClock()),
+                    clock: TestClock())
     }
 
     private func playhead(of model: PlayerModel) -> TimeInterval? {
@@ -220,7 +221,8 @@ struct PlayerModelTests {
                                 positions: PlaybackCoordinator(progress: ScriptedProgress(),
                                                                history: history,
                                                                order: EpisodeOrder(catalogue: StubCatalogue()),
-                                                               clock: TestClock()))
+                                                               clock: TestClock()),
+                                clock: TestClock())
 
         await model.start()
 

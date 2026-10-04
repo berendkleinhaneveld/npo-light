@@ -13,7 +13,8 @@ extension PlayerModel {
         self.init(playable: playable,
                   mode: mode,
                   starter: starter,
-                  positions: .scripted())
+                  positions: .scripted(),
+                  clock: TestClock())
     }
 }
 
