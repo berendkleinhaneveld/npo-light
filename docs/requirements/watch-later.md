@@ -202,7 +202,7 @@ way round.
 
 ## FR-LATER-11 — A saved item that disappears
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Rights expire, and a saved item may be gone by the time the family gets to it.
 That must not break the home page (FR-CONTENT-05).

@@ -177,7 +177,7 @@ struct HomeTileView: View {
 
     /// How far in the episode is, when that is known (FR-HOME-06).
     @ViewBuilder private var progress: some View {
-        if case .continues(_, let fraction?) = tile.state {
+        if !tile.isUnavailable, case .continues(_, let fraction?) = tile.state {
             ProgressView(value: fraction)
                 .padding(.horizontal, 12)
                 .padding(.bottom, 8)
@@ -188,6 +188,14 @@ struct HomeTileView: View {
     /// The words carry the state, not a colour or a symbol alone
     /// (NFR-A11Y-04).
     @ViewBuilder private var line: some View {
+        if tile.isUnavailable {
+            Label("Niet meer beschikbaar", systemImage: "exclamationmark.triangle.fill")
+        } else {
+            available
+        }
+    }
+
+    @ViewBuilder private var available: some View {
         switch tile.state {
         case .notStarted:
             Text("Serie")

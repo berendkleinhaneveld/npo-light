@@ -31,6 +31,7 @@ the old one as superseded instead of rewriting it.
 | [0020](0020-a-series-continues-where-its-page-was-told.md) | A series continues where its page was told | Proposed |
 | [0021](0021-the-system-player-through-its-view-controller.md) | Show the system player through its view controller | Proposed |
 | [0022](0022-a-mode-switch-builds-the-screens-again.md) | A mode switch builds the screens again | Proposed |
+| [0023](0023-ask-whether-a-tile-still-works-after-drawing-it.md) | Ask whether a tile still works, after drawing it | Proposed |
 
 ## How to add one
 

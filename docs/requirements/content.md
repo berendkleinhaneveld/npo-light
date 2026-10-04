@@ -96,7 +96,7 @@ trip.
 
 ## FR-CONTENT-05 — An item that disappears does not break the app
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Items are removed from NPO's catalogue when their rights expire. A pinned or
 recently watched item that no longer exists must not break the home page.

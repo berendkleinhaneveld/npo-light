@@ -48,6 +48,16 @@ final class HomeModel {
 
     let mode: Mode
 
+    /// How long an answer about a tile's availability is good for, before
+    /// NPO is asked again.
+    static let availabilityAge: TimeInterval = 60 * 60
+
+    /// The look at what the tiles would play, while it is under way.
+    private(set) var checking: Task<Void, Never>?
+
+    /// What NPO said about what the tiles would play, and when.
+    private var availability: [HomeTile.Subject: (isAvailable: Bool, asked: Date)] = [:]
+
     private let pins: any Pins
     private let watched: WatchedState
     private let catalogue: any Catalogue
@@ -82,6 +92,55 @@ final class HomeModel {
         continuing = row.map { HomeTile($0, positions: positions) }
         later = kept.map { HomeTile($0, positions: positions) }
         saved = Set(kept.map(\.id))
+        mark()
+        // After the rows are drawn from what is kept: asking NPO must not
+        // hold the home page up (NFR-PERF-03).
+        checking?.cancel()
+        checking = Task { await self.checkAvailability() }
+    }
+
+    /// Asks NPO whether what each tile would play is still there, for the
+    /// tiles it has not asked about lately, and marks the ones that are not
+    /// (FR-CONTENT-05, FR-LATER-11). Only a clear no marks a tile: a tile
+    /// NPO could not be asked about is left as it is.
+    func checkAvailability() async {
+        let subjects = Set((pinned + continuing + later).map(\.subject)).filter { subject in
+            guard let known = availability[subject] else { return true }
+            return clock.now.timeIntervalSince(known.asked) >= Self.availabilityAge
+        }
+        for subject in subjects {
+            guard !Task.isCancelled, let isAvailable = await isAvailable(subject) else { continue }
+            availability[subject] = (isAvailable, clock.now)
+        }
+        mark()
+    }
+
+    private func isAvailable(_ subject: HomeTile.Subject) async -> Bool? {
+        do {
+            switch subject {
+            case .playable(let id): return try await catalogue.programme(id, in: mode).isPlayable
+            case .series(let id): _ = try await catalogue.series(id, in: mode)
+            }
+            return true
+        } catch BackendError.itemUnavailable {
+            return false
+        } catch {
+            return nil
+        }
+    }
+
+    /// Puts what is known about availability on the tiles.
+    private func mark() {
+        func marked(_ tiles: [HomeTile]) -> [HomeTile] {
+            tiles.map { tile in
+                var tile = tile
+                tile.isUnavailable = availability[tile.subject]?.isAvailable == false
+                return tile
+            }
+        }
+        pinned = marked(pinned)
+        continuing = marked(continuing)
+        later = marked(later)
     }
 
     /// Saves something for later, or takes it off the list when it is on it
