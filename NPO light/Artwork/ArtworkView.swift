@@ -17,6 +17,9 @@ struct ArtworkView: View {
     let url: URL?
     var size = ArtworkSize.tile
 
+    /// Which part of the image stays in view when the frame is not its shape.
+    var alignment = Alignment.center
+
     @Environment(\.artwork) private var artwork
     @State private var loaded: Loaded?
 
@@ -31,7 +34,7 @@ struct ArtworkView: View {
         // The frame decides the size and the image fills it: an overlay takes
         // the size it is offered, where the image alone would take its own.
         Color.clear
-            .overlay { content }
+            .overlay(alignment: alignment) { content }
             .clipped()
             .task(id: url) { await load() }
             .accessibilityHidden(true)

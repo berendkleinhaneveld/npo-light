@@ -32,7 +32,10 @@ We load images ourselves, through an injected `ArtworkProviding`.
 
 - **Asked for at a size.** `ArtworkSize` is an enumeration of what the host
   will make — `tile` (600) and `large` (1200) — and puts `dimensions` on the
-  address. A view names the size, never a number of pixels.
+  address. A view names the size, never a number of pixels. One more, `full`,
+  is for the image across a series' page: the host makes nothing between 1200
+  and the original, so it asks for the original and decodes it no wider than
+  1920 pixels — 8 MB in memory, for the one image a page has.
 - **Decoded where it is fetched.** `ArtworkLoader` is `@concurrent`: it
   fetches, and decodes with ImageIO to pixels no larger than the size asked
   for, before anything reaches the main actor. That also holds when the host

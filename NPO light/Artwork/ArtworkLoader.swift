@@ -17,7 +17,8 @@ import Synchronization
 /// it to the moment it was drawn, on the main thread — which is what made the
 /// keyboard stutter while a search's results arrived.
 nonisolated final class ArtworkLoader: ArtworkProviding {
-    /// 64 MB of decoded pixels: about eighty tiles, or twenty large images.
+    /// 64 MB of decoded pixels: about eighty tiles, twenty large images, or
+    /// eight that fill the screen.
     static let defaultCeiling = 64 * 1024 * 1024
 
     private struct State {

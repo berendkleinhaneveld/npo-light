@@ -80,6 +80,11 @@ final class NPOLightUITests: XCTestCase {
         XCTAssertTrue(app.buttons["episode-season-1-episode-1"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.descendants(matching: .any)["episode-preview"].exists)
 
+        // The page opens on the series itself; down goes into its seasons,
+        // on the one being shown.
+        remote.press(.down)
+        XCTAssertTrue(firstSeason.hasFocus)
+
         // Moving along the picker shows the next season without a press.
         remote.press(.right)
         XCTAssertTrue(app.buttons["episode-season-2-episode-1"].waitForExistence(timeout: 10))
@@ -117,6 +122,7 @@ final class NPOLightUITests: XCTestCase {
         let firstSeason = app.buttons["season-season-1"]
         XCTAssertTrue(firstSeason.waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["episode-season-1-episode-1"].waitForExistence(timeout: 10))
+        remote.press(.down)
         remote.press(.right)
         XCTAssertTrue(app.buttons["episode-season-2-episode-1"].waitForExistence(timeout: 10))
 
@@ -290,10 +296,10 @@ final class NPOLightUITests: XCTestCase {
         remote.press(.select)
         XCTAssertTrue(app.buttons["episode-season-1-episode-1"].waitForExistence(timeout: 10))
 
-        // Down the whole season, which is longer than the screen, and once
-        // more: focus is on the last episode and stays there.
+        // Into the seasons, down the whole season, which is longer than the
+        // screen, and once more: focus is on the last episode and stays there.
         let last = app.buttons["episode-season-1-episode-12"]
-        for _ in 0..<13 {
+        for _ in 0..<14 {
             remote.press(.down)
         }
         XCTAssertTrue(last.hasFocus)

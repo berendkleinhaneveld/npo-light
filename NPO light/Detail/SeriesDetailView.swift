@@ -5,33 +5,67 @@
 
 import SwiftUI
 
-/// A series: its header, a season picker, and one season's episodes with the
-/// focused one previewed beside them (FR-CONTENT-03, -07, -08).
+/// A series: its image across the top of the page with the title and the
+/// actions on it, and under that the seasons, with one season's episodes and
+/// the focused one previewed beside them (FR-CONTENT-03, -07, -08).
+///
+/// The page is two screens high. It opens on the first, and moves to the
+/// second when focus goes into the seasons, so that the list has the whole
+/// height of the television.
 ///
 /// Watched state is not here yet: it needs the store of positions.
 struct SeriesDetailView: View {
+    /// How much of the first screen the image takes. The rest shows the top
+    /// of the seasons, which says there is something below.
+    static let heroHeight: CGFloat = 620
+
+    nonisolated private enum Part: Hashable, Sendable {
+        case hero
+        case seasons
+    }
+
     let model: SeriesDetailModel
     let play: (Playable) -> Void
 
-    @Namespace private var page
+    @State private var scroll = ScrollPosition(idType: Part.self)
+    @State private var isBrowsing = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 32) {
-            SeriesHeaderView(title: model.summary.title,
-                             detail: loadedDetail,
-                             fallbackArtwork: model.summary.artwork,
-                             isPinned: model.isPinned) {
-                Task { await model.togglePin() }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                SeriesHero(title: model.summary.title,
+                           detail: loadedDetail,
+                           fallbackArtwork: model.summary.artwork,
+                           isPinned: model.isPinned,
+                           togglePin: { Task { await model.togglePin() } },
+                           focused: { isBrowsing = false })
+                    .id(Part.hero)
+                seasons
+                    .id(Part.seasons)
             }
-            // The page opens on its seasons and episodes, as it did before
-            // there was a button above them.
-            content
-                .prefersDefaultFocus(in: page)
+            .scrollTargetLayout()
         }
-        .focusScope(page)
-        .padding(.horizontal, 80)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .scrollPosition($scroll)
+        .onChange(of: isBrowsing) { _, isBrowsing in
+            withAnimation {
+                scroll.scrollTo(id: isBrowsing ? Part.seasons : Part.hero, anchor: .top)
+            }
+        }
+        .background(Color.black)
+        .ignoresSafeArea()
         .task { await model.load() }
+    }
+
+    /// The second screen: exactly as high as the television, inside its safe
+    /// area.
+    private var seasons: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            content
+        }
+        .padding(.horizontal, 80)
+        .padding(.vertical, 60)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .containerRelativeFrame(.vertical, alignment: .top)
     }
 
     private var loadedDetail: SeriesDetail? {
@@ -46,9 +80,10 @@ struct SeriesDetailView: View {
                 .frame(maxWidth: .infinity)
         case .loaded:
             SeasonPicker(seasons: model.pickerSeasons, shown: model.shownSeason) {
-                model.pickerFocusMoved(to: $0, from: $1)
+                isBrowsing = true
+                return model.pickerFocusMoved(to: $0, from: $1)
             }
-            SeasonEpisodesView(model: model, play: play)
+            SeasonEpisodesView(model: model, play: play) { isBrowsing = true }
                 // A list of its own for each season. When a season already
                 // fetched replaced another in the same list, focus went to
                 // rows that were no longer drawn: nothing was highlighted
@@ -72,32 +107,70 @@ struct SeriesDetailView: View {
     }
 }
 
-/// The series' own image, title and description, and its pin (FR-HOME-03).
-struct SeriesHeaderView: View {
+/// The series' own image from edge to edge, fading into the page, with the
+/// title, the description and the pin on it (FR-CONTENT-08, FR-HOME-03).
+struct SeriesHero: View {
     let title: String
     let detail: SeriesDetail?
     let fallbackArtwork: URL?
     let isPinned: Bool
     let togglePin: () -> Void
 
+    /// Focus came to one of the actions.
+    let focused: () -> Void
+
+    @FocusState private var hasFocus: Bool
+
     var body: some View {
-        HStack(alignment: .top, spacing: 40) {
-            ArtworkView(url: detail?.artwork ?? fallbackArtwork, size: .large)
-                .frame(width: 400, height: 225)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-            VStack(alignment: .leading, spacing: 16) {
-                Text(verbatim: detail?.title ?? title)
-                    .font(.title2)
-                if let synopsis = detail?.synopsis {
-                    Text(verbatim: synopsis)
-                        .font(.body)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(3)
-                }
-                pin
-            }
+        ZStack(alignment: .bottomLeading) {
+            // The top of the image: that is where the faces are, and the
+            // bottom is under the title anyway.
+            ArtworkView(url: detail?.artwork ?? fallbackArtwork, size: .full, alignment: .top)
+            shade
+            info
         }
+        .frame(maxWidth: .infinity)
+        .frame(height: SeriesDetailView.heroHeight)
+        .clipped()
         .focusSection()
+        .onChange(of: hasFocus) { _, hasFocus in
+            if hasFocus { focused() }
+        }
+    }
+
+    /// Dark where the text is and at the bottom, where the image runs into
+    /// the page; the image itself to the right.
+    private var shade: some View {
+        ZStack {
+            LinearGradient(stops: [.init(color: .black, location: 0),
+                                   .init(color: .black.opacity(0.85), location: 0.38),
+                                   .init(color: .black.opacity(0.15), location: 0.78)],
+                           startPoint: .leading,
+                           endPoint: .trailing)
+            LinearGradient(stops: [.init(color: .black, location: 0),
+                                   .init(color: .clear, location: 0.45)],
+                           startPoint: .bottom,
+                           endPoint: .top)
+        }
+    }
+
+    private var info: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text(verbatim: detail?.title ?? title)
+                .font(.title.bold())
+                .lineLimit(2)
+            if let synopsis = detail?.synopsis {
+                Text(verbatim: synopsis)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(4)
+            }
+            pin
+                .padding(.top, 12)
+        }
+        .frame(maxWidth: 1040, alignment: .leading)
+        .padding(.horizontal, 80)
+        .padding(.bottom, 40)
     }
 
     /// The words say which of the two it does, not only the symbol
@@ -105,9 +178,11 @@ struct SeriesHeaderView: View {
     @ViewBuilder private var pin: some View {
         if isPinned {
             Button("Losmaken", systemImage: "pin.slash", action: togglePin)
+                .focused($hasFocus)
                 .accessibilityIdentifier("series-unpin")
         } else {
             Button("Vastzetten", systemImage: "pin", action: togglePin)
+                .focused($hasFocus)
                 .accessibilityIdentifier("series-pin")
         }
     }
@@ -166,6 +241,9 @@ struct SeasonEpisodesView: View {
     let model: SeriesDetailModel
     let play: (Playable) -> Void
 
+    /// Focus came to an episode.
+    var focusEntered: () -> Void = {}
+
     @FocusState private var focused: EpisodeID?
 
     var body: some View {
@@ -221,7 +299,9 @@ struct SeasonEpisodesView: View {
         .frame(width: 900)
         .focusSection()
         .onChange(of: focused) { _, episode in
-            if let episode { model.focus(episode) }
+            guard let episode else { return }
+            focusEntered()
+            model.focus(episode)
         }
     }
 }
@@ -260,8 +340,13 @@ struct EpisodePreview: View {
     SeriesDetailView(model: .scripted(ScriptedCatalogue.results.series[0]), play: { _ in })
 }
 
-#Preview("Header") {
-    SeriesHeaderView(title: "Freeks wilde wereld", detail: nil, fallbackArtwork: nil, isPinned: false) {}
+#Preview("Hero") {
+    SeriesHero(title: "Freeks wilde wereld",
+               detail: nil,
+               fallbackArtwork: nil,
+               isPinned: false,
+               togglePin: {},
+               focused: {})
 }
 
 #Preview("Picker") {

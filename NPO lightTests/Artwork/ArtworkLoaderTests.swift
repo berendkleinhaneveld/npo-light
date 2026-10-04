@@ -45,6 +45,20 @@ struct ArtworkLoaderTests {
         #expect(sent.query() == "dimensions=\(dimensions)")
     }
 
+    @Test("NFR-PERF-05: an image for the whole screen is the original, decoded no wider than the screen")
+    func fullSizeIsTheOriginalScaledDown() async throws {
+        let transport = try Self.host(width: 3024, height: 1701)
+        let loader = ArtworkLoader(transport: transport, log: RecordingLog())
+
+        let image = try await loader.image(at: try Self.address(), size: .full)
+
+        // The host scales to no size between 1200 and the original, so it is
+        // not asked to.
+        #expect(transport.sent.first?.url == (try Self.address()))
+        #expect(image.width == 1920)
+        #expect(image.height == 1080)
+    }
+
     @Test("NFR-PERF-05: an original that arrives anyway is decoded no larger than it is shown")
     func originalIsScaledDown() async throws {
         let loader = ArtworkLoader(transport: try Self.host(width: 3024, height: 1701), log: RecordingLog())

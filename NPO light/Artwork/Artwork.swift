@@ -15,8 +15,13 @@ nonisolated enum ArtworkSize: Sendable, Hashable, CaseIterable {
     /// A tile in a row: 320 points wide, 640 pixels on a 4K television.
     case tile
 
-    /// A series' header, or the episode previewed beside a list.
+    /// The episode previewed beside a list.
     case large
+
+    /// A series' image across the whole screen. The host makes nothing
+    /// between 1200 pixels and the original, so this is the original, decoded
+    /// no larger than the screen is wide.
+    case full
 
     /// The longest side, in pixels. The host fits the image inside a square of
     /// this size and keeps its shape.
@@ -24,12 +29,17 @@ nonisolated enum ArtworkSize: Sendable, Hashable, CaseIterable {
         switch self {
         case .tile: 600
         case .large: 1200
+        case .full: 1920
         }
     }
 
+    /// Whether the host is asked to scale. It only does for sizes it knows.
+    private var isScaledByHost: Bool { self != .full }
+
     /// `url`, asking for this size.
     func address(of url: URL) -> URL {
-        guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return url }
+        guard isScaledByHost,
+              var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return url }
         var query = (components.queryItems ?? []).filter { $0.name != Self.parameter }
         query.append(URLQueryItem(name: Self.parameter, value: "\(pixels)x\(pixels)"))
         components.queryItems = query
