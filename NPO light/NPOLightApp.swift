@@ -8,7 +8,8 @@ import SwiftUI
 /// The composition root (ADR 0011): the one place that names a concrete type
 /// and hands it down, so that the seams ADR 0009 relies on stay reachable.
 ///
-/// The search history and the pins are the first of the stores. Where each keeps its data
+/// The search history, the pins and the positions are the first of the
+/// stores. Where each keeps its data
 /// is ADR 0015.
 @main
 struct NPOLightApp: App {
@@ -25,10 +26,12 @@ struct NPOLightApp: App {
     @State private var searchModel: SearchModel
 
     private let backend: Backend
+    private let positions: PlaybackCoordinator
 
     init() {
         let backend = Self.makeBackend()
         self.backend = backend
+        positions = PlaybackCoordinator(progress: backend.progress, clock: SystemClock())
         let appModel = AppModel(authenticator: backend.authenticator)
         _appModel = State(initialValue: appModel)
         _signInModel = State(initialValue: SignInModel(authenticator: backend.authenticator,
@@ -51,8 +54,8 @@ struct NPOLightApp: App {
                      seriesModel: { [backend] in
                          SeriesDetailModel(summary: $0, catalogue: backend.catalogue, pins: backend.pins, mode: .normal)
                      },
-                     playerModel: { [backend] in
-                         PlayerModel(playable: $0, mode: .normal, starter: backend.playback)
+                     playerModel: { [backend, positions] in
+                         PlayerModel(playable: $0, mode: .normal, starter: backend.playback, positions: positions)
                      })
                      .environment(\.artwork, backend.artwork)
         }
@@ -67,7 +70,8 @@ struct NPOLightApp: App {
                            playback: ScriptedPlayback(),
                            artwork: NoArtwork(),
                            searchHistory: ScriptedSearchHistory(),
-                           pins: ScriptedPins())
+                           pins: ScriptedPins(),
+                           progress: ScriptedProgress())
         }
         #endif
         let configuration = URLSessionConfiguration.ephemeral
@@ -94,7 +98,8 @@ struct NPOLightApp: App {
             playback: LoggedPlayback(wrapping: playback, log: log),
             artwork: ArtworkLoader(transport: URLSessionTransport(session: artworkSession()), log: log),
             searchHistory: SearchHistoryStore(),
-            pins: PinStore()
+            pins: PinStore(),
+            progress: ProgressStore.open(in: .cachesDirectory)
         )
     }
 
@@ -141,4 +146,5 @@ private struct Backend {
     let artwork: any ArtworkProviding
     let searchHistory: any SearchHistory
     let pins: any Pins
+    let progress: any ProgressKeeping
 }

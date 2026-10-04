@@ -20,7 +20,7 @@ and audio-track selection that tvOS provides.
 
 ## FR-PLAY-02 — Resume where you stopped
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 An item with a stored position resumes there. One without starts at the
 beginning.
@@ -32,10 +32,13 @@ beginning.
 - An item watched past the completion threshold (FR-PLAY-04) starts from the
   beginning when it is played again deliberately.
 - Positions are stored per mode (FR-MODE-05).
+- Something watched again after it was finished stays watched, and can itself
+  be resumed where it was stopped
+  ([ADR 0018](../adr/0018-when-a-position-is-written-and-where.md)).
 
 ## FR-PLAY-03 — Positions are persisted, not lost
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The playback position is written to the local store regularly during playback
 and when playback ends, so that killing the app or losing power costs seconds,
@@ -43,7 +46,8 @@ not the whole episode.
 
 **Acceptance criteria**
 
-- The position is persisted at a fixed interval during playback.
+- The position is persisted at a fixed interval during playback: every ten
+  seconds ([ADR 0018](../adr/0018-when-a-position-is-written-and-where.md)).
 - The position is persisted when playback pauses, stops, or the app goes to the
   background.
 - After a crash or a force quit, the resume point is no more than that interval
@@ -51,7 +55,7 @@ not the whole episode.
 
 ## FR-PLAY-04 — "Finished" has one definition
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 An episode counts as finished once playback passes **the later of 95% of its
 duration and the point where 90 seconds remain**. Everything that depends on

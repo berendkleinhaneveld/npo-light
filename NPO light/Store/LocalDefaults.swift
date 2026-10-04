@@ -26,6 +26,7 @@ nonisolated struct LocalDefaults {
     enum Record: String, CaseIterable, Sendable {
         case searchHistory = "search-history"
         case pins
+        case positions
     }
 
     /// Comfortably below the 512 KB at which tvOS starts to warn.
@@ -47,6 +48,12 @@ nonisolated struct LocalDefaults {
         Record.allCases.reduce(0) { total, record in
             total + Mode.allCases.reduce(0) { $0 + (data(for: record, in: $1)?.count ?? 0) }
         }
+    }
+
+    /// How large `record` may be in `mode` without crossing the ceiling,
+    /// given everything else that is kept.
+    func room(for record: Record, in mode: Mode) -> Int {
+        max(0, ceiling - size + (data(for: record, in: mode)?.count ?? 0))
     }
 
     func data(for record: Record, in mode: Mode) -> Data? {

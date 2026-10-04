@@ -10,10 +10,16 @@ import SwiftUI
 struct PlayerView: View {
     let model: PlayerModel
 
+    @Environment(\.scenePhase) private var scenePhase
+
     var body: some View {
         content
             .task { await model.start() }
             .onDisappear { model.stop() }
+            .onChange(of: scenePhase) { _, phase in
+                // The television went to its home screen, or to sleep.
+                if phase != .active { model.rest() }
+            }
     }
 
     @ViewBuilder private var content: some View {
@@ -68,9 +74,7 @@ struct PlayerProblemView: View {
 
 #if DEBUG
 #Preview("Player") {
-    PlayerView(model: PlayerModel(playable: ScriptedCatalogue.results.episodes[0],
-                                  mode: .normal,
-                                  starter: ScriptedPlayback()))
+    PlayerView(model: .scripted(ScriptedCatalogue.results.episodes[0]))
 }
 
 #Preview("Unavailable") {

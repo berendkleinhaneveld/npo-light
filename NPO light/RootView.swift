@@ -61,7 +61,7 @@ private struct RootPreview: View {
                  homeModel: .scripted(),
                  searchModel: SearchModel.scripted(),
                  seriesModel: { .scripted($0) },
-                 playerModel: { PlayerModel(playable: $0, mode: .normal, starter: ScriptedPlayback()) })
+                 playerModel: { .scripted($0) })
     }
 }
 

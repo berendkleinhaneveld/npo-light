@@ -161,7 +161,7 @@ private struct PlayerScreen: View {
     HomeView(model: .scripted(pinned: ScriptedCatalogue.results.series),
              search: .scripted(),
              seriesModel: { .scripted($0) },
-             playerModel: { PlayerModel(playable: $0, mode: .normal, starter: ScriptedPlayback()) })
+             playerModel: { .scripted($0) })
 }
 
 #Preview("Nothing pinned") {
