@@ -1,6 +1,6 @@
 # Requirements
 
-This directory is the specification of **NPO light**: a simplified tvOS app for
+This directory is the specification of **Verder Kijker**: a simplified tvOS app for
 NPO Start / NPO Plus, built for family use. Every requirement has a stable
 identifier so that a test can name the behaviour it proves.
 

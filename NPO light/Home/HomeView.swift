@@ -1,6 +1,6 @@
 //
 //  HomeView.swift
-//  NPO light
+//  Verder Kijker
 //
 
 import SwiftUI
@@ -110,7 +110,7 @@ struct HomeView: View {
     private var header: some View {
         HStack {
             // A proper noun, and no translation's job.
-            Text(verbatim: "NPO light")
+            Text(verbatim: "Verder Kijker")
                 .font(.title3)
             Spacer()
             // Search first: it is what the page opens on (FR-SEARCH-01).
