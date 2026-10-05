@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "verder-kijker-glow.png",
+      "idiom" : "tv"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
