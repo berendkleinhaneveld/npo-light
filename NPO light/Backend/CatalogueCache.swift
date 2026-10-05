@@ -34,10 +34,37 @@ actor CatalogueCache {
         }
     }
 
-    /// An answer, and when NPO gave it.
+    /// How soon an answer is asked for again: how fast what it is about
+    /// changes (ADR 0024).
+    nonisolated enum Pace: String, Sendable, Codable {
+        /// A programme followed as it is broadcast — the news, a daily
+        /// programme: a new episode is wanted the evening it is there.
+        case current
+
+        /// The latest season of any other series, and the series itself:
+        /// when it is still running, an episode or a season is added now
+        /// and then.
+        case running
+
+        /// What does not change any more: an earlier season, a film.
+        case settled
+
+        /// How long an answer of this pace is given without asking again.
+        var age: TimeInterval {
+            switch self {
+            case .current: 30 * 60
+            case .running: 24 * 60 * 60
+            case .settled: 7 * 24 * 60 * 60
+            }
+        }
+    }
+
+    /// An answer, when NPO gave it, and how soon it is to be asked for again.
+    /// An answer kept before the pace was is asked for soonest.
     nonisolated struct Entry<Value: Codable & Sendable>: Codable, Sendable {
         let value: Value
         let fetchedAt: Date
+        var pace: Pace?
     }
 
     /// The most answers kept. A family's series, seasons and films of a year
@@ -79,8 +106,8 @@ actor CatalogueCache {
     }
 
     /// Keeps `value` as NPO's answer at `date`, and makes room for it.
-    func store(_ value: some Codable & Sendable, for key: Key, at date: Date) {
-        guard let data = try? JSONEncoder().encode(Entry(value: value, fetchedAt: date)) else { return }
+    func store(_ value: some Codable & Sendable, for key: Key, at date: Date, pace: Pace = .current) {
+        guard let data = try? JSONEncoder().encode(Entry(value: value, fetchedAt: date, pace: pace)) else { return }
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         // A cache that cannot be written is a cache that is empty.
         guard (try? data.write(to: file(key), options: .atomic)) != nil else { return }

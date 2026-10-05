@@ -128,7 +128,7 @@ struct CatalogueCacheTests {
             let catalogue = Self.cached(stub, in: directory, clock: clock)
             _ = try await catalogue.episodes(of: Self.season, in: .normal)
 
-            clock.advance(by: .seconds(CachedCatalogue.maximumAge - 1))
+            clock.advance(by: .seconds(CatalogueCache.Pace.current.age - 1))
             let again = try await catalogue.episodes(of: Self.season, in: .normal)
 
             #expect(again == StubCatalogue.episodes(of: Self.season))
@@ -148,7 +148,7 @@ struct CatalogueCacheTests {
             let first = try await catalogue.episodes(of: Self.season, in: .normal)
             #expect(first.count == 1)
 
-            clock.advance(by: .seconds(CachedCatalogue.maximumAge))
+            clock.advance(by: .seconds(CatalogueCache.Pace.current.age))
             let second = try await catalogue.episodes(of: Self.season, in: .normal)
 
             #expect(second.count == 2)
@@ -186,7 +186,7 @@ struct CatalogueCacheTests {
         try await withDirectory { directory in
             let clock = TestClock(now: Self.start)
             _ = try await Self.cached(StubCatalogue(), in: directory, clock: clock).series(Self.series.id, in: .normal)
-            clock.advance(by: .seconds(CachedCatalogue.maximumAge))
+            clock.advance(by: .seconds(CatalogueCache.Pace.running.age))
             let gone = Self.cached(StubCatalogue(detail: { _ in throw BackendError.itemUnavailable }),
                                    in: directory, clock: clock)
 

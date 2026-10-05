@@ -28,10 +28,30 @@ different catalogues.
 
 **One rule for all three:**
 
-- an answer younger than **thirty minutes** is given without asking NPO;
+- a young answer is given without asking NPO;
 - an older one is asked for again, and the new answer kept;
 - when NPO cannot be reached, the old answer is given after all;
 - when NPO says the item is gone, what was kept of it is removed.
+
+**How long an answer is young depends on what it is about.** The family
+mostly watches series that were finished long ago, and now and then the news;
+one age for both is either too many requests or an evening's episode missing.
+NPO says which programmes are followed as they are broadcast — it calls them
+time-bound and lists them latest first, which the boundary already reads
+([ADR 0020](0020-a-series-continues-where-its-page-was-told.md)). From that,
+three paces:
+
+| Pace | Asked for again after | What |
+| --- | --- | --- |
+| current | half an hour | a time-bound programme's page, and its latest season |
+| running | a day | any other series' page, and its latest season |
+| settled | a week | every earlier season, and a programme's own page |
+
+A series' page and its latest season are never settled, because nothing says
+that a series has ended: a drama may gain an episode a week, or a season next
+year. A season's list does not say what it is a season of, so its pace is
+taken from its series when that passed through, kept with the answer for the
+launches after, and is the fastest when it is not known.
 
 **What is kept is also there to show at once.** `Catalogue` gains three
 questions that never ask NPO — what is remembered of a series, a season, a
@@ -64,17 +84,29 @@ where an episode sits in its series; which modes the account has.
 - **A stream of answers from one question** — "here is the old one, here is
   the new one". Rejected as more than two plain questions need: every caller
   would become a loop.
-- **A shorter or longer age** — thirty minutes is a guess. It is how late a
-  new episode can show up in a season's list, against how often a page opens
-  without waiting.
+- **One age for everything** — the first form of this decision, at thirty
+  minutes. Replaced at the owner's suggestion: too often for a series that
+  ended years ago, and the only way to make it less often was to make the
+  news late.
+- **A week for every series that is not time-bound**, its latest season
+  included — what the owner first asked for. Not done as asked: a drama that
+  is still running would show this week's episode up to a week late. A day
+  for the latest season costs one request a day for a series that is looked
+  at daily.
 
 ## Consequences
 
 - A page seen before opens at once, also after a relaunch, and without a
   network.
-- A new episode can be up to thirty minutes late in a list that was looked at
-  just before it appeared. Going on to the next episode reads the same list,
-  so autoplay can be that late in seeing it too.
+- A new episode can be late in a list that was looked at just before it
+  appeared: up to half an hour for a time-bound programme, up to a day for
+  any other series. Going on to the next episode reads the same list, so
+  autoplay can be that late in seeing it too.
+- Which programmes are time-bound is NPO's word, read from the same field as
+  the direction of the seasons, on the evidence of two series.
+- A programme's page is asked for once a week, and says whether NPO would
+  play the programme. That answer can be a week old; the player is what
+  finds out for certain.
 - A season's list is kept whole, descriptions included: about eighty
   kilobytes for a year of a daily programme.
 - An answer kept by one version of the app and not readable by the next is

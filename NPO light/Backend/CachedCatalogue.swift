@@ -4,12 +4,16 @@
 //
 
 import Foundation
+import Synchronization
 
 /// A catalogue that keeps what NPO answered about a series, a season and a
 /// programme, and answers from that while it is young (FR-CONTENT-04,
 /// ADR 0024).
 ///
-/// - A young answer is given without asking NPO.
+/// - A young answer is given without asking NPO. How long an answer is young
+///   depends on what it is about: half an hour for a programme followed as
+///   it is broadcast, a day for the latest season of any other series, a
+///   week for what no longer changes.
 /// - An old one is asked for again. When NPO cannot be reached, the old
 ///   answer is given after all: something seen before can be looked at
 ///   without a network (NFR-REL-01).
@@ -18,14 +22,17 @@ import Foundation
 ///
 /// Search is not kept: its answer is for what was typed a moment ago. Neither
 /// is where an episode sits in its series, nor which modes the account has.
-nonisolated struct CachedCatalogue: Catalogue {
-    /// How long an answer is given without asking again. A new episode shows
-    /// up at most this long after NPO lists it.
-    static let maximumAge: TimeInterval = 30 * 60
+nonisolated final class CachedCatalogue: Catalogue {
+    typealias Pace = CatalogueCache.Pace
 
     private let wrapped: any Catalogue
     private let cache: CatalogueCache
     private let clock: any Clocking
+
+    /// The pace of each season whose series passed through here, by the
+    /// season's key: a season's own list does not say what it is a season
+    /// of.
+    private let seasons = Mutex<[CatalogueCache.Key: Pace]>([:])
 
     init(wrapping wrapped: any Catalogue, cache: CatalogueCache, clock: any Clocking) {
         self.wrapped = wrapped
@@ -46,25 +53,33 @@ nonisolated struct CachedCatalogue: Catalogue {
     }
 
     func series(_ id: ItemID, in mode: Mode) async throws -> SeriesDetail {
-        try await answer(for: Self.key(series: id, mode)) {
+        let detail = try await answer(for: Self.key(series: id, mode), pace: { Self.pace(of: $0) }, asking: {
             try await wrapped.series(id, in: mode)
-        }
+        })
+        note(detail, in: mode)
+        return detail
     }
 
     func episodes(of season: SeasonID, in mode: Mode) async throws -> [Playable] {
-        try await answer(for: Self.key(season: season, mode)) {
+        let key = Self.key(season: season, mode)
+        let known = seasons.withLock { $0[key] }
+        return try await answer(for: key, pace: { _ in known }, asking: {
             try await wrapped.episodes(of: season, in: mode)
-        }
+        })
     }
 
+    /// A programme's page says what it is, which does not change. Whether it
+    /// can still be played does; the player is what finds that out.
     func programme(_ id: EpisodeID, in mode: Mode) async throws -> ProgrammeDetail {
-        try await answer(for: Self.key(programme: id, mode)) {
+        try await answer(for: Self.key(programme: id, mode), pace: { _ in .settled }, asking: {
             try await wrapped.programme(id, in: mode)
-        }
+        })
     }
 
     func rememberedSeries(_ id: ItemID, in mode: Mode) async -> SeriesDetail? {
-        await cache.entry(SeriesDetail.self, for: Self.key(series: id, mode))?.value
+        let detail = await cache.entry(SeriesDetail.self, for: Self.key(series: id, mode))?.value
+        if let detail { note(detail, in: mode) }
+        return detail
     }
 
     func rememberedEpisodes(of season: SeasonID, in mode: Mode) async -> [Playable]? {
@@ -89,19 +104,43 @@ nonisolated struct CachedCatalogue: Catalogue {
         CatalogueCache.Key(kind: .programme, identifier: id.rawValue, mode: mode)
     }
 
+    // MARK: Pace
+
+    /// NPO says which programmes are followed as they are broadcast: it
+    /// lists those latest first.
+    private static func pace(of series: SeriesDetail) -> Pace {
+        series.listsNewestFirst ? .current : .running
+    }
+
+    /// Remembers how fast each season of `series` changes: the latest one as
+    /// fast as the series, the earlier ones not at all.
+    private func note(_ series: SeriesDetail, in mode: Mode) {
+        let latest = series.broadcastOrder.last
+        seasons.withLock { known in
+            for season in series.seasons {
+                known[Self.key(season: season.id, mode)] = season.id == latest ? Self.pace(of: series) : .settled
+            }
+        }
+    }
+
     // MARK: The rule
 
+    /// - Parameter pace: how fast `value` changes, when that is known here.
+    ///   When it is not, the pace the answer was kept with is used, and for
+    ///   an answer never kept the fastest.
     private func answer<Value: Codable & Sendable>(
         for key: CatalogueCache.Key,
+        pace: (Value) -> Pace?,
         asking fetch: () async throws -> Value
     ) async throws -> Value {
         let kept = await cache.entry(Value.self, for: key)
-        if let kept, clock.now.timeIntervalSince(kept.fetchedAt) < Self.maximumAge {
-            return kept.value
+        if let kept {
+            let age = (pace(kept.value) ?? kept.pace ?? .current).age
+            if clock.now.timeIntervalSince(kept.fetchedAt) < age { return kept.value }
         }
         do {
             let fresh = try await fetch()
-            await cache.store(fresh, for: key, at: clock.now)
+            await cache.store(fresh, for: key, at: clock.now, pace: pace(fresh) ?? kept?.pace ?? .current)
             return fresh
         } catch BackendError.itemUnavailable {
             // NPO no longer has it: what was kept is no longer true.

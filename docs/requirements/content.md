@@ -90,7 +90,9 @@ trip.
 - A cached response is used to render immediately; a refresh happens in the
   background and updates the view when it differs.
 - Cache entries carry a fetch timestamp and are refreshed when older than a
-  defined maximum age: thirty minutes
+  defined maximum age, which depends on how fast what they are about changes:
+  half an hour for a programme followed as it is broadcast, a day for the
+  latest season of any other series, a week for what no longer changes
   ([ADR 0024](../adr/0024-keep-what-npo-answered-and-ask-again-behind-it.md)).
 - The cache is bounded: it does not grow without limit as the family browses.
 - Nothing about *what* was cached leaves the device (NFR-PRIV-01).
