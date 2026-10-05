@@ -5,7 +5,7 @@ Prefix `FR-CONTENT`.
 
 ## FR-CONTENT-01 — Two kinds of item
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The app models exactly two kinds of item: a **series** (an ordered collection
 of episodes), and a **single programme** that belongs to no series — a film, a
@@ -49,10 +49,13 @@ order, so that "the next episode" is well defined.
 - An episode that is in the catalogue but not playable (expired rights) is
   skipped when looking for the next episode, and is shown as unavailable in an
   episode list.
+- NPO lists the seasons of some programmes latest first — one that has a
+  season for each year. The next season is still the later one, whichever way
+  the list runs.
 
 ## FR-CONTENT-03 — Item detail page
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Selecting an item anywhere in the app opens its detail page: title,
 description, artwork and a play or resume action. A series adds a pin or unpin
@@ -66,12 +69,17 @@ a standalone episode adds a save action instead (FR-HOME-03, FR-LATER-03).
   for one with a stored position (FR-PLAY-02).
 - For a series, the primary action plays the next unwatched episode
   (FR-HOME-04).
+- For a series, the page names the episode the primary action plays.
+- An episode shown in a list — a search result — offers the way to the page
+  of the series it belongs to, beside playing it.
+- A series with every episode watched says so and has no primary action: an
+  episode is played again from the list.
 - On a series, the pin action reflects the current pinned state and toggles
   it (FR-HOME-03, FR-HOME-05).
 
 ## FR-CONTENT-04 — Catalogue data comes from NPO and is cached
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Item metadata is fetched from NPO's backend and cached locally, so that a
 screen the user has seen before can be rendered again without a network round
@@ -82,21 +90,26 @@ trip.
 - A cached response is used to render immediately; a refresh happens in the
   background and updates the view when it differs.
 - Cache entries carry a fetch timestamp and are refreshed when older than a
-  defined maximum age.
+  defined maximum age, which depends on how fast what they are about changes:
+  half an hour for a programme followed as it is broadcast, a day for the
+  latest season of any other series, a week for what no longer changes
+  ([ADR 0024](../adr/0024-keep-what-npo-answered-and-ask-again-behind-it.md)).
 - The cache is bounded: it does not grow without limit as the family browses.
 - Nothing about *what* was cached leaves the device (NFR-PRIV-01).
 
 ## FR-CONTENT-05 — An item that disappears does not break the app
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Items are removed from NPO's catalogue when their rights expire. A pinned or
 recently watched item that no longer exists must not break the home page.
 
 **Acceptance criteria**
 
-- A tile whose item can no longer be fetched is shown as unavailable, with the
-  cached title, and can still be removed or unpinned.
+- A tile whose item turned out to be gone when it was selected is shown as
+  unavailable from then on, with the cached title, and can still be removed
+  or unpinned. The app does not ask NPO about tiles nobody selected
+  ([ADR 0023](../adr/0023-find-out-that-a-tile-is-gone-by-selecting-it.md)).
 - Selecting an unavailable item explains that it is no longer available instead
   of failing to play.
 - Autoplay skips an unavailable next episode (FR-CONTENT-02).
@@ -138,7 +151,7 @@ here.
 
 ## FR-CONTENT-07 — A series is browsed one season at a time
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 A series' detail page shows the episodes of one season at a time, with a season
 picker above them that lists every season. Moving through the picker changes
@@ -166,7 +179,7 @@ read.
 
 ## FR-CONTENT-08 — An episode can be judged before it is played
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 A series' detail page shows the series' header image, and the episode that has
 focus in the list is previewed beside it with its own image and description.

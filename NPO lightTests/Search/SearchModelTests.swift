@@ -18,7 +18,7 @@ struct SearchModelTests {
     private func model(_ catalogue: StubCatalogue,
                        clock: TestClock = TestClock(),
                        mode: Mode = .normal) -> SearchModel {
-        SearchModel(catalogue: catalogue, clock: clock, mode: mode)
+        SearchModel(catalogue: catalogue, history: ScriptedSearchHistory(), clock: clock, mode: mode)
     }
 
     @Test("FR-SEARCH-02: typing shows the results for what is in the field, with no button to press")

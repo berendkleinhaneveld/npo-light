@@ -13,7 +13,19 @@ struct SeriesDetailModelTests {
     nonisolated private static let second = StubCatalogue.seasons[1].id
 
     private func model(_ catalogue: StubCatalogue) -> SeriesDetailModel {
-        SeriesDetailModel(summary: StubCatalogue.results.series[0], catalogue: catalogue, mode: .normal)
+        SeriesDetailModel(summary: StubCatalogue.results.series[0],
+                          catalogue: catalogue,
+                          pins: ScriptedPins(),
+                          watched: .scripted(),
+                          mode: .normal)
+    }
+
+    private func pinning(_ summary: SeriesSummary, _ pins: ScriptedPins, in mode: Mode) -> SeriesDetailModel {
+        SeriesDetailModel(summary: summary,
+                          catalogue: StubCatalogue(),
+                          pins: pins,
+                          watched: .scripted(),
+                          mode: mode)
     }
 
     @Test("FR-CONTENT-07: the page opens on a season and shows that season's episodes only")
@@ -165,12 +177,110 @@ struct SeriesDetailModelTests {
 
     @Test("FR-CONTENT-03: choosing a series from search results opens its detail page")
     func seriesPickOpensDetail() {
-        let home = HomeModel()
+        let home = HomeModel(pins: ScriptedPins(), mode: .normal)
         let series = StubCatalogue.results.series[0]
 
         home.openSearch()
         home.open(.series(series))
 
         #expect(home.path == [.search, .series(series)])
+    }
+
+    @Test("FR-HOME-03: the pin action reflects whether the series is pinned, and toggles it")
+    func pinActionToggles() async {
+        let pins = ScriptedPins()
+        let summary = StubCatalogue.results.series[0]
+        let model = pinning(summary, pins, in: .normal)
+        await model.load()
+        #expect(!model.isPinned)
+
+        await model.togglePin()
+        #expect(model.isPinned)
+        #expect(await pins.pinned(in: .normal).map(\.id) == [summary.id])
+
+        await model.togglePin()
+        #expect(!model.isPinned)
+        #expect(await pins.pinned(in: .normal).isEmpty)
+    }
+
+    @Test("FR-HOME-03: a page opened for a pinned series says so, in its own mode only")
+    func pinnedStateIsReadOnLoad() async {
+        let summary = StubCatalogue.results.series[0]
+        let pins = ScriptedPins([summary])
+        let normal = pinning(summary, pins, in: .normal)
+        let kids = pinning(summary, pins, in: .kids)
+
+        await normal.load()
+        await kids.load()
+
+        #expect(normal.isPinned)
+        #expect(!kids.isPinned)
+    }
+
+    @Test("FR-CONTENT-05: what is pinned is the series as NPO now names it, not as the list that led here did")
+    func pinCarriesTheCurrentTitle() async {
+        let pins = ScriptedPins()
+        let stale = SeriesSummary(id: StubCatalogue.detail.id, title: "Old title", artwork: nil)
+        let model = pinning(stale, pins, in: .normal)
+        await model.load()
+
+        await model.togglePin()
+
+        #expect(await pins.pinned(in: .normal).map(\.title) == [StubCatalogue.detail.title])
+    }
+
+    @Test("FR-HOME-04: a series is pinned with the episode it starts with, so that its tile can play it")
+    func pinCarriesTheFirstEpisode() async {
+        let pins = ScriptedPins()
+        let model = pinning(StubCatalogue.results.series[0], pins, in: .normal)
+        await model.load()
+        await model.pending?.value
+
+        await model.togglePin()
+
+        let first = StubCatalogue.episodes(of: Self.first)[0]
+        #expect(await pins.starts(in: .normal) == [StubCatalogue.detail.id: Upcoming(first, in: Self.first)])
+    }
+
+    @Test("FR-CONTENT-07: moving focus along the picker shows the season focus is on")
+    func movingAlongThePickerShowsTheSeason() async {
+        let model = model(StubCatalogue())
+        await model.load()
+        await model.pending?.value
+
+        let target = model.pickerFocusMoved(to: Self.second, from: Self.first)
+        await model.pending?.value
+
+        #expect(target == Self.second)
+        #expect(model.shownSeason == Self.second)
+        #expect(model.episodes == .loaded(StubCatalogue.episodes(of: Self.second)))
+    }
+
+    @Test("FR-CONTENT-07: coming into the picker lands on the season being shown, and leaves its episodes in place")
+    func enteringThePickerKeepsTheSeason() async {
+        let catalogue = StubCatalogue()
+        let model = model(catalogue)
+        await model.load()
+        await model.pending?.value
+
+        // The focus engine lands on the nearest season, which is another one.
+        let target = model.pickerFocusMoved(to: Self.second, from: nil)
+
+        #expect(target == Self.first)
+        #expect(model.shownSeason == Self.first)
+        #expect(model.episodes == .loaded(StubCatalogue.episodes(of: Self.first)))
+        #expect(catalogue.seasonRequests == [Self.first])
+    }
+
+    @Test("FR-CONTENT-07: coming into the picker on the season being shown changes nothing")
+    func enteringOnTheShownSeason() async {
+        let catalogue = StubCatalogue()
+        let model = model(catalogue)
+        await model.load()
+        await model.pending?.value
+
+        #expect(model.pickerFocusMoved(to: Self.first, from: nil) == Self.first)
+        #expect(model.episodes == .loaded(StubCatalogue.episodes(of: Self.first)))
+        #expect(catalogue.seasonRequests == [Self.first])
     }
 }

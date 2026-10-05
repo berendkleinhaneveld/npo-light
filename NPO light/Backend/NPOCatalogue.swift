@@ -54,12 +54,35 @@ nonisolated final class NPOCatalogue: Catalogue {
     }
 
     @concurrent
+    func programme(_ id: EpisodeID, in mode: Mode) async throws -> ProgrammeDetail {
+        let call = BackendCall(path: NPOWire.programmePath(id), profile: try await profiles.profile(for: mode))
+        return try await body(ProgrammePageBody.self, from: call).detail
+    }
+
+    @concurrent
     func episodes(of season: SeasonID, in mode: Mode) async throws -> [Playable] {
         // `asc` is broadcast order, and what NPO's own app asks for.
         let call = BackendCall(path: NPOWire.episodesPath(season),
                                query: [URLQueryItem(name: "sort", value: "asc")],
                                profile: try await profiles.profile(for: mode))
         return try await body([CatalogueItemBody].self, from: call).compactMap(\.playable)
+    }
+
+    /// Two questions: what playing the episode answers, which names its
+    /// series and its season, and that series' page, for the series as the
+    /// app knows one.
+    @concurrent
+    func place(of episode: EpisodeID, in mode: Mode) async throws -> SeriesPlace? {
+        let profile = try await profiles.profile(for: mode)
+        let player = BackendCall(path: NPOWire.playerPath(episode),
+                                 query: [URLQueryItem(name: "player-environment", value: "production")],
+                                 profile: profile)
+        guard let program = try await body(PlayerBody.self, from: player).program,
+              let series = program.seriesSlug, let season = program.seasonSlug else { return nil }
+        let page = BackendCall(path: NPOWire.seriesPath(slug: series), profile: profile)
+        let detail = try await body(SeriesPageBody.self, from: page).detail
+        return SeriesPlace(series: SeriesSummary(id: detail.id, title: detail.title, artwork: detail.artwork),
+                           season: SeasonID(rawValue: season))
     }
 
     // MARK: the wire

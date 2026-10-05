@@ -13,7 +13,11 @@ import Foundation
 nonisolated struct PlayableStream: Sendable, Equatable {
     /// The signed manifest on NPO's content delivery network.
     let manifest: URL
-    let protection: StreamProtection
+
+    /// What the licence exchange needs, or `nil` for a stream that is not
+    /// protected: NPO sends some programmes, older ones among them, in the
+    /// clear.
+    let protection: StreamProtection?
 }
 
 /// What the FairPlay licence exchange needs. Opaque above the boundary: the
@@ -66,10 +70,21 @@ nonisolated final class NPOStreams: Sendable {
     }
 }
 
-/// `GET /programs/player/{guid}`: the player token. The programme it names and
-/// the next one come with it, and are not read yet.
+/// `GET /programs/player/{guid}`: the player token, and the programme it is
+/// for. The next programme comes with it, and is not read: which episode
+/// follows is taken from the season's list (ADR 0020).
 nonisolated struct PlayerBody: Decodable {
+    struct Program: Decodable {
+        /// The series' name in NPO's addresses. Absent for a programme that
+        /// belongs to no series.
+        let seriesSlug: String?
+
+        /// The season's identifier, whatever the field is called.
+        let seasonSlug: String?
+    }
+
     let token: String
+    let program: Program?
 }
 
 /// `POST /stream-link` on the player host.
@@ -77,9 +92,29 @@ nonisolated struct PlayerBody: Decodable {
 /// The advertisement fields the answer carries are not decoded at all: they
 /// are ignored rather than followed (FR-AUTH-05).
 nonisolated struct StreamLinkBody: Decodable {
+    enum StreamKeys: String, CodingKey {
+        case streamURL
+        case drm
+    }
+
     struct Stream: Decodable {
         let streamURL: String
-        let drm: Protection
+
+        /// `null` for a stream that is not protected. NPO always says: an
+        /// answer that leaves it out is half an answer, and is not read as
+        /// a stream to play in the clear.
+        let drm: Protection?
+
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: StreamKeys.self)
+            streamURL = try container.decode(String.self, forKey: .streamURL)
+            guard container.contains(.drm) else {
+                throw DecodingError.keyNotFound(StreamKeys.drm,
+                                                .init(codingPath: container.codingPath,
+                                                      debugDescription: "A stream says whether it is protected."))
+            }
+            drm = try container.decodeIfPresent(Protection.self, forKey: .drm)
+        }
     }
 
     struct Protection: Decodable {
@@ -94,9 +129,14 @@ nonisolated struct StreamLinkBody: Decodable {
     let stream: Stream
 
     var playableStream: PlayableStream? {
-        guard let manifest = URL(string: stream.streamURL),
-              let certificate = URL(string: stream.drm.certificateUrl),
-              let licence = URL(string: stream.drm.licenseUrl) else {
+        guard let manifest = URL(string: stream.streamURL) else { return nil }
+        guard let drm = stream.drm else {
+            return PlayableStream(manifest: manifest, protection: nil)
+        }
+        // Protection that cannot be read is not the same as none: playing
+        // without it would fail later, and less clearly.
+        guard let certificate = URL(string: drm.certificateUrl),
+              let licence = URL(string: drm.licenseUrl) else {
             return nil
         }
         return PlayableStream(
@@ -104,8 +144,8 @@ nonisolated struct StreamLinkBody: Decodable {
             protection: StreamProtection(
                 certificateURL: certificate,
                 licenceURL: licence,
-                credential: stream.drm.httpHeaders?[Self.credentialHeader],
-                expiresAt: stream.drm.expirationInSeconds.map(Date.init(timeIntervalSince1970:))
+                credential: drm.httpHeaders?[Self.credentialHeader],
+                expiresAt: drm.expirationInSeconds.map(Date.init(timeIntervalSince1970:))
             )
         )
     }

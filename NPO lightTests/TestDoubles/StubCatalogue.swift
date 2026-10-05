@@ -35,17 +35,34 @@ nonisolated final class StubCatalogue: Catalogue {
     private let answer: @Sendable (String) async throws -> SearchResults
     private let detail: @Sendable (ItemID) async throws -> SeriesDetail
     private let season: @Sendable (SeasonID) async throws -> [Playable]
+    private let place: @Sendable (EpisodeID) async throws -> SeriesPlace?
+    private let programme: @Sendable (EpisodeID) async throws -> ProgrammeDetail
     private let asked = Mutex<[Search]>([])
     private let askedSeasons = Mutex<[SeasonID]>([])
 
     init(
         answer: @escaping @Sendable (String) async throws -> SearchResults = { _ in StubCatalogue.results },
         detail: @escaping @Sendable (ItemID) async throws -> SeriesDetail = { _ in StubCatalogue.detail },
-        season: @escaping @Sendable (SeasonID) async throws -> [Playable] = { StubCatalogue.episodes(of: $0) }
+        season: @escaping @Sendable (SeasonID) async throws -> [Playable] = { StubCatalogue.episodes(of: $0) },
+        place: @escaping @Sendable (EpisodeID) async throws -> SeriesPlace? = { _ in nil },
+        programme: @escaping @Sendable (EpisodeID) async throws -> ProgrammeDetail = { StubCatalogue.film($0) }
     ) {
+        self.place = place
+        self.programme = programme
         self.answer = answer
         self.detail = detail
         self.season = season
+    }
+
+    /// A film as its page describes it, playable.
+    static func film(_ id: EpisodeID) -> ProgrammeDetail {
+        ProgrammeDetail(playable: Playable(id: id,
+                                           title: "De wilde stad",
+                                           caption: "Documentaire • 1u 25m",
+                                           synopsis: "Een jaar in de stad.",
+                                           duration: .seconds(5100),
+                                           artwork: nil),
+                        isPlayable: true)
     }
 
     /// Two episodes named after their season.
@@ -82,5 +99,13 @@ nonisolated final class StubCatalogue: Catalogue {
     func episodes(of season: SeasonID, in mode: Mode) async throws -> [Playable] {
         askedSeasons.withLock { $0.append(season) }
         return try await self.season(season)
+    }
+
+    func place(of episode: EpisodeID, in mode: Mode) async throws -> SeriesPlace? {
+        try await place(episode)
+    }
+
+    func programme(_ id: EpisodeID, in mode: Mode) async throws -> ProgrammeDetail {
+        try await programme(id)
     }
 }

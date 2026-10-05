@@ -217,8 +217,70 @@ struct CatalogueTests {
         #expect(series.seasons.first?.title == "Seizoen 1")
         // The twelfth entry is not "Seizoen 12": the titles are editorial.
         #expect(series.seasons.suffix(2).map(\.title) == ["Kort", "Seizoen 12"])
+        #expect(series.broadcastOrder == series.seasons.map(\.id))
         #expect(Self.requests(to: path, in: harness).first?
             .value(forHTTPHeaderField: "profile-guid") == Self.kidsProfile)
+    }
+
+    @Test("FR-CONTENT-02: a programme NPO lists latest season first still says which season follows which")
+    func newestFirstSeriesKnowsItsOrder() async throws {
+        let body = #"""
+        {"guid":"s-1","header":{"title":"Het Klokhuis"},
+         "tabs":[{"type":"seasons","programSort":"desc",
+                  "seasons":[{"guid":"y-2026","title":"2026"},{"guid":"y-2025","title":"2025"}]}]}
+        """#
+        let (catalogue, _) = try await Self.catalogue(answering: "/series/page/s-1", with: .json(body))
+
+        let series = try await catalogue.series(ItemID(rawValue: "s-1"), in: .normal)
+
+        #expect(series.seasons.map(\.title) == ["2026", "2025"])
+        #expect(series.broadcastOrder.map(\.rawValue) == ["y-2025", "y-2026"])
+    }
+
+    // MARK: a single programme
+
+    private static let programmePage = #"""
+    {"guid":"p-1",
+     "header":{"title":"Red Hot Chili Peppers","subtitle":"Kort.","metadata":"Muziek • 1u 35m",
+               "durationInSeconds":5700,
+               "images":[{"url":"https://assets.example/rhcp.jpg","role":"default"}],
+               "playButton":{"enabled":ENABLED}},
+     "tabs":[{"type":"moreSingleVideo","synopsis":"Het hele verhaal van het concert."}]}
+    """#
+
+    @Test("FR-CONTENT-03: a programme's page gives its title, NPO's own line, the long description and its image")
+    func programmePageIsRead() async throws {
+        let body = Self.programmePage.replacingOccurrences(of: "ENABLED", with: "true")
+        let (catalogue, harness) = try await Self.catalogue(answering: "/programs/page/p-1", with: .json(body))
+
+        let detail = try await catalogue.programme(EpisodeID(rawValue: "p-1"), in: .kids)
+
+        #expect(detail.playable == Playable(id: EpisodeID(rawValue: "p-1"),
+                                            title: "Red Hot Chili Peppers",
+                                            caption: "Muziek • 1u 35m",
+                                            synopsis: "Het hele verhaal van het concert.",
+                                            duration: .seconds(5700),
+                                            artwork: URL(string: "https://assets.example/rhcp.jpg")))
+        #expect(detail.isPlayable)
+        #expect(Self.requests(to: "/programs/page/p-1", in: harness).first?
+            .value(forHTTPHeaderField: "profile-guid") == Self.kidsProfile)
+    }
+
+    @Test("FR-CONTENT-06: a programme NPO marks as not playable is known not to be, before any stream is asked for")
+    func unplayableProgrammeIsKnown() async throws {
+        let body = Self.programmePage.replacingOccurrences(of: "ENABLED", with: "false")
+        let (catalogue, _) = try await Self.catalogue(answering: "/programs/page/p-1", with: .json(body))
+
+        #expect(try await !catalogue.programme(EpisodeID(rawValue: "p-1"), in: .normal).isPlayable)
+    }
+
+    @Test("FR-CONTENT-05: a programme NPO no longer has is unavailable")
+    func goneProgrammeIsUnavailable() async throws {
+        let (catalogue, _) = try await Self.catalogue()
+
+        await #expect(throws: BackendError.itemUnavailable) {
+            _ = try await catalogue.programme(EpisodeID(rawValue: "gone"), in: .normal)
+        }
     }
 
     @Test("FR-CONTENT-02: a season exposes its episodes in broadcast order")

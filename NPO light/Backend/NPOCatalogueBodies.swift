@@ -104,7 +104,13 @@ nonisolated struct SeriesPageBody: Decodable {
     struct Tab: Decodable {
         static let seasonsType = "seasons"
 
+        /// What ``programSort`` says for a programme that is followed as it
+        /// is broadcast — a daily one, with a season for each year. NPO then
+        /// lists the latest season first, as well as the latest episode.
+        static let newestFirst = "desc"
+
         let type: String?
+        let programSort: String?
         let seasons: [SeasonBody]?
     }
 
@@ -118,7 +124,8 @@ nonisolated struct SeriesPageBody: Decodable {
     let tabs: [Tab]?
 
     var detail: SeriesDetail {
-        let seasons = tabs?.first { $0.type == Tab.seasonsType }?.seasons ?? []
+        let tab = tabs?.first { $0.type == Tab.seasonsType }
+        let seasons = tab?.seasons ?? []
         let artwork = header.images?
             .first { $0.role == ImageBody.artworkRole }?.url
             .flatMap(URL.init(string:))
@@ -127,7 +134,53 @@ nonisolated struct SeriesPageBody: Decodable {
             title: header.title,
             synopsis: header.subtitle,
             artwork: artwork,
-            seasons: seasons.map { Season(id: SeasonID(rawValue: $0.guid), title: $0.title) }
+            seasons: seasons.map { Season(id: SeasonID(rawValue: $0.guid), title: $0.title) },
+            listsNewestFirst: tab?.programSort == Tab.newestFirst
+        )
+    }
+}
+
+/// `GET /programs/page/{guid}`: the page of one programme.
+nonisolated struct ProgrammePageBody: Decodable {
+    struct Header: Decodable {
+        let title: String
+        /// A short description. The long one is in the info tab.
+        let subtitle: String?
+        /// NPO's own line, such as `Muziek • 1u 35m`.
+        let metadata: String?
+        let durationInSeconds: Int?
+        let images: [ImageBody]?
+        let playButton: PlayButton?
+    }
+
+    struct PlayButton: Decodable {
+        let enabled: Bool?
+    }
+
+    struct Tab: Decodable {
+        let synopsis: String?
+    }
+
+    let guid: String
+    let header: Header
+    let tabs: [Tab]?
+
+    var detail: ProgrammeDetail {
+        let artwork = header.images?
+            .first { $0.role == ImageBody.artworkRole }?.url
+            .flatMap(URL.init(string:))
+        let synopsis = tabs?.compactMap(\.synopsis).first { !$0.isEmpty } ?? header.subtitle
+        let metadata = header.metadata.flatMap { $0.isEmpty ? nil : $0 }
+        return ProgrammeDetail(
+            playable: Playable(id: EpisodeID(rawValue: guid),
+                               title: header.title,
+                               caption: metadata,
+                               synopsis: synopsis,
+                               duration: header.durationInSeconds.map { .seconds($0) },
+                               artwork: artwork),
+            // NPO says so on the button it would draw. Not saying is not a
+            // refusal: the stream is still asked for, and may be.
+            isPlayable: header.playButton?.enabled ?? true
         )
     }
 }

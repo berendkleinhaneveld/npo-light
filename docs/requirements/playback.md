@@ -20,7 +20,7 @@ and audio-track selection that tvOS provides.
 
 ## FR-PLAY-02 — Resume where you stopped
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 An item with a stored position resumes there. One without starts at the
 beginning.
@@ -32,10 +32,13 @@ beginning.
 - An item watched past the completion threshold (FR-PLAY-04) starts from the
   beginning when it is played again deliberately.
 - Positions are stored per mode (FR-MODE-05).
+- Something watched again after it was finished stays watched, and can itself
+  be resumed where it was stopped
+  ([ADR 0018](../adr/0018-when-a-position-is-written-and-where.md)).
 
 ## FR-PLAY-03 — Positions are persisted, not lost
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The playback position is written to the local store regularly during playback
 and when playback ends, so that killing the app or losing power costs seconds,
@@ -43,7 +46,8 @@ not the whole episode.
 
 **Acceptance criteria**
 
-- The position is persisted at a fixed interval during playback.
+- The position is persisted at a fixed interval during playback: every ten
+  seconds ([ADR 0018](../adr/0018-when-a-position-is-written-and-where.md)).
 - The position is persisted when playback pauses, stops, or the app goes to the
   background.
 - After a crash or a force quit, the resume point is no more than that interval
@@ -51,7 +55,7 @@ not the whole episode.
 
 ## FR-PLAY-04 — "Finished" has one definition
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 An episode counts as finished once playback passes **the later of 95% of its
 duration and the point where 90 seconds remain**. Everything that depends on
@@ -80,7 +84,7 @@ point, chosen to be adjusted once the family has lived with it
 
 ## FR-PLAY-05 — Autoplay in normal mode
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 In normal mode, finishing an episode of a series plays the next one straight
 away.
@@ -89,13 +93,14 @@ away.
 
 - The next episode starts without the user pressing anything.
 - An overlay names the next episode and offers to stop, for long enough to be
-  used.
+  used: ten seconds
+  ([ADR 0021](../adr/0021-the-system-player-through-its-view-controller.md)).
 - Choosing to stop returns to where playback was started from, not to a dead
   screen.
 
 ## FR-PLAY-06 — Autoplay in kids mode pauses first
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 In kids mode, the next episode is preceded by a deliberate pause — five seconds
 by default, configurable (FR-SET-02).
@@ -113,7 +118,7 @@ before the next episode carries them along.
 
 ## FR-PLAY-07 — Autoplay knows when to stop
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Autoplay only continues within a series, and stops when there is nothing to
 continue to.
@@ -129,7 +134,7 @@ continue to.
 
 ## FR-PLAY-08 — Are you still watching?
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 After a stretch of continuous playback the app asks whether anyone is still
 there: one hour in kids mode, three hours in normal mode, both configurable
@@ -141,15 +146,15 @@ there: one hour in kids mode, three hours in normal mode, both configurable
   not reset it.
 - Any remote interaction — pause, scrub, a button press — resets the timer.
 - The prompt pauses playback and offers to continue.
-- With no answer within a defined grace period, playback stops and the app
-  returns to home.
+- With no answer within a defined grace period — thirty seconds — playback
+  stops and the app returns to home.
 - Confirming continues from exactly where the prompt interrupted, and restarts
   the timer.
 - The two durations are independent: changing one does not change the other.
 
 ## FR-PLAY-09 — Watching updates the home page
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Playing something is what fills the recently watched row (FR-HOME-06).
 
@@ -158,7 +163,15 @@ Playing something is what fills the recently watched row (FR-HOME-06).
 - Starting playback records the item as most recently watched, per mode.
 - A series records once, updated per episode, rather than one entry per
   episode.
+- A single programme records as an item of its own.
 - Finishing an episode leaves the item pointing at the next one (FR-HOME-07).
+- An episode started from a list that does not name its series — a search
+  result
+  ([Q-10](open-questions.md#q-10--does-a-programme-in-a-list-belong-to-a-series))
+  — is placed in its series by asking NPO once it plays, and from then on is
+  an episode like any other. One NPO cannot place keeps its position and moves
+  no series
+  ([ADR 0020](../adr/0020-a-series-continues-where-its-page-was-told.md)).
 
 ## FR-PLAY-10 — Playback errors are recoverable
 

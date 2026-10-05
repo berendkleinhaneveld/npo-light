@@ -50,11 +50,11 @@ struct StreamsTests {
         let stream = try await streams.stream(for: Self.episode, in: .normal)
 
         #expect(stream.manifest.absoluteString == "https://npo.prd.cdn.bcms.kpn.com/sanitised/playlist.m3u8")
-        #expect(stream.protection.certificateURL.absoluteString
+        #expect(stream.protection?.certificateURL.absoluteString
             == "https://fairplay.npo.nl/certificate/fairplay.cer")
-        #expect(stream.protection.licenceURL.host() == "npo-drm-gateway.samgcloud.nepworldwide.nl")
-        #expect(stream.protection.credential == "sanitised.licence.token")
-        #expect(stream.protection.expiresAt == Date(timeIntervalSince1970: 1_788_209_420))
+        #expect(stream.protection?.licenceURL.host() == "npo-drm-gateway.samgcloud.nepworldwide.nl")
+        #expect(stream.protection?.credential == "sanitised.licence.token")
+        #expect(stream.protection?.expiresAt == Date(timeIntervalSince1970: 1_788_209_420))
     }
 
     @Test("FR-PLAY-11: a stream whose licence address carries its own authorisation has no credential beside it")
@@ -65,10 +65,34 @@ struct StreamsTests {
         let stream = try await streams.stream(for: Self.episode, in: .normal)
 
         #expect(stream.manifest.absoluteString == "https://npo-vod.prd.cdn.bcms.kpn.com/sanitised/index.m3u8")
-        #expect(stream.protection.licenceURL.absoluteString
+        #expect(stream.protection?.licenceURL.absoluteString
             == "https://drm.npoplayer.nl/proxyEngine.aspx?auth=sanitised.licence.auth&sig=sanitised-signature")
-        #expect(stream.protection.credential == nil)
-        #expect(stream.protection.expiresAt == Date(timeIntervalSince1970: 1_791_107_859))
+        #expect(stream.protection?.credential == nil)
+        #expect(stream.protection?.expiresAt == Date(timeIntervalSince1970: 1_791_107_859))
+    }
+
+    @Test("FR-PLAY-11: a stream NPO sends in the clear is a manifest with nothing to exchange")
+    func unprotectedStreamIsPlayable() async throws {
+        let body = #"{"stream":{"streamURL":"https://cdn.example/clear/index.m3u8","drm":null,"avType":"vod"}}"#
+        let (streams, _) = try await Self.streams(streamLink: HTTPResponse(status: 200, body: Data(body.utf8)))
+
+        let stream = try await streams.stream(for: Self.episode, in: .normal)
+
+        #expect(stream.manifest.absoluteString == "https://cdn.example/clear/index.m3u8")
+        #expect(stream.protection == nil)
+    }
+
+    @Test("FR-PLAY-10: protection that cannot be read is an error, not a stream to play without it")
+    func unreadableProtectionIsRefused() async throws {
+        let body = #"""
+        {"stream":{"streamURL":"https://cdn.example/index.m3u8",
+                   "drm":{"certificateUrl":"","licenseUrl":"https://licence.example/"}}}
+        """#
+        let (streams, _) = try await Self.streams(streamLink: HTTPResponse(status: 200, body: Data(body.utf8)))
+
+        await #expect(throws: BackendError.self) {
+            _ = try await streams.stream(for: Self.episode, in: .normal)
+        }
     }
 
     @Test("FR-PLAY-11, FR-MODE-04: the player token is asked for as the mode's profile, then exchanged raw")

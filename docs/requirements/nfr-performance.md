@@ -55,7 +55,7 @@ a fixed ceiling and evict.
 **Acceptance criteria**
 
 - The artwork cache has a documented maximum size and evicts least-recently
-  used entries.
+  used entries ([ADR 0017](../adr/0017-load-artwork-at-the-size-it-is-shown.md)).
 - Scrolling a long episode list repeatedly does not increase steady-state
   memory.
 
@@ -69,5 +69,8 @@ throughout the app, not only in search.
 **Acceptance criteria**
 
 - Types doing I/O are not `@MainActor`; UI state types are.
+- An image is asked for at the size it is shown and reaches the main actor
+  already decoded, no larger than that
+  ([ADR 0017](../adr/0017-load-artwork-at-the-size-it-is-shown.md)).
 - Isolation is expressed in the type system rather than with
   `@unchecked Sendable` or `nonisolated(unsafe)` (see AGENTS.md).

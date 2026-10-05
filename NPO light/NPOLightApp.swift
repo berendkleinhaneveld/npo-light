@@ -8,56 +8,93 @@ import SwiftUI
 /// The composition root (ADR 0011): the one place that names a concrete type
 /// and hands it down, so that the seams ADR 0009 relies on stay reachable.
 ///
-/// The stores are not here yet. Where they keep their data is ADR 0015.
+/// The search history, the pins, the positions, what was watched and what
+/// was saved for later are the stores. Where each keeps its data is ADR 0015.
 @main
 struct NPOLightApp: App {
     /// How long a request to NPO may stay unanswered before it fails, so that
     /// no screen waits for ever on a backend that went quiet.
     private static let requestTimeout: TimeInterval = 15
 
+    /// The most the images kept on disk may take. tvOS may empty it sooner.
+    private static let artworkDiskCeiling = 128 * 1024 * 1024
+
     @State private var appModel: AppModel
     @State private var signInModel: SignInModel
-    @State private var homeModel = HomeModel()
-    @State private var searchModel: SearchModel
+    @State private var modes: ModeModel
+    @State private var settings: SettingsModel
+    @State private var notice: LaunchNotice
 
     private let backend: Backend
+    private let positions: PlaybackCoordinator
 
     init() {
         let backend = Self.makeBackend()
         self.backend = backend
+        positions = PlaybackCoordinator(watched: backend.watchedState,
+                                        order: EpisodeOrder(catalogue: backend.catalogue),
+                                        clock: SystemClock())
         let appModel = AppModel(authenticator: backend.authenticator)
         _appModel = State(initialValue: appModel)
         _signInModel = State(initialValue: SignInModel(authenticator: backend.authenticator,
                                                        clock: SystemClock(),
                                                        onSignedIn: { appModel.admit($0) }))
-        // Normal mode until the mode switch exists (FR-MODE-02).
-        _searchModel = State(initialValue: SearchModel(catalogue: backend.catalogue,
-                                                       clock: SystemClock(),
-                                                       mode: .normal))
+        _modes = State(initialValue: backend.modes)
+        _notice = State(initialValue: LaunchNotice(positionsWereReset: backend.positionsWereReset))
+        _settings = State(initialValue: backend.settings { appModel.signOut() })
     }
 
     var body: some Scene {
         WindowGroup {
             RootView(appModel: appModel,
                      signInModel: signInModel,
-                     homeModel: homeModel,
-                     searchModel: searchModel,
-                     seriesModel: { [backend] in
-                         SeriesDetailModel(summary: $0, catalogue: backend.catalogue, mode: .normal)
+                     modes: modes,
+                     settings: settings,
+                     homeModel: { [backend] mode in
+                         HomeModel(pins: backend.pins,
+                                   watched: backend.watchedState,
+                                   catalogue: backend.catalogue,
+                                   clock: SystemClock(),
+                                   mode: mode)
                      },
-                     playerModel: { [backend] in
-                         PlayerModel(playable: $0, mode: .normal, starter: backend.playback)
+                     searchModel: { [backend] mode in
+                         SearchModel(catalogue: backend.catalogue,
+                                     history: backend.searchHistory,
+                                     clock: SystemClock(),
+                                     mode: mode)
+                     },
+                     seriesModel: { [backend] series, mode in
+                         SeriesDetailModel(summary: series,
+                                           catalogue: backend.catalogue,
+                                           pins: backend.pins,
+                                           watched: backend.watchedState,
+                                           mode: mode)
+                     },
+                     programmeModel: { [backend] programme, mode in
+                         ProgrammeDetailModel(summary: programme,
+                                              catalogue: backend.catalogue,
+                                              watched: backend.watchedState,
+                                              mode: mode)
+                     },
+                     playerModel: { [backend, positions, settings] request, mode in
+                         PlayerModel(playable: request.playable,
+                                     origin: request.origin,
+                                     mode: mode,
+                                     starter: backend.playback,
+                                     positions: positions,
+                                     clock: SystemClock(),
+                                     timings: { settings.timings })
                      })
+                     .environment(\.artwork, backend.artwork)
+                     .environment(notice)
         }
     }
 
+    /// Set by a test that wants a launch to say that the store was reset.
+    private static let storeResetKey = "NPO_LIGHT_STORE_RESET"
+
     private static func makeBackend() -> Backend {
-        #if DEBUG
-        // A launch by a test must not reach NPO.
-        if let scripted = ScriptedAuthenticator(environment: ProcessInfo.processInfo.environment) {
-            return Backend(authenticator: scripted, catalogue: ScriptedCatalogue(), playback: ScriptedPlayback())
-        }
-        #endif
+        if let scripted = scriptedBackend() { return scripted }
         let configuration = URLSessionConfiguration.ephemeral
         configuration.timeoutIntervalForRequest = requestTimeout
         let clock = SystemClock()
@@ -72,15 +109,88 @@ struct NPOLightApp: App {
         let authenticator = NPOAuthenticator(transport: transport, tokenStore: KeychainTokenStore(), clock: clock)
         let profiles = NPOProfiles(authenticator: authenticator)
         let streams = NPOStreams(authenticator: authenticator, profiles: profiles, transport: transport)
-        let playback = NPOPlayback(streams: streams, licenser: FairPlayLicenser(transport: transport), clock: clock)
+        let npoPlayback = NPOPlayback(streams: streams,
+                                      licenser: FairPlayLicenser(transport: transport),
+                                      clock: clock)
+        let playback = simulatorPlayback ?? npoPlayback
+        let progress = ProgressStore.open(in: .cachesDirectory)
         // Every failure behind the boundary is written down on its way out
         // (ADR 0016).
+        let cache = CatalogueCache()
+        let catalogue = catalogue(over: LoggedCatalogue(wrapping: NPOCatalogue(authenticator: authenticator,
+                                                                               profiles: profiles),
+                                                        log: log),
+                                  keptIn: cache)
         return Backend(
             authenticator: LoggedAuthenticator(wrapping: authenticator, log: log),
-            catalogue: LoggedCatalogue(wrapping: NPOCatalogue(authenticator: authenticator, profiles: profiles),
-                                       log: log),
-            playback: LoggedPlayback(wrapping: playback, log: log)
+            catalogue: catalogue,
+            playback: LoggedPlayback(wrapping: playback, log: log),
+            artwork: ArtworkLoader(transport: URLSessionTransport(session: artworkSession()), log: log),
+            searchHistory: SearchHistoryStore(),
+            pins: PinStore(),
+            progress: progress,
+            watched: WatchHistoryStore(),
+            later: WatchLaterStore(),
+            eraser: LocalDataEraser(progress: progress, catalogue: cache),
+            positionsWereReset: progress.wasReset
         )
+    }
+
+    /// The stand-ins a launch by a test runs on, which must not reach NPO or
+    /// leave anything behind (ADR 0009). `nil` for any other launch, and in
+    /// the app that ships.
+    private static func scriptedBackend() -> Backend? {
+        #if DEBUG
+        let environment = ProcessInfo.processInfo.environment
+        guard let scripted = ScriptedAuthenticator(environment: environment) else { return nil }
+        let eraser = ScriptedEraser()
+        return Backend(authenticator: scripted,
+                       catalogue: ScriptedCatalogue(),
+                       playback: ScriptedPlayback(),
+                       artwork: NoArtwork(),
+                       searchHistory: eraser.searches,
+                       pins: eraser.pins,
+                       progress: eraser.progress,
+                       watched: eraser.history,
+                       later: eraser.later,
+                       eraser: eraser,
+                       positionsWereReset: environment[storeResetKey] != nil,
+                       keepsSettings: false)
+        #else
+        nil
+        #endif
+    }
+
+    /// What NPO answered is kept, so that a page seen before opens without
+    /// waiting for it again (ADR 0024). Without a place to keep it, NPO is
+    /// simply asked every time.
+    private static func catalogue(over npo: any Catalogue, keptIn cache: CatalogueCache?) -> any Catalogue {
+        guard let cache else { return npo }
+        return CachedCatalogue(wrapping: npo, cache: cache, clock: SystemClock())
+    }
+
+    /// Images come over a session of their own, kept on disk by the system's
+    /// cache under a ceiling: NPO lets an image be kept for a year, and what
+    /// is on disk need not be fetched again after a relaunch (ADR 0017). Not
+    /// through the logging transport, which would keep every image whole.
+    private static func artworkSession() -> URLSession {
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = requestTimeout
+        configuration.urlCache = URLCache(memoryCapacity: 0, diskCapacity: artworkDiskCeiling)
+        configuration.httpCookieStorage = nil
+        configuration.urlCredentialStorage = nil
+        return URLSession(configuration: configuration)
+    }
+
+    /// What plays instead of NPO's streams where they cannot: a debug build
+    /// on the simulator plays the test card, with the real catalogue and the
+    /// real stores around it (ADR 0019). `nil` everywhere else.
+    private static var simulatorPlayback: (any PlaybackStarting)? {
+        #if DEBUG && targetEnvironment(simulator)
+        ScriptedPlayback()
+        #else
+        nil
+        #endif
     }
 
     /// Where requests and responses are kept whole, tidied and announced: the
@@ -104,9 +214,51 @@ struct NPOLightApp: App {
     }
 }
 
-/// Everything behind the NPO boundary, as the rest of the app sees it.
+/// Everything behind the NPO boundary and the local stores, as the rest of
+/// the app sees them.
 private struct Backend {
     let authenticator: any Authenticating
     let catalogue: any Catalogue
     let playback: any PlaybackStarting
+    let artwork: any ArtworkProviding
+    let searchHistory: any SearchHistory
+    let pins: any Pins
+    let progress: any ProgressKeeping
+    let watched: any WatchHistory
+    let later: any WatchLater
+
+    let eraser: any LocalDataErasing
+
+    /// The store of positions could not be read and was started over
+    /// (NFR-REL-05).
+    var positionsWereReset = false
+
+    /// The mode and the settings of a launch by a test are gone with the
+    /// process; the app's own are kept (FR-MODE-01, FR-SET-02).
+    var keepsSettings = true
+
+    @MainActor
+    func settings(signOut: @escaping () -> Void) -> SettingsModel {
+        guard keepsSettings else {
+            return SettingsModel(timings: Timings(), eraser: eraser, keep: { _, _ in }, signOut: signOut)
+        }
+        let stored = StoredTimings()
+        return SettingsModel(timings: stored.timings,
+                             eraser: eraser,
+                             keep: { stored.keep($0, for: $1) },
+                             signOut: signOut)
+    }
+
+    @MainActor var modes: ModeModel {
+        guard keepsSettings else {
+            return ModeModel(initial: .normal, catalogue: catalogue, keep: { _ in })
+        }
+        let stored = StoredMode()
+        return ModeModel(initial: stored.mode, catalogue: catalogue, keep: { stored.mode = $0 })
+    }
+
+    /// What a page that shows watched state reads.
+    var watchedState: WatchedState {
+        WatchedState(progress: progress, history: watched, later: later)
+    }
 }

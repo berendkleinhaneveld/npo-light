@@ -25,6 +25,14 @@ the old one as superseded instead of rewriting it.
 | [0014](0014-each-mode-browses-as-an-npo-profile.md) | Each mode browses as one of the account's NPO profiles | Accepted |
 | [0015](0015-local-data-in-two-places.md) | Keep what the family chose in UserDefaults, and every position in an evictable store | Accepted |
 | [0016](0016-log-at-the-seams.md) | Log at the seams, and keep whole exchanges in files in debug builds | Proposed |
+| [0017](0017-load-artwork-at-the-size-it-is-shown.md) | Load artwork at the size it is shown, off the main actor | Proposed |
+| [0018](0018-when-a-position-is-written-and-where.md) | When a position is written, and where | Proposed |
+| [0019](0019-play-a-generated-video-where-fairplay-cannot-run.md) | Play a generated video where FairPlay cannot run | Proposed |
+| [0020](0020-a-series-continues-where-its-page-was-told.md) | A series continues where its page was told | Proposed |
+| [0021](0021-the-system-player-through-its-view-controller.md) | Show the system player through its view controller | Proposed |
+| [0022](0022-a-mode-switch-builds-the-screens-again.md) | A mode switch builds the screens again | Proposed |
+| [0023](0023-find-out-that-a-tile-is-gone-by-selecting-it.md) | Find out that a tile is gone by selecting it | Proposed |
+| [0024](0024-keep-what-npo-answered-and-ask-again-behind-it.md) | Keep what NPO answered, and ask again behind it | Proposed |
 
 ## How to add one
 

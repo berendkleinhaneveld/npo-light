@@ -39,7 +39,7 @@ nonisolated struct ScriptedCatalogue: Catalogue {
     ]
 
     func availableModes() async throws -> Set<Mode> {
-        [.normal]
+        [.normal, .kids]
     }
 
     func search(for query: String, in mode: Mode) async throws -> SearchResults {
@@ -54,10 +54,31 @@ nonisolated struct ScriptedCatalogue: Catalogue {
                      seasons: Self.seasons)
     }
 
-    /// Three episodes that carry their season in their name, so that a test
-    /// can tell which season is on screen.
+    func programme(_ id: EpisodeID, in mode: Mode) async throws -> ProgrammeDetail {
+        let known = Self.results.singleProgrammes.first { $0.id == id } ?? Self.results.singleProgrammes[0]
+        let described = Playable(id: id,
+                                 title: known.title,
+                                 caption: "Documentaire • 1u 25m",
+                                 synopsis: "Hoe dieren hun weg vinden in de stad, een jaar lang gevolgd.",
+                                 duration: known.duration,
+                                 artwork: nil)
+        return ProgrammeDetail(playable: described, isPlayable: true)
+    }
+
+    /// The scripted episodes carry their season in their identifier; anything
+    /// else stands alone.
+    func place(of episode: EpisodeID, in mode: Mode) async throws -> SeriesPlace? {
+        guard let season = Self.seasons.first(where: { episode.rawValue.hasPrefix($0.id.rawValue) }) else {
+            return nil
+        }
+        return SeriesPlace(series: Self.results.series[0], season: season.id)
+    }
+
+    /// Episodes that carry their season in their name, so that a test can
+    /// tell which season is on screen — and more of them than fit on it, as a
+    /// real season has: a list that scrolls is where focus went astray.
     func episodes(of season: SeasonID, in mode: Mode) async throws -> [Playable] {
-        (1...3).map { number in
+        (1...12).map { number in
             Playable(id: EpisodeID(rawValue: "\(season.rawValue)-episode-\(number)"),
                      title: "\(season.rawValue) aflevering \(number)",
                      caption: "Afl. \(number) • 10m",

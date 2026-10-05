@@ -4,7 +4,7 @@ The app is always in exactly one mode. Prefix `FR-MODE`.
 
 ## FR-MODE-01 — Two modes, remembered across launches
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The app has a normal mode and a kids mode. It launches in whichever mode it was
 in when it was last used.
@@ -17,7 +17,7 @@ in when it was last used.
 
 ## FR-MODE-02 — Switching is one action and is not gated
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Switching modes is a single, always-visible action on the home page. It asks
 for no PIN, password or confirmation in either direction.
@@ -44,7 +44,7 @@ not a change to this one.
 
 ## FR-MODE-03 — The current mode is unmistakable
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 A glance at the screen tells you which mode you are in — kids mode has its own
 visual identity, not just a different content list.
@@ -58,7 +58,7 @@ visual identity, not just a different content list.
 
 ## FR-MODE-04 — Kids mode browses the youth catalogue
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 In kids mode, every item the app offers — home page, search results, next
 episodes — comes from NPO's youth catalogue. Browsing within that catalogue is
@@ -87,7 +87,7 @@ out — cannot be rebuilt from the ratings on single items.
 
 ## FR-MODE-05 — Each mode has its own pins, history and search history
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Pinned items, recently watched and search history are stored per mode. Nothing
 a child watches appears on the adult home page, and the other way round.
@@ -104,7 +104,7 @@ a child watches appears on the adult home page, and the other way round.
 
 ## FR-MODE-06 — Settings are a normal-mode screen
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Settings (FR-SET) are reachable only from normal mode. Kids mode offers no
 entry point to them.

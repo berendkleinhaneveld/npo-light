@@ -194,6 +194,21 @@ SwiftLint settles formatting; these are the conventions it cannot check.
   SwiftData store holds positions at an explicit URL in `Caches` — never a
   default `ModelConfiguration`, which only works in the Simulator. A store over
   `UserDefaults` follows the same rules as one over SwiftData.
+- **Artwork.** As decided in ADR 0017, an image is drawn by `ArtworkView`,
+  which names an `ArtworkSize` — never by `AsyncImage`, which fetches NPO's
+  three-thousand-pixel original and decodes it on the main thread.
+- **Playback on the simulator.** As decided in ADR 0019, a debug build on the
+  simulator plays a generated test card instead of NPO's protected streams,
+  with the real catalogue and stores around it. Use it to see and to test
+  what happens while something plays; the licence exchange itself is only
+  ever seen on a television.
+- **The catalogue cache.** As decided in ADR 0024, what NPO answered about a
+  series, a season or a programme is kept by `CachedCatalogue`, below the
+  boundary. A page shows what the catalogue remembers first and asks the
+  ordinary question behind it; it does not keep a cache of its own.
+- **The player.** As decided in ADR 0021, video is shown by `SystemPlayer`,
+  not by SwiftUI's `VideoPlayer`: a button the remote can reach while
+  something plays is one of the system player's contextual actions.
 - **Concurrency.** UI state is `@MainActor`. Do not add `@unchecked Sendable`
   or `nonisolated(unsafe)` to silence the compiler — model the isolation
   properly.

@@ -62,7 +62,7 @@ genuinely fails sends the user back to sign-in.
 
 ## FR-AUTH-04 — Sign out
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The user can sign out from settings (FR-SET-03). Signing out clears the session
 but keeps local data.

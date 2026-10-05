@@ -54,18 +54,25 @@ final class NPOPlayback: PlaybackStarting {
     private func protectedPlayback(of playable: Playable, in mode: Mode) async throws -> Playback {
         let stream = try await streams.stream(for: playable.id, in: mode)
         let asset = AVURLAsset(url: stream.manifest)
+        let item = AVPlayerItem(asset: asset)
+        item.externalMetadata = [Self.titleMetadata(playable.title)]
+        // A stream NPO sends in the clear needs no keys, and so no session.
+        guard let protection = stream.protection else {
+            return Playback(player: AVPlayer(playerItem: item), keys: nil)
+        }
 
-        let handler = FairPlayKeyHandler(protection: stream.protection,
+        let handler = FairPlayKeyHandler(protection: protection,
                                          licenser: licenser,
                                          clock: clock) { [streams] in
-            try await streams.stream(for: playable.id, in: mode).protection
+            // A stream that was protected a moment ago still is.
+            guard let fresh = try await streams.stream(for: playable.id, in: mode).protection else {
+                throw BackendError.unexpectedResponse(status: nil)
+            }
+            return fresh
         }
         let session = AVContentKeySession(keySystem: .fairPlayStreaming)
         session.setDelegate(handler, queue: handler.queue)
         session.addContentKeyRecipient(asset)
-
-        let item = AVPlayerItem(asset: asset)
-        item.externalMetadata = [Self.titleMetadata(playable.title)]
         return Playback(player: AVPlayer(playerItem: item), keys: KeySession(session: session, handler: handler))
     }
 

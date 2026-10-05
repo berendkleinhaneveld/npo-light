@@ -15,7 +15,7 @@ wording that ships is a String Catalog entry (NFR-I18N-01).
 
 ## FR-LATER-01 — Watch later is its own list
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The app keeps a watch later list per mode, separate from pinned items
 (FR-HOME-02) and from recently watched (FR-HOME-06). Saving, unsaving and
@@ -31,7 +31,7 @@ playing a saved item never change what is pinned.
 
 ## FR-LATER-02 — Only films and single episodes can be saved
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 What can be saved is one playable thing: a **film**, a **standalone episode**,
 or **one episode of a series**. A series itself cannot be saved — a series is
@@ -54,7 +54,7 @@ so every "we want to watch that" has exactly one home.
 
 ## FR-LATER-03 — Saving is offered wherever an item is
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 An item can be saved from every place the app already shows it, without
 navigating somewhere else first.
@@ -71,11 +71,12 @@ navigating somewhere else first.
 - In every one of those places the action toggles: it saves an unsaved item and
   removes a saved one, and its label says which it will do.
 - The action is reachable from the remote without a hidden gesture being the
-  only route (NFR-A11Y-01).
+  only route (NFR-A11Y-01): it is in the menu that holding the select button
+  opens, and the page says that the menu is there.
 
 ## FR-LATER-04 — Most recently saved first
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The list is ordered by when each item was saved, most recent first — the same
 convention as the pinned row (FR-HOME-02).
@@ -112,7 +113,7 @@ FR-HOME-09.
 
 ## FR-LATER-06 — The list is not capped
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Watch later holds as many items as the family saves. Nothing is dropped to make
 room.
@@ -130,7 +131,7 @@ not a bug.
 
 ## FR-LATER-07 — Finishing an item removes it
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 When playback of a saved item passes the completion threshold (FR-PLAY-04), it
 leaves the watch later list. The list empties itself as the family works
@@ -152,7 +153,7 @@ through it.
 
 ## FR-LATER-08 — A started item stays until it is finished
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Playing part of a saved item does not remove it. It remains on the list, with
 its progress, until it passes the completion threshold or is removed by hand.
@@ -169,7 +170,7 @@ its progress, until it passes the completion threshold or is removed by hand.
 
 ## FR-LATER-09 — Remove by hand
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 A saved item can be taken off the list without watching it, from the watch
 later row itself and from its detail page.
@@ -184,7 +185,7 @@ later row itself and from its detail page.
 
 ## FR-LATER-10 — Each mode has its own watch later list
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Watch later is stored per mode, like pins, history and search history
 (FR-MODE-05). What a child saves is not on the adult home page, and the other
@@ -201,15 +202,17 @@ way round.
 
 ## FR-LATER-11 — A saved item that disappears
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Rights expire, and a saved item may be gone by the time the family gets to it.
 That must not break the home page (FR-CONTENT-05).
 
 **Acceptance criteria**
 
-- A saved item that can no longer be fetched keeps its tile, shown as
-  unavailable with its cached title, and can still be removed.
+- A saved item that can no longer be fetched keeps its tile, and can still be
+  removed. Once selecting it has shown that it is gone, the tile is shown as
+  unavailable, with its cached title
+  ([ADR 0023](../adr/0023-find-out-that-a-tile-is-gone-by-selecting-it.md)).
 - Selecting it explains that it is no longer available instead of failing to
   play.
 - An unavailable item is not removed from the list on the app's own initiative;
@@ -217,7 +220,7 @@ That must not break the home page (FR-CONTENT-05).
 
 ## FR-LATER-12 — Playing from the row
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 A tile in the watch later row plays that exact item.
 
