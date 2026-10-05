@@ -19,7 +19,7 @@ nonisolated struct SeriesSummary: Sendable, Hashable, Identifiable, Codable {
 /// The type does not say which. A list that knows keeps the two apart
 /// (``SearchResults``), and nothing in a list names the series an episode
 /// belongs to: only the answer to playing it does (Q-10).
-nonisolated struct Playable: Sendable, Hashable, Identifiable {
+nonisolated struct Playable: Sendable, Hashable, Identifiable, Codable {
     let id: EpisodeID
     let title: String
 
@@ -38,7 +38,7 @@ nonisolated struct Playable: Sendable, Hashable, Identifiable {
 
 /// A programme that belongs to no series, as its own page describes it
 /// (FR-CONTENT-03).
-nonisolated struct ProgrammeDetail: Sendable, Equatable {
+nonisolated struct ProgrammeDetail: Sendable, Equatable, Codable {
     /// The programme, with the fuller description its page has.
     let playable: Playable
 
@@ -66,13 +66,13 @@ nonisolated struct SearchResults: Sendable, Equatable {
 
 /// One season, named as NPO names it. The title is editorial — a series can
 /// have a season called "Kort" — so it is never computed from a number.
-nonisolated struct Season: Sendable, Equatable, Identifiable {
+nonisolated struct Season: Sendable, Equatable, Identifiable, Codable {
     let id: SeasonID
     let title: String
 }
 
 /// A series and its seasons (FR-CONTENT-02).
-nonisolated struct SeriesDetail: Sendable, Equatable, Identifiable {
+nonisolated struct SeriesDetail: Sendable, Equatable, Identifiable, Codable {
     let id: ItemID
     let title: String
     let synopsis: String?

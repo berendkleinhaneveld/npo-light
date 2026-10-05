@@ -60,16 +60,25 @@ final class ProgrammeDetailModel {
         return PlayRequest(playable: detail.playable, origin: .single)
     }
 
+    /// What was seen of it before is shown at once, and NPO is asked again
+    /// behind it (FR-CONTENT-04).
     func load() async {
-        page = .loading
         await readWatched()
+        if let remembered = await catalogue.rememberedProgramme(summary.id, in: mode) {
+            page = .loaded(remembered)
+        } else {
+            page = .loading
+        }
         do {
-            page = .loaded(try await catalogue.programme(summary.id, in: mode))
+            let detail = try await catalogue.programme(summary.id, in: mode)
+            if page != .loaded(detail) { page = .loaded(detail) }
         } catch BackendError.itemUnavailable {
             page = .unavailable
         } catch is CancellationError {
             // The page went away.
         } catch {
+            // With something to show, a failed refresh changes nothing.
+            if case .loaded = page { return }
             page = .failed
         }
     }

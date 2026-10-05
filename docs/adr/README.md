@@ -32,6 +32,7 @@ the old one as superseded instead of rewriting it.
 | [0021](0021-the-system-player-through-its-view-controller.md) | Show the system player through its view controller | Proposed |
 | [0022](0022-a-mode-switch-builds-the-screens-again.md) | A mode switch builds the screens again | Proposed |
 | [0023](0023-find-out-that-a-tile-is-gone-by-selecting-it.md) | Find out that a tile is gone by selecting it | Proposed |
+| [0024](0024-keep-what-npo-answered-and-ask-again-behind-it.md) | Keep what NPO answered, and ask again behind it | Proposed |
 
 ## How to add one
 

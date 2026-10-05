@@ -79,7 +79,7 @@ a standalone episode adds a save action instead (FR-HOME-03, FR-LATER-03).
 
 ## FR-CONTENT-04 — Catalogue data comes from NPO and is cached
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Item metadata is fetched from NPO's backend and cached locally, so that a
 screen the user has seen before can be rendered again without a network round
@@ -90,7 +90,8 @@ trip.
 - A cached response is used to render immediately; a refresh happens in the
   background and updates the view when it differs.
 - Cache entries carry a fetch timestamp and are refreshed when older than a
-  defined maximum age.
+  defined maximum age: thirty minutes
+  ([ADR 0024](../adr/0024-keep-what-npo-answered-and-ask-again-behind-it.md)).
 - The cache is bounded: it does not grow without limit as the family browses.
 - Nothing about *what* was cached leaves the device (NFR-PRIV-01).
 

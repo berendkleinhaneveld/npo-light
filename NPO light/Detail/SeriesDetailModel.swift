@@ -164,25 +164,43 @@ final class SeriesDetailModel {
     /// Fetches the series and opens the season that holds the episode the
     /// main action plays: the first, for a series nobody started or one
     /// watched to its end (FR-CONTENT-07).
+    ///
+    /// What was seen of the series before is shown at once, and NPO is asked
+    /// again behind it: the page changes only when the answer differs
+    /// (FR-CONTENT-04).
     func load() async {
-        page = .loading
         isPinned = await pins.isPinned(summary.id, in: mode)
+        await readWatched()
+        if let remembered = await catalogue.rememberedSeries(summary.id, in: mode) {
+            present(remembered)
+        } else {
+            page = .loading
+        }
         do {
             let detail = try await catalogue.series(summary.id, in: mode)
-            await readWatched()
-            page = .loaded(detail)
-            let continued = detail.seasons.first { $0.id == upNext?.season }
-            if let opening = continued ?? detail.seasons.first {
-                show(opening.id)
-            } else {
-                episodes = .loaded([])
-            }
+            if page != .loaded(detail) { present(detail) }
         } catch BackendError.itemUnavailable {
             page = .unavailable
         } catch is CancellationError {
             // The page went away.
         } catch {
+            // With something to show, a failed refresh changes nothing.
+            if case .loaded = page { return }
             page = .failed
+        }
+    }
+
+    /// Shows the series, on the season it opens on — or on the one already
+    /// shown, when a newer answer replaces an older one under the user.
+    private func present(_ detail: SeriesDetail) {
+        page = .loaded(detail)
+        if let shownSeason, detail.seasons.contains(where: { $0.id == shownSeason }) { return }
+        let continued = detail.seasons.first { $0.id == upNext?.season }
+        if let opening = continued ?? detail.seasons.first {
+            show(opening.id)
+        } else {
+            shownSeason = nil
+            episodes = .loaded([])
         }
     }
 
@@ -284,22 +302,32 @@ final class SeriesDetailModel {
         focused = episode
     }
 
+    /// The season as it was seen before is shown at once, and NPO is asked
+    /// again behind it (FR-CONTENT-04).
     private func fetch(_ season: SeasonID) async {
-        let outcome: Episodes
+        let remembered = await catalogue.rememberedEpisodes(of: season, in: mode)
+        if let remembered {
+            await take(remembered, for: season)
+        }
         do {
             let list = try await catalogue.episodes(of: season, in: mode)
-            fetched[season] = list
-            let known = await watched.progress.progress(of: list.map(\.id), in: mode)
-            positions.merge(known) { _, read in read }
-            outcome = .loaded(list)
+            if list != remembered { await take(list, for: season) }
         } catch is CancellationError {
             return
         } catch {
-            outcome = .failed
+            // With something to show, a failed refresh changes nothing.
+            guard remembered == nil, !Task.isCancelled, shownSeason == season else { return }
+            episodes = .failed
         }
+    }
+
+    private func take(_ list: [Playable], for season: SeasonID) async {
+        fetched[season] = list
+        let known = await watched.progress.progress(of: list.map(\.id), in: mode)
+        positions.merge(known) { _, read in read }
         // Focus has moved on along the picker: this answer is for a season
         // that is no longer the one shown.
         guard !Task.isCancelled, shownSeason == season else { return }
-        episodes = outcome
+        episodes = .loaded(list)
     }
 }

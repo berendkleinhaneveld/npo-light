@@ -94,24 +94,7 @@ struct NPOLightApp: App {
     private static let storeResetKey = "NPO_LIGHT_STORE_RESET"
 
     private static func makeBackend() -> Backend {
-        #if DEBUG
-        // A launch by a test must not reach NPO.
-        if let scripted = ScriptedAuthenticator(environment: ProcessInfo.processInfo.environment) {
-            let eraser = ScriptedEraser()
-            return Backend(authenticator: scripted,
-                           catalogue: ScriptedCatalogue(),
-                           playback: ScriptedPlayback(),
-                           artwork: NoArtwork(),
-                           searchHistory: eraser.searches,
-                           pins: eraser.pins,
-                           progress: eraser.progress,
-                           watched: eraser.history,
-                           later: eraser.later,
-                           eraser: eraser,
-                           positionsWereReset: ProcessInfo.processInfo.environment[storeResetKey] != nil,
-                           keepsSettings: false)
-        }
-        #endif
+        if let scripted = scriptedBackend() { return scripted }
         let configuration = URLSessionConfiguration.ephemeral
         configuration.timeoutIntervalForRequest = requestTimeout
         let clock = SystemClock()
@@ -133,10 +116,14 @@ struct NPOLightApp: App {
         let progress = ProgressStore.open(in: .cachesDirectory)
         // Every failure behind the boundary is written down on its way out
         // (ADR 0016).
+        let cache = CatalogueCache()
+        let catalogue = catalogue(over: LoggedCatalogue(wrapping: NPOCatalogue(authenticator: authenticator,
+                                                                               profiles: profiles),
+                                                        log: log),
+                                  keptIn: cache)
         return Backend(
             authenticator: LoggedAuthenticator(wrapping: authenticator, log: log),
-            catalogue: LoggedCatalogue(wrapping: NPOCatalogue(authenticator: authenticator, profiles: profiles),
-                                       log: log),
+            catalogue: catalogue,
             playback: LoggedPlayback(wrapping: playback, log: log),
             artwork: ArtworkLoader(transport: URLSessionTransport(session: artworkSession()), log: log),
             searchHistory: SearchHistoryStore(),
@@ -144,9 +131,42 @@ struct NPOLightApp: App {
             progress: progress,
             watched: WatchHistoryStore(),
             later: WatchLaterStore(),
-            eraser: LocalDataEraser(progress: progress),
+            eraser: LocalDataEraser(progress: progress, catalogue: cache),
             positionsWereReset: progress.wasReset
         )
+    }
+
+    /// The stand-ins a launch by a test runs on, which must not reach NPO or
+    /// leave anything behind (ADR 0009). `nil` for any other launch, and in
+    /// the app that ships.
+    private static func scriptedBackend() -> Backend? {
+        #if DEBUG
+        let environment = ProcessInfo.processInfo.environment
+        guard let scripted = ScriptedAuthenticator(environment: environment) else { return nil }
+        let eraser = ScriptedEraser()
+        return Backend(authenticator: scripted,
+                       catalogue: ScriptedCatalogue(),
+                       playback: ScriptedPlayback(),
+                       artwork: NoArtwork(),
+                       searchHistory: eraser.searches,
+                       pins: eraser.pins,
+                       progress: eraser.progress,
+                       watched: eraser.history,
+                       later: eraser.later,
+                       eraser: eraser,
+                       positionsWereReset: environment[storeResetKey] != nil,
+                       keepsSettings: false)
+        #else
+        nil
+        #endif
+    }
+
+    /// What NPO answered is kept, so that a page seen before opens without
+    /// waiting for it again (ADR 0024). Without a place to keep it, NPO is
+    /// simply asked every time.
+    private static func catalogue(over npo: any Catalogue, keptIn cache: CatalogueCache?) -> any Catalogue {
+        guard let cache else { return npo }
+        return CachedCatalogue(wrapping: npo, cache: cache, clock: SystemClock())
     }
 
     /// Images come over a session of their own, kept on disk by the system's

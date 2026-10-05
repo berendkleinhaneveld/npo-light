@@ -202,6 +202,10 @@ SwiftLint settles formatting; these are the conventions it cannot check.
   with the real catalogue and stores around it. Use it to see and to test
   what happens while something plays; the licence exchange itself is only
   ever seen on a television.
+- **The catalogue cache.** As decided in ADR 0024, what NPO answered about a
+  series, a season or a programme is kept by `CachedCatalogue`, below the
+  boundary. A page shows what the catalogue remembers first and asks the
+  ordinary question behind it; it does not keep a cache of its own.
 - **The player.** As decided in ADR 0021, video is shown by `SystemPlayer`,
   not by SwiftUI's `VideoPlayer`: a button the remote can reach while
   something plays is one of the system player's contextual actions.
