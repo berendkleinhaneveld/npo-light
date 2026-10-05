@@ -81,7 +81,7 @@ struct SettingsTests {
     func signOutLeavesLocalData() async {
         let eraser = ScriptedEraser()
         await eraser.pins.pin(StubCatalogue.results.series[0], in: .normal)
-        let app = AppModel(authenticator: ScriptedAuthenticator(.signedIn))
+        let app = AppModel(authenticator: ScriptedAuthenticator(.signedIn), clock: HookClock())
         await app.restore()
         let model = SettingsModel(timings: Timings(), eraser: eraser, keep: { _, _ in }, signOut: { app.signOut() })
 

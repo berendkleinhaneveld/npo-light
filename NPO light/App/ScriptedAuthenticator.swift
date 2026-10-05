@@ -19,6 +19,9 @@ nonisolated struct ScriptedAuthenticator: Authenticating {
 
         /// A stored session with NPO Plus.
         case signedIn = "signed-in"
+
+        /// A stored session NPO admitted before, and no way to ask NPO now.
+        case offline
     }
 
     /// The environment variable a UI test sets to pick a scenario.
@@ -73,8 +76,17 @@ nonisolated struct ScriptedAuthenticator: Authenticating {
         }
     }
 
+    /// The account an earlier launch was admitted with (NFR-REL-01).
+    var admittedBefore: Account? {
+        scenario == .offline ? Self.account : nil
+    }
+
     func restoredAccount() async throws -> Account? {
-        scenario == .signedIn ? Self.account : nil
+        switch scenario {
+        case .awaitingApproval: nil
+        case .signedIn: Self.account
+        case .offline: throw BackendError.unreachable
+        }
     }
 
     func signOut() throws {}

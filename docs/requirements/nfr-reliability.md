@@ -5,18 +5,26 @@ changes, the TV gets unplugged mid-episode.
 
 ## NFR-REL-01 — The app is usable without a network
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 With no network, the app still shows what it knows: the home page renders from
-cache and says what cannot be refreshed.
+what is kept on the television and says that NPO cannot be reached.
 
 **Acceptance criteria**
 
-- Launching offline with a valid session and a populated cache shows the home
-  page (FR-CONTENT-04).
+- Launching offline with a stored session shows the home page, when NPO
+  admitted the account at an earlier launch: the app goes on with that answer
+  until NPO can be asked again
+  ([ADR 0025](../adr/0025-go-on-with-the-last-admitted-account-offline.md)).
+  Without such an answer the launch says that NPO cannot be reached and
+  offers a retry (FR-AUTH-08).
+- A page seen before opens from what NPO answered then (FR-CONTENT-04).
+- The home page says that NPO cannot be reached, for as long as that lasts.
 - Actions that genuinely need the network — playback, search — explain that
   rather than failing silently.
-- Coming back online refreshes without a relaunch.
+- Coming back online is noticed without a relaunch: NPO is asked again while
+  it cannot be reached, and its first answer is acted on as at a launch — a
+  subscription that lapsed in the meantime is caught (FR-AUTH-08).
 
 ## NFR-REL-02 — Every failure has an actionable state
 

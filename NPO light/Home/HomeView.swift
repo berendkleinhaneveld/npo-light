@@ -20,11 +20,15 @@ struct HomeView: View {
 
     /// Absent in a preview, which has nothing to say.
     @Environment(LaunchNotice.self) private var notice: LaunchNotice?
+    @Environment(\.isOffline) private var isOffline
 
     var body: some View {
         NavigationStack(path: $model.path) {
             VStack(alignment: .leading, spacing: 48) {
                 header
+                if isOffline {
+                    OfflineNotice()
+                }
                 if let notice, notice.positionsWereReset {
                     ResetNotice { notice.acknowledge() }
                 }

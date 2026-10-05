@@ -34,7 +34,7 @@ struct NPOLightApp: App {
         positions = PlaybackCoordinator(watched: backend.watchedState,
                                         order: EpisodeOrder(catalogue: backend.catalogue),
                                         clock: SystemClock())
-        let appModel = AppModel(authenticator: backend.authenticator)
+        let appModel = backend.appModel
         _appModel = State(initialValue: appModel)
         _signInModel = State(initialValue: SignInModel(authenticator: backend.authenticator,
                                                        clock: SystemClock(),
@@ -155,7 +155,8 @@ struct NPOLightApp: App {
                        later: eraser.later,
                        eraser: eraser,
                        positionsWereReset: environment[storeResetKey] != nil,
-                       keepsSettings: false)
+                       keepsSettings: false,
+                       admittedBefore: scripted.admittedBefore)
         #else
         nil
         #endif
@@ -237,6 +238,9 @@ private struct Backend {
     /// process; the app's own are kept (FR-MODE-01, FR-SET-02).
     var keepsSettings = true
 
+    /// The account a launch by a test was admitted with before (NFR-REL-01).
+    var admittedBefore: Account?
+
     @MainActor
     func settings(signOut: @escaping () -> Void) -> SettingsModel {
         guard keepsSettings else {
@@ -247,6 +251,17 @@ private struct Backend {
                              eraser: eraser,
                              keep: { stored.keep($0, for: $1) },
                              signOut: signOut)
+    }
+
+    @MainActor var appModel: AppModel {
+        guard keepsSettings else {
+            return AppModel(authenticator: authenticator, clock: SystemClock(), remembered: admittedBefore)
+        }
+        let stored = StoredAccount()
+        return AppModel(authenticator: authenticator,
+                        clock: SystemClock(),
+                        remembered: stored.account,
+                        keep: { stored.account = $0 })
     }
 
     @MainActor var modes: ModeModel {
