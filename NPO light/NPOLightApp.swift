@@ -140,7 +140,7 @@ struct NPOLightApp: App {
         #if DEBUG
         let environment = ProcessInfo.processInfo.environment
         guard let scripted = ScriptedAuthenticator(environment: environment) else { return nil }
-        let eraser = ScriptedEraser()
+        let eraser = environment[ScriptedEraser.filledKey] == nil ? ScriptedEraser() : ScriptedEraser.filled()
         return Backend(authenticator: scripted,
                        catalogue: ScriptedCatalogue(),
                        playback: ScriptedPlayback(),

@@ -30,6 +30,17 @@ struct HomeRow: View {
     var saved: Set<EpisodeID> = []
     var toggleSave: ((HomeTile) -> Void)?
 
+    /// What can have focus in the row.
+    private enum Spot: Hashable {
+        case tile(ItemID)
+        case search
+    }
+
+    @FocusState private var focus: Spot?
+
+    /// Offering focus to the tile that inherits it, until it is taken.
+    @State private var handover: Task<Void, Never>?
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(title)
@@ -43,7 +54,37 @@ struct HomeRow: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .focusSection()
+        .onChange(of: focus) { _, taken in
+            // Focus is in the row again: from here on it is the family's to
+            // move, and is not offered again.
+            guard taken != nil else { return }
+            handover?.cancel()
+            handover = nil
+        }
     }
+
+    /// Takes a tile off the row, and hands focus to the tile after it, the
+    /// one before it, or the way to search when it was the last. Left to
+    /// itself tvOS gives focus to nothing: the tile the menu was opened on is
+    /// gone when the menu closes (FR-HOME-10).
+    private func take(_ tile: HomeTile) {
+        let next: Spot = tiles.neighbour(of: tile.id).map { .tile($0) } ?? .search
+        remove(tile)
+        handover?.cancel()
+        handover = Task {
+            // Focus cannot be given while the menu is still closing, and
+            // nothing says when it has: it is offered until it is taken.
+            for _ in 0..<Self.handoverAttempts {
+                guard (try? await Task.sleep(for: Self.handoverPause)) != nil else { return }
+                focus = next
+            }
+        }
+    }
+
+    /// How often, and how far apart, focus is offered to the tile that
+    /// inherits it: two seconds in all, where the menu takes about one.
+    private static let handoverAttempts = 8
+    private static let handoverPause = Duration.milliseconds(250)
 
     private var name: String {
         switch kind {
@@ -117,6 +158,7 @@ struct HomeRow: View {
                     .foregroundStyle(.secondary)
             }
             Button("Zoeken", systemImage: "magnifyingglass", action: search)
+                .focused($focus, equals: .search)
                 .accessibilityIdentifier("\(name)-empty-search")
         }
         .padding(.horizontal, 80)
@@ -130,12 +172,13 @@ struct HomeRow: View {
                     Button { select(tile) } label: {
                         HomeTileView(tile: tile)
                     }
+                    .focused($focus, equals: .tile(tile.id))
                     .contextMenu {
                         if let page = tile.page {
                             Button("Details", systemImage: "info.circle") { open(page) }
                         }
                         saveButton(for: tile)
-                        Button(removal, systemImage: removalSymbol) { remove(tile) }
+                        Button(removal, systemImage: removalSymbol) { take(tile) }
                     }
                     .accessibilityIdentifier("\(name)-\(tile.id.rawValue)")
                 }

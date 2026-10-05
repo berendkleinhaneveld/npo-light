@@ -90,7 +90,7 @@ convention as the pinned row (FR-HOME-02).
 
 ## FR-LATER-05 — A third home row, below recently watched
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Watch later is the third row of the home page, below recently watched
 (FR-HOME-01). When the list is empty the row is not shown at all.

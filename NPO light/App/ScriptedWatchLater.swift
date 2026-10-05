@@ -65,6 +65,27 @@ nonisolated struct ScriptedEraser: LocalDataErasing {
     }
 }
 
+extension ScriptedEraser {
+    /// The environment variable a UI test sets to start on a home page with
+    /// something on every row.
+    static let filledKey = "NPO_LIGHT_HOME"
+
+    /// Three things on *Kijk verder* and one saved for later, for a test of
+    /// what the home page does when one of them goes.
+    static func filled() -> ScriptedEraser {
+        let results = ScriptedCatalogue.results
+        let film = results.singleProgrammes[0]
+        let played = Date(timeIntervalSinceNow: -3600)
+        let entries = results.series.enumerated().map { index, series in
+            WatchedEntry(series: series,
+                         next: Upcoming(results.episodes[0], in: ScriptedCatalogue.seasons[0].id),
+                         playedAt: played.addingTimeInterval(TimeInterval(-index)))
+        } + [WatchedEntry(single: film, playedAt: played.addingTimeInterval(-60))]
+        return ScriptedEraser(history: ScriptedWatchHistory(entries),
+                              later: ScriptedWatchLater([SavedItem(film, origin: .single)]))
+    }
+}
+
 extension WatchedState {
     /// Nothing watched and nothing saved, for previews.
     static func scripted() -> WatchedState {
