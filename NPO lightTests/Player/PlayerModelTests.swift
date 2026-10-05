@@ -195,6 +195,25 @@ struct PlayerModelTests {
         #expect(await store.progress(of: Self.episode.id, in: .normal)?.isFinished != true)
     }
 
+    @Test("FR-PLAY-10: a stream that fails halfway is a problem with a retry, which carries on from there")
+    func failureHalfwayKeepsThePosition() async throws {
+        let store = ScriptedProgress([Self.stopped(at: 60)])
+        let model = cardModel(store)
+        await model.start()
+
+        model.playbackFailed()
+        await model.writing?.value
+
+        #expect(model.problem == .failed)
+        let kept = try #require(await store.progress(of: Self.episode.id, in: .normal))
+        #expect(abs((kept.offset ?? 0) - 60) < 2)
+
+        await model.start()
+        let position = try #require(playhead(of: model))
+        model.stop()
+        #expect(abs(position - 60) < 2)
+    }
+
     @Test("NFR-MAINT-04: the test card is a playable video of the length it says, made without a network")
     func testCardIsPlayable() async throws {
         let asset = AVURLAsset(url: try await TestCard.video())

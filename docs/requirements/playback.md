@@ -175,7 +175,7 @@ Playing something is what fills the recently watched row (FR-HOME-06).
 
 ## FR-PLAY-10 — Playback errors are recoverable
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 A stream that will not play says why and offers a way forward.
 

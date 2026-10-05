@@ -268,9 +268,10 @@ final class PlayerModel {
         }
     }
 
-    /// The position survives the failure, so that a retry carries on from
-    /// where the stream stopped (FR-PLAY-10).
-    private func playbackFailed() {
+    /// What was playing stopped being playable. The position survives the
+    /// failure, so that a retry carries on from where the stream stopped
+    /// (FR-PLAY-10).
+    func playbackFailed() {
         rest()
         stopWatching()
         state = .failed(.failed)
