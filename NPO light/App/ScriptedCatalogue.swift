@@ -35,7 +35,13 @@ nonisolated struct ScriptedCatalogue: Catalogue {
     static let seasons = [
         Season(id: SeasonID(rawValue: "season-1"), title: "Seizoen 1"),
         Season(id: SeasonID(rawValue: "season-2"), title: "Seizoen 2"),
-        Season(id: SeasonID(rawValue: "season-3"), title: "Kort")
+        Season(id: SeasonID(rawValue: "season-3"), title: "Kort"),
+        // More than fit above the list of episodes, as a series that ran
+        // for years has: the last ones are not above anything.
+        Season(id: SeasonID(rawValue: "season-4"), title: "Seizoen 4"),
+        Season(id: SeasonID(rawValue: "season-5"), title: "Seizoen 5"),
+        Season(id: SeasonID(rawValue: "season-6"), title: "Seizoen 6"),
+        Season(id: SeasonID(rawValue: "season-7"), title: "Seizoen 7")
     ]
 
     func availableModes() async throws -> Set<Mode> {

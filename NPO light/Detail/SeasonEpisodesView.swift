@@ -42,6 +42,11 @@ struct SeasonEpisodesView: View {
                     }
                 }
             }
+            // The whole width takes focus: a season far along the picker is
+            // not above the list, and down from it has to arrive here all
+            // the same (NFR-A11Y-01).
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .focusSection()
         }
     }
 
