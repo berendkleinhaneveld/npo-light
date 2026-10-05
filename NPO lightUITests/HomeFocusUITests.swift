@@ -25,11 +25,18 @@ final class HomeFocusUITests: XCTestCase {
         XCTAssertTrue(first.waitForExistence(timeout: 10))
         XCTAssertTrue(saved.exists)
 
-        // Onto the first tile of the row, wherever the page opened.
-        for direction in [XCUIRemote.Button.down, .down, .up, .left, .left, .left] where !first.hasFocus {
-            remote.press(direction)
+        // Onto the first tile of the row, wherever the page opened: on the
+        // way to search above the rows, or on a tile already. Down until
+        // focus is in the row, then left to its start.
+        let row = [first, second, app.buttons["continue-playable-2"]]
+        for _ in 0..<3 where !row.contains(where: \.hasFocus) {
+            remote.press(.down)
         }
-        XCTAssertTrue(first.hasFocus)
+        XCTAssertTrue(row.contains(where: \.hasFocus), "Focus never reached the row")
+        for _ in 0..<2 where !first.hasFocus {
+            remote.press(.left)
+        }
+        XCTAssertTrue(first.hasFocus, "Focus never reached the first tile")
 
         // Taken off the row from its menu, whose last entry removes it: the
         // tile after it has focus, not nothing.
@@ -43,7 +50,7 @@ final class HomeFocusUITests: XCTestCase {
         waitForFocus(on: saved)
         remove(times: 2, with: remote)
         let holders = app.descendants(matching: .any).matching(NSPredicate(format: "hasFocus == true"))
-        XCTAssertTrue(holders.firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(holders.firstMatch.waitForExistence(timeout: 10), "Nothing has focus")
         XCTAssertFalse(saved.exists)
     }
 
