@@ -34,6 +34,16 @@ nonisolated final class StubAuthenticator: Authenticating {
     private let restored: @Sendable () async throws -> Account?
     private let signingOut: @Sendable () throws -> Void
     private let calls = Mutex(Calls())
+    private let endings = AsyncStream.makeStream(of: Void.self)
+
+    var endedSessions: AsyncStream<Void> { endings.stream }
+
+    /// NPO ended the session while the app was running, and nothing ends it
+    /// after that: whoever listens is let go.
+    func endSession() {
+        endings.continuation.yield()
+        endings.continuation.finish()
+    }
 
     init(
         start: @escaping @Sendable () async throws -> DeviceCodeChallenge = { StubAuthenticator.challenge },

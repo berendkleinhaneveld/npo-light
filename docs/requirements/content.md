@@ -35,7 +35,7 @@ requirement says "a film or a standalone episode", it means a single programme.
 
 ## FR-CONTENT-02 — A series exposes its episodes in order
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 A series exposes its seasons and, within a season, its episodes in broadcast
 order, so that "the next episode" is well defined.
@@ -47,8 +47,12 @@ order, so that "the next episode" is well defined.
 - The last episode of a season is followed by the first episode of the next
   season, if one exists.
 - An episode that is in the catalogue but not playable (expired rights) is
-  skipped when looking for the next episode, and is shown as unavailable in an
-  episode list.
+  skipped when looking for the next episode.
+- An episode that turned out to be gone when it was selected is shown as
+  unavailable in its season's list from then on, in words and not by dimming
+  alone (NFR-A11Y-04). A season's list from NPO does not say which episodes
+  can be played, and the app does not ask NPO about each one
+  ([ADR 0023](../adr/0023-find-out-that-a-tile-is-gone-by-selecting-it.md)).
 - NPO lists the seasons of some programmes latest first — one that has a
   season for each year. The next season is still the later one, whichever way
   the list runs.

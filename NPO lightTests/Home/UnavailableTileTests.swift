@@ -131,4 +131,16 @@ struct UnavailableTileTests {
         #expect(model.later.first?.isUnavailable == false)
         #expect(model.later.first?.request != nil)
     }
+
+    @Test("FR-CONTENT-02: an episode that turned out to be gone is known to the series' page")
+    func goneEpisodeIsKnown() async {
+        let model = model()
+        let episode = Self.playable("episode-3")
+        #expect(model.unavailableEpisodes.isEmpty)
+
+        await model.playbackEnded(unavailable: PlayRequest(playable: episode))
+
+        #expect(model.unavailableEpisodes == [episode.id])
+        #expect(asked.value == 0)
+    }
 }

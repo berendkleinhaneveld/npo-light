@@ -60,7 +60,12 @@ struct SeasonEpisodesView: View {
                                     .lineLimit(1)
                             }
                             Spacer()
-                            if let caption = episode.caption {
+                            // In words and a symbol, not by dimming alone
+                            // (NFR-A11Y-04).
+                            if model.unavailable.contains(episode.id) {
+                                Label("Niet meer beschikbaar", systemImage: "nosign")
+                                    .foregroundStyle(.secondary)
+                            } else if let caption = episode.caption {
                                 Text(verbatim: caption)
                                     .foregroundStyle(.secondary)
                             }

@@ -49,6 +49,18 @@ final class ModeUITests: XCTestCase {
         XCTAssertFalse(badge.exists)
     }
 
+    // Requirement: NFR-REL-01
+    @MainActor
+    func testOfflineLaunchShowsHome() throws {
+        let app = XCUIApplication()
+        app.launchEnvironment["NPO_LIGHT_SCENARIO"] = "offline"
+        app.launch()
+
+        // The home page, and why not everything on it works.
+        XCTAssertTrue(app.buttons["home-search"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["offline-notice"].exists)
+    }
+
     // Requirement: NFR-REL-05
     @MainActor
     func testResetIsToldOnce() throws {

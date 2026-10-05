@@ -205,7 +205,7 @@ showing an empty band.
 
 ## FR-HOME-10 — Home reflects what just happened
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Coming back from playback, from a detail page or from search, the home page
 shows the current state without a manual refresh.
@@ -215,7 +215,11 @@ shows the current state without a manual refresh.
 - Returning from playback updates the item's position and its place in the row.
 - Returning after pinning shows the new tile.
 - Focus lands somewhere sensible after the update rather than jumping to the
-  first tile (NFR-A11Y-01).
+  first tile (NFR-A11Y-01): back from the player it is on the tile that was
+  played, wherever that tile now stands in its row.
+- A tile taken off a row from its menu leaves focus to the tile after it, to
+  the one before it when it was the last, and to the row's way to search when
+  it was the only one. Focus is never on nothing.
 
 ## FR-HOME-11 — Falling off the row does not forget where you were
 

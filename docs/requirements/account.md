@@ -47,7 +47,7 @@ than discovered.
 
 ## FR-AUTH-03 — Sessions refresh silently
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 An expired session is refreshed without the user noticing. Only a refresh that
 genuinely fails sends the user back to sign-in.
@@ -59,6 +59,9 @@ genuinely fails sends the user back to sign-in.
 - Concurrent requests hitting an expired session trigger exactly one refresh.
 - A failed refresh returns to the sign-in screen; pins, history and search
   history are kept, so signing back in restores the same home page.
+- That holds while the app is running too: when a request on some page finds
+  that NPO no longer recognises the session, the app returns to sign-in then,
+  not at the next launch.
 
 ## FR-AUTH-04 — Sign out
 
@@ -177,7 +180,7 @@ away, or listening to it through VoiceOver (NFR-A11Y-02).
 
 ## FR-AUTH-07 — The session is kept alive without asking again
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 The stored session carries an expiry. The app refreshes it before it lapses and
 after it has lapsed, without involving the user, and sends the user back to

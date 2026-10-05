@@ -82,4 +82,18 @@ struct HomeModelTests {
         #expect(model.path == [.search, .series(Self.freek)])
         #expect(model.playing == nil)
     }
+
+    @Test("FR-HOME-10: a tile taken off a row leaves focus to the one after it, or the one before the last")
+    func removedTileHasAnHeir() {
+        let tiles = ["a", "b", "c"].map { name in
+            HomeTile(pinned: SeriesSummary(id: ItemID(rawValue: name), title: name, artwork: nil), startingWith: nil)
+        }
+        let first = tiles[0].id
+        let last = tiles[tiles.count - 1].id
+
+        #expect(tiles.neighbour(of: first) == tiles[1].id)
+        #expect(tiles.neighbour(of: last) == tiles[tiles.count - 2].id)
+        // The only one: focus goes to the way to search.
+        #expect([tiles[0]].neighbour(of: first) == nil)
+    }
 }

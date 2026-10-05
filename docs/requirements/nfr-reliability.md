@@ -5,18 +5,26 @@ changes, the TV gets unplugged mid-episode.
 
 ## NFR-REL-01 — The app is usable without a network
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 With no network, the app still shows what it knows: the home page renders from
-cache and says what cannot be refreshed.
+what is kept on the television and says that NPO cannot be reached.
 
 **Acceptance criteria**
 
-- Launching offline with a valid session and a populated cache shows the home
-  page (FR-CONTENT-04).
+- Launching offline with a stored session shows the home page, when NPO
+  admitted the account at an earlier launch: the app goes on with that answer
+  until NPO can be asked again
+  ([ADR 0025](../adr/0025-go-on-with-the-last-admitted-account-offline.md)).
+  Without such an answer the launch says that NPO cannot be reached and
+  offers a retry (FR-AUTH-08).
+- A page seen before opens from what NPO answered then (FR-CONTENT-04).
+- The home page says that NPO cannot be reached, for as long as that lasts.
 - Actions that genuinely need the network — playback, search — explain that
   rather than failing silently.
-- Coming back online refreshes without a relaunch.
+- Coming back online is noticed without a relaunch: NPO is asked again while
+  it cannot be reached, and its first answer is acted on as at a launch — a
+  subscription that lapsed in the meantime is caught (FR-AUTH-08).
 
 ## NFR-REL-02 — Every failure has an actionable state
 
@@ -36,16 +44,21 @@ request results in a message the user can act on.
 
 ## NFR-REL-03 — Requests time out and back off
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Requests have timeouts; transient failures are retried with backoff; permanent
-failures are not retried in a loop.
+failures are not retried in a loop
+([ADR 0026](../adr/0026-try-a-request-again-only-when-it-is-safe.md)).
 
 **Acceptance criteria**
 
 - A request that does not complete within its timeout fails rather than hanging.
 - Retries use increasing delays and a maximum attempt count.
 - A 4xx that is not an expired session is not retried.
+- Only a request that changes nothing is retried: a renewal of the session is
+  sent once, because its token can be used once (FR-AUTH-07).
+- A request that timed out is not sent again, so that no page waits several
+  timeouts before it says anything (NFR-REL-02).
 
 ## NFR-REL-04 — Local data survives a hard stop
 

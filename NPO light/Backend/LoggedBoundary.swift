@@ -59,6 +59,8 @@ nonisolated struct LoggedAuthenticator: Authenticating {
         }
     }
 
+    var endedSessions: AsyncStream<Void> { wrapped.endedSessions }
+
     func signOut() throws {
         do {
             try wrapped.signOut()

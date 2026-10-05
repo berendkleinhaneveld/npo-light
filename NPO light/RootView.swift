@@ -24,6 +24,11 @@ struct RootView: View {
     var body: some View {
         content
             .task { await appModel.restore() }
+            // While NPO cannot be reached it is asked again, and the pages
+            // say why something does not work (NFR-REL-01).
+            .task(id: appModel.isOffline) { await appModel.reconnect() }
+            .task { await appModel.watchSession() }
+            .environment(\.isOffline, appModel.isOffline)
     }
 
     @ViewBuilder private var content: some View {
@@ -43,7 +48,8 @@ struct RootView: View {
                 // Another mode is another home page, from the start: nothing
                 // of the mode that was left stays on screen (FR-MODE-02).
                 .id(modes.current)
-                .task { await modes.load() }
+                // Asked again when NPO can be reached again.
+                .task(id: appModel.isOffline) { await modes.load() }
         case .plusRequired:
             PlusRequiredView { appModel.acknowledgePlusRequired() }
         case .unreachable:
@@ -52,6 +58,11 @@ struct RootView: View {
             }
         }
     }
+}
+
+extension EnvironmentValues {
+    /// NPO cannot be reached, and the app shows what it knows (NFR-REL-01).
+    @Entry var isOffline = false
 }
 
 /// The home page of one mode, with models of its own for as long as the app
@@ -100,7 +111,7 @@ private struct RootPreview: View {
 
     init(_ scenario: ScriptedAuthenticator.Scenario) {
         let authenticator = ScriptedAuthenticator(scenario)
-        let appModel = AppModel(authenticator: authenticator)
+        let appModel = AppModel(authenticator: authenticator, clock: SystemClock())
         self.appModel = appModel
         signInModel = SignInModel(authenticator: authenticator,
                                   clock: SystemClock(),

@@ -157,3 +157,14 @@ nonisolated struct HomeTile: Sendable, Equatable, Identifiable {
         return SavedItem(next.playable, origin: origin)
     }
 }
+
+extension [HomeTile] {
+    /// The tile that takes the place of `id` when it leaves the row: the one
+    /// after it, or the one before it when it was the last. `nil` when it
+    /// was the only one (FR-HOME-10).
+    func neighbour(of id: ItemID) -> ItemID? {
+        guard let index = firstIndex(where: { $0.id == id }) else { return nil }
+        if index + 1 < count { return self[index + 1].id }
+        return index > 0 ? self[index - 1].id : nil
+    }
+}

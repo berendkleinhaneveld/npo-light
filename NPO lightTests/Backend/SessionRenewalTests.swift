@@ -131,6 +131,9 @@ struct SessionRenewalTests {
         }
         #expect(harness.store.storedSession == nil)
         #expect(try await harness.authenticator.restoredAccount() == nil)
+        // And the app hears it, whichever page was asking.
+        var endings = harness.authenticator.endedSessions.makeAsyncIterator()
+        #expect(await endings.next() != nil)
     }
 
     @Test("FR-AUTH-07: a renewal that never reached NPO keeps the token, and works the next time")

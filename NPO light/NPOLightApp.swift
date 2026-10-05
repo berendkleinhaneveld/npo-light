@@ -12,10 +12,6 @@ import SwiftUI
 /// was saved for later are the stores. Where each keeps its data is ADR 0015.
 @main
 struct NPOLightApp: App {
-    /// How long a request to NPO may stay unanswered before it fails, so that
-    /// no screen waits for ever on a backend that went quiet.
-    private static let requestTimeout: TimeInterval = 15
-
     /// The most the images kept on disk may take. tvOS may empty it sooner.
     private static let artworkDiskCeiling = 128 * 1024 * 1024
 
@@ -34,7 +30,7 @@ struct NPOLightApp: App {
         positions = PlaybackCoordinator(watched: backend.watchedState,
                                         order: EpisodeOrder(catalogue: backend.catalogue),
                                         clock: SystemClock())
-        let appModel = AppModel(authenticator: backend.authenticator)
+        let appModel = backend.appModel
         _appModel = State(initialValue: appModel)
         _signInModel = State(initialValue: SignInModel(authenticator: backend.authenticator,
                                                        clock: SystemClock(),
@@ -95,17 +91,18 @@ struct NPOLightApp: App {
 
     private static func makeBackend() -> Backend {
         if let scripted = scriptedBackend() { return scripted }
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.timeoutIntervalForRequest = requestTimeout
         let clock = SystemClock()
         let log = SystemLog()
         let detail = HTTPLogDetail(environment: ProcessInfo.processInfo.environment, allowsFull: allowsFullHTTPLog)
-        let session = URLSession(configuration: configuration)
-        let transport = LoggingTransport(wrapping: URLSessionTransport(session: session),
-                                         detail: detail,
-                                         log: log,
-                                         archive: detail == .full ? httpLogArchive(log: log) : nil,
-                                         clock: clock)
+        let session = URLSession(configuration: RequestPolicy.configuration)
+        // Every attempt is logged, so the retries go around the log
+        // (NFR-REL-03, ADR 0026).
+        let logged = LoggingTransport(wrapping: URLSessionTransport(session: session),
+                                      detail: detail,
+                                      log: log,
+                                      archive: detail == .full ? httpLogArchive(log: log) : nil,
+                                      clock: clock)
+        let transport = RetryingTransport(wrapping: logged, clock: clock)
         let authenticator = NPOAuthenticator(transport: transport, tokenStore: KeychainTokenStore(), clock: clock)
         let profiles = NPOProfiles(authenticator: authenticator)
         let streams = NPOStreams(authenticator: authenticator, profiles: profiles, transport: transport)
@@ -143,7 +140,7 @@ struct NPOLightApp: App {
         #if DEBUG
         let environment = ProcessInfo.processInfo.environment
         guard let scripted = ScriptedAuthenticator(environment: environment) else { return nil }
-        let eraser = ScriptedEraser()
+        let eraser = environment[ScriptedEraser.filledKey] == nil ? ScriptedEraser() : ScriptedEraser.filled()
         return Backend(authenticator: scripted,
                        catalogue: ScriptedCatalogue(),
                        playback: ScriptedPlayback(),
@@ -155,7 +152,8 @@ struct NPOLightApp: App {
                        later: eraser.later,
                        eraser: eraser,
                        positionsWereReset: environment[storeResetKey] != nil,
-                       keepsSettings: false)
+                       keepsSettings: false,
+                       admittedBefore: scripted.admittedBefore)
         #else
         nil
         #endif
@@ -175,7 +173,7 @@ struct NPOLightApp: App {
     /// through the logging transport, which would keep every image whole.
     private static func artworkSession() -> URLSession {
         let configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForRequest = requestTimeout
+        configuration.timeoutIntervalForRequest = RequestPolicy.timeout
         configuration.urlCache = URLCache(memoryCapacity: 0, diskCapacity: artworkDiskCeiling)
         configuration.httpCookieStorage = nil
         configuration.urlCredentialStorage = nil
@@ -237,6 +235,9 @@ private struct Backend {
     /// process; the app's own are kept (FR-MODE-01, FR-SET-02).
     var keepsSettings = true
 
+    /// The account a launch by a test was admitted with before (NFR-REL-01).
+    var admittedBefore: Account?
+
     @MainActor
     func settings(signOut: @escaping () -> Void) -> SettingsModel {
         guard keepsSettings else {
@@ -247,6 +248,17 @@ private struct Backend {
                              eraser: eraser,
                              keep: { stored.keep($0, for: $1) },
                              signOut: signOut)
+    }
+
+    @MainActor var appModel: AppModel {
+        guard keepsSettings else {
+            return AppModel(authenticator: authenticator, clock: SystemClock(), remembered: admittedBefore)
+        }
+        let stored = StoredAccount()
+        return AppModel(authenticator: authenticator,
+                        clock: SystemClock(),
+                        remembered: stored.account,
+                        keep: { stored.account = $0 })
     }
 
     @MainActor var modes: ModeModel {
