@@ -35,6 +35,9 @@ nonisolated final class NPOAuthenticator: Authenticating {
     private let tokenStore: any TokenStore
     private let clock: any Clocking
     private let renewal = Mutex(Renewal())
+    private let endings = AsyncStream.makeStream(of: Void.self)
+
+    var endedSessions: AsyncStream<Void> { endings.stream }
 
     init(transport: any HTTPTransport, tokenStore: any TokenStore, clock: any Clocking) {
         self.transport = transport
@@ -197,6 +200,8 @@ nonisolated final class NPOAuthenticator: Authenticating {
             guard state.epoch == epoch else { return }
             try tokenStore.clear()
         }
+        // Whichever page asked gets its error; the app has to hear it too.
+        endings.continuation.yield()
         throw BackendError.notSignedIn
     }
 

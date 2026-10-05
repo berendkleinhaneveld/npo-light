@@ -90,6 +90,18 @@ final class AppModel {
         }
     }
 
+    /// Returns to sign-in when NPO ends the session while the app is running:
+    /// a request on some page found out, and without this every page would
+    /// go on failing until the next launch (FR-AUTH-03). Ends when the task
+    /// it runs in is cancelled.
+    func watchSession() async {
+        for await _ in authenticator.endedSessions {
+            // Asked rather than assumed: by the time this is heard, somebody
+            // may have signed in again.
+            await ask()
+        }
+    }
+
     /// Asks NPO about the stored session and acts on the answer. `false`
     /// when there was none, which changes nothing.
     @discardableResult

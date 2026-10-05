@@ -70,6 +70,12 @@ nonisolated protocol Authenticating: Sendable {
     /// evidence about the account (FR-AUTH-08).
     func restoredAccount() async throws -> Account?
 
+    /// Yields each time NPO said, while the app was running, that it no
+    /// longer recognises the session: a request on some page found out, and
+    /// the app has to return to sign-in without waiting for the next launch
+    /// (FR-AUTH-03).
+    var endedSessions: AsyncStream<Void> { get }
+
     /// Forgets the session on this television.
     ///
     /// Local only: a public client cannot revoke its own grant at NPO, and the

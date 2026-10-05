@@ -89,6 +89,9 @@ nonisolated struct ScriptedAuthenticator: Authenticating {
         }
     }
 
+    /// A scripted session does not end.
+    var endedSessions: AsyncStream<Void> { AsyncStream { $0.finish() } }
+
     func signOut() throws {}
 }
 #endif

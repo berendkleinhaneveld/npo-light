@@ -27,6 +27,7 @@ struct RootView: View {
             // While NPO cannot be reached it is asked again, and the pages
             // say why something does not work (NFR-REL-01).
             .task(id: appModel.isOffline) { await appModel.reconnect() }
+            .task { await appModel.watchSession() }
             .environment(\.isOffline, appModel.isOffline)
     }
 

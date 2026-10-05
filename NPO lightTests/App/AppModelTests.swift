@@ -111,4 +111,32 @@ struct AppModelTests {
         #expect(model.session == .signedOut)
         #expect(authenticator.signOutCount == 1)
     }
+
+    @Test("FR-AUTH-03: a session NPO ends while the app is running returns to sign-in")
+    func endedSessionShowsSignIn() async {
+        let attempts = Counter()
+        let authenticator = StubAuthenticator(restored: {
+            attempts.increment() == 1 ? StubAuthenticator.plusAccount : nil
+        })
+        let model = AppModel(authenticator: authenticator, clock: HookClock())
+        await model.restore()
+        #expect(model.session == .signedIn(StubAuthenticator.plusAccount))
+
+        authenticator.endSession()
+        await model.watchSession()
+
+        #expect(model.session == .signedOut)
+    }
+
+    @Test("FR-AUTH-03: a session that ended is not taken for one somebody signed in with since")
+    func newSessionOutlivesOldEnding() async {
+        let authenticator = StubAuthenticator(restored: { StubAuthenticator.plusAccount })
+        let model = AppModel(authenticator: authenticator, clock: HookClock())
+        await model.restore()
+
+        authenticator.endSession()
+        await model.watchSession()
+
+        #expect(model.session == .signedIn(StubAuthenticator.plusAccount))
+    }
 }
