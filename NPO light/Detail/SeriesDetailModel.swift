@@ -81,6 +81,11 @@ final class SeriesDetailModel {
     /// What is on this mode's watch later list (FR-LATER-03).
     private(set) var saved: Set<EpisodeID> = []
 
+    /// The episodes that turned out to be gone when they were selected. A
+    /// season's list does not say, and the app does not ask NPO about each
+    /// episode in it (FR-CONTENT-02, ADR 0023).
+    private(set) var unavailable: Set<EpisodeID> = []
+
     private let catalogue: any Catalogue
     private let pins: any Pins
     private let watched: WatchedState
@@ -124,6 +129,11 @@ final class SeriesDetailModel {
         }
         guard !hasNothingNext, let episode = listed.first else { return nil }
         return Primary(episode: episode, season: first.id, resumes: positions[episode.id]?.offset != nil)
+    }
+
+    /// What the home page found out by trying.
+    func mark(unavailable episodes: Set<EpisodeID>) {
+        unavailable = episodes
     }
 
     func watched(_ episode: EpisodeID) -> Watched {

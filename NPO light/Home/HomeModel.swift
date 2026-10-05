@@ -53,6 +53,15 @@ final class HomeModel {
     /// ask NPO about tiles nobody selected (ADR 0023).
     private var gone: Set<HomeTile.Subject> = []
 
+    /// The episodes among them, for a series' page to mark in its list
+    /// (FR-CONTENT-02).
+    var unavailableEpisodes: Set<EpisodeID> {
+        Set(gone.compactMap { subject in
+            guard case .playable(let id) = subject else { return nil }
+            return id
+        })
+    }
+
     private let pins: any Pins
     private let watched: WatchedState
     private let catalogue: any Catalogue

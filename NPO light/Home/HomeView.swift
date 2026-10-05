@@ -80,6 +80,7 @@ struct HomeView: View {
                 case .series(let series):
                     SeriesDetailScreen(series: series,
                                        playbacksEnded: model.playbacksEnded,
+                                       unavailable: model.unavailableEpisodes,
                                        makeModel: seriesModel) { model.play($0) }
                 }
             }
@@ -159,14 +160,17 @@ struct ResetNotice: View {
 private struct SeriesDetailScreen: View {
     @State private var model: SeriesDetailModel
     private let playbacksEnded: Int
+    private let unavailable: Set<EpisodeID>
     private let play: (PlayRequest) -> Void
 
     init(series: SeriesSummary,
          playbacksEnded: Int,
+         unavailable: Set<EpisodeID>,
          makeModel: (SeriesSummary) -> SeriesDetailModel,
          play: @escaping (PlayRequest) -> Void) {
         _model = State(initialValue: makeModel(series))
         self.playbacksEnded = playbacksEnded
+        self.unavailable = unavailable
         self.play = play
     }
 
@@ -175,6 +179,9 @@ private struct SeriesDetailScreen: View {
             .onChange(of: playbacksEnded) {
                 // Back from the player: what was watched has changed.
                 Task { await model.readWatched() }
+            }
+            .onChange(of: unavailable, initial: true) {
+                model.mark(unavailable: unavailable)
             }
     }
 }

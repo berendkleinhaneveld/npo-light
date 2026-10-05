@@ -280,4 +280,15 @@ struct SeriesWatchedTests {
         #expect(model.primary?.episode == Self.episode(2, of: Self.first))
         #expect(!model.isFullyWatched)
     }
+
+    @Test("FR-CONTENT-02: an episode found to be gone is shown as unavailable, and keeps its place")
+    func goneEpisodeIsMarked() async {
+        let model = await loaded()
+        let gone = Self.episode(2, of: Self.first)
+
+        model.mark(unavailable: [gone.id])
+
+        #expect(model.unavailable == [gone.id])
+        #expect(model.episodes == .loaded(StubCatalogue.episodes(of: Self.first)))
+    }
 }
