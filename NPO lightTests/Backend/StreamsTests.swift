@@ -174,6 +174,7 @@ struct StreamsTests {
         let asked = harness.transport.sent.count
         let playback = NPOPlayback(streams: streams,
                                    licenser: FairPlayLicenser(transport: harness.transport),
+                                   transport: harness.transport,
                                    clock: TestClock())
         let episode = Playable(id: Self.episode, title: "", caption: nil, synopsis: nil, duration: nil, artwork: nil)
 

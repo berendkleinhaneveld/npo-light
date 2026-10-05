@@ -108,6 +108,7 @@ struct NPOLightApp: App {
         let streams = NPOStreams(authenticator: authenticator, profiles: profiles, transport: transport)
         let npoPlayback = NPOPlayback(streams: streams,
                                       licenser: FairPlayLicenser(transport: transport),
+                                      transport: transport,
                                       clock: clock)
         let playback = simulatorPlayback ?? npoPlayback
         let progress = ProgressStore.open(in: .cachesDirectory)
@@ -122,7 +123,9 @@ struct NPOLightApp: App {
             authenticator: LoggedAuthenticator(wrapping: authenticator, log: log),
             catalogue: catalogue,
             playback: LoggedPlayback(wrapping: playback, log: log),
-            artwork: ArtworkLoader(transport: URLSessionTransport(session: artworkSession()), log: log),
+            // An image that failed in passing is asked for again, like any
+            // other request that changes nothing (ADR 0026).
+            artwork: ArtworkLoader(transport: RetryingTransport(wrapping: artworkTransport(), clock: clock), log: log),
             searchHistory: SearchHistoryStore(),
             pins: PinStore(),
             progress: progress,
@@ -167,17 +170,18 @@ struct NPOLightApp: App {
         return CachedCatalogue(wrapping: npo, cache: cache, clock: SystemClock())
     }
 
-    /// Images come over a session of their own, kept on disk by the system's
-    /// cache under a ceiling: NPO lets an image be kept for a year, and what
-    /// is on disk need not be fetched again after a relaunch (ADR 0017). Not
-    /// through the logging transport, which would keep every image whole.
-    private static func artworkSession() -> URLSession {
+    /// Images come over a transport of their own, kept on disk by the
+    /// system's cache under a ceiling: NPO lets an image be kept for a year,
+    /// and what is on disk need not be fetched again after a relaunch
+    /// (ADR 0017). Not through the logging transport, which would keep every
+    /// image whole.
+    private static func artworkTransport() -> any HTTPTransport {
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForRequest = RequestPolicy.timeout
         configuration.urlCache = URLCache(memoryCapacity: 0, diskCapacity: artworkDiskCeiling)
         configuration.httpCookieStorage = nil
         configuration.urlCredentialStorage = nil
-        return URLSession(configuration: configuration)
+        return URLSessionTransport(session: URLSession(configuration: configuration))
     }
 
     /// What plays instead of NPO's streams where they cannot: a debug build

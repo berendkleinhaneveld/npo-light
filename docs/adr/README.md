@@ -35,6 +35,7 @@ the old one as superseded instead of rewriting it.
 | [0024](0024-keep-what-npo-answered-and-ask-again-behind-it.md) | Keep what NPO answered, and ask again behind it | Proposed |
 | [0025](0025-go-on-with-the-last-admitted-account-offline.md) | Go on with the last admitted account when NPO cannot be asked | Proposed |
 | [0026](0026-try-a-request-again-only-when-it-is-safe.md) | Try a request again only when it is safe, and only a few times | Proposed |
+| [0027](0027-add-npos-subtitles-to-the-manifest.md) | Add NPO's subtitles to the manifest the player is given | Proposed |
 
 ## How to add one
 

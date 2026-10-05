@@ -18,6 +18,25 @@ nonisolated struct PlayableStream: Sendable, Equatable {
     /// protected: NPO sends some programmes, older ones among them, in the
     /// clear.
     let protection: StreamProtection?
+
+    /// The subtitles NPO has for it. They come beside the stream, not in it
+    /// (ADR 0027).
+    var subtitles: [SubtitleTrack] = []
+
+    /// How long it lasts, if NPO said.
+    var duration: Duration?
+}
+
+/// Subtitles in one language, as one file of the whole programme.
+nonisolated struct SubtitleTrack: Sendable, Equatable {
+    /// The language, as NPO names it: `nl`.
+    let language: String
+
+    /// What the system's menu shows: `Nederlands`.
+    let name: String
+
+    /// The WebVTT file.
+    let location: URL
 }
 
 /// What the FairPlay licence exchange needs. Opaque above the boundary: the
@@ -124,11 +143,47 @@ nonisolated struct StreamLinkBody: Decodable {
         let httpHeaders: [String: String]?
     }
 
+    struct Assets: Decodable {
+        let subtitles: [Subtitle]?
+    }
+
+    struct Subtitle: Decodable {
+        let iso: String?
+        let name: String?
+        let location: String?
+    }
+
+    struct Metadata: Decodable {
+        /// In milliseconds.
+        let duration: Double?
+    }
+
     static let credentialHeader = "X-Custom-Data"
 
     let stream: Stream
+    let assets: Assets?
+    let metadata: Metadata?
+
+    /// The subtitles that can be used: one that names no language or no
+    /// file is left out, and playback goes on without it.
+    private var subtitles: [SubtitleTrack] {
+        (assets?.subtitles ?? []).compactMap { subtitle in
+            guard let language = subtitle.iso, !language.isEmpty,
+                  let location = subtitle.location.flatMap(URL.init(string:)), location.scheme == "https" else {
+                return nil
+            }
+            return SubtitleTrack(language: language, name: subtitle.name ?? language, location: location)
+        }
+    }
 
     var playableStream: PlayableStream? {
+        guard var playable = protectedStream else { return nil }
+        playable.subtitles = subtitles
+        playable.duration = metadata?.duration.map { .milliseconds(Int($0)) }
+        return playable
+    }
+
+    private var protectedStream: PlayableStream? {
         guard let manifest = URL(string: stream.streamURL) else { return nil }
         guard let drm = stream.drm else {
             return PlayableStream(manifest: manifest, protection: nil)
