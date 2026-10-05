@@ -108,6 +108,7 @@ struct NPOLightApp: App {
         let streams = NPOStreams(authenticator: authenticator, profiles: profiles, transport: transport)
         let npoPlayback = NPOPlayback(streams: streams,
                                       licenser: FairPlayLicenser(transport: transport),
+                                      transport: transport,
                                       clock: clock)
         let playback = simulatorPlayback ?? npoPlayback
         let progress = ProgressStore.open(in: .cachesDirectory)

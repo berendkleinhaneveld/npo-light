@@ -5,7 +5,7 @@ Prefix `FR-PLAY`.
 
 ## FR-PLAY-01 — Playing uses the system player
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Playback uses the standard tvOS player, with the transport controls, subtitle
 and audio-track selection that tvOS provides.
@@ -16,6 +16,12 @@ and audio-track selection that tvOS provides.
   app.
 - Subtitles and audio tracks the stream carries are selectable through the
   system UI.
+- So are the subtitles NPO has for a programme, which it delivers beside the
+  stream and not in it: the app adds them to what the player is given
+  ([ADR 0027](../adr/0027-add-npos-subtitles-to-the-manifest.md)). They are
+  offered and not switched on: whether they show follows the system's
+  settings.
+- A programme without subtitles plays as before, with none offered.
 - The app adds no custom transport controls that shadow the system ones.
 
 ## FR-PLAY-02 — Resume where you stopped

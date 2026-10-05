@@ -14,8 +14,9 @@ import Synchronization
 struct Playback {
     let player: AVPlayer
 
-    /// The content-key session and its delegate. AVFoundation holds neither
-    /// strongly, so whoever holds the playback holds them.
+    /// The content-key session, its delegate and whoever answers for the
+    /// manifest. AVFoundation holds none of them strongly, so whoever holds
+    /// the playback holds them.
     let keys: AnyObject?
 }
 
@@ -33,11 +34,13 @@ protocol PlaybackStarting {
 final class NPOPlayback: PlaybackStarting {
     private let streams: NPOStreams
     private let licenser: FairPlayLicenser
+    private let transport: any HTTPTransport
     private let clock: any Clocking
 
-    init(streams: NPOStreams, licenser: FairPlayLicenser, clock: any Clocking) {
+    init(streams: NPOStreams, licenser: FairPlayLicenser, transport: any HTTPTransport, clock: any Clocking) {
         self.streams = streams
         self.licenser = licenser
+        self.transport = transport
         self.clock = clock
     }
 
@@ -53,12 +56,18 @@ final class NPOPlayback: PlaybackStarting {
 
     private func protectedPlayback(of playable: Playable, in mode: Mode) async throws -> Playback {
         let stream = try await streams.stream(for: playable.id, in: mode)
-        let asset = AVURLAsset(url: stream.manifest)
+        // With subtitles to add, the player asks the app for the manifest
+        // (ADR 0027); without, it fetches NPO's own.
+        let loader = ManifestLoader(stream: stream, transport: transport)
+        let asset = AVURLAsset(url: loader.flatMap { _ in SubtitledManifest.manifest } ?? stream.manifest)
+        if let loader {
+            asset.resourceLoader.setDelegate(loader, queue: loader.queue)
+        }
         let item = AVPlayerItem(asset: asset)
         item.externalMetadata = [Self.titleMetadata(playable.title)]
         // A stream NPO sends in the clear needs no keys, and so no session.
         guard let protection = stream.protection else {
-            return Playback(player: AVPlayer(playerItem: item), keys: nil)
+            return Playback(player: AVPlayer(playerItem: item), keys: loader)
         }
 
         let handler = FairPlayKeyHandler(protection: protection,
@@ -73,7 +82,8 @@ final class NPOPlayback: PlaybackStarting {
         let session = AVContentKeySession(keySystem: .fairPlayStreaming)
         session.setDelegate(handler, queue: handler.queue)
         session.addContentKeyRecipient(asset)
-        return Playback(player: AVPlayer(playerItem: item), keys: KeySession(session: session, handler: handler))
+        return Playback(player: AVPlayer(playerItem: item),
+                        keys: KeySession(session: session, handler: handler, loader: loader))
     }
 
     /// The title the system player's info panel shows.
@@ -86,14 +96,17 @@ final class NPOPlayback: PlaybackStarting {
     }
 }
 
-/// Keeps a content-key session and its delegate alive together.
+/// Keeps a content-key session, its delegate and the manifest's loader alive
+/// together.
 private final class KeySession {
     let session: AVContentKeySession
     let handler: FairPlayKeyHandler
+    let loader: ManifestLoader?
 
-    init(session: AVContentKeySession, handler: FairPlayKeyHandler) {
+    init(session: AVContentKeySession, handler: FairPlayKeyHandler, loader: ManifestLoader?) {
         self.session = session
         self.handler = handler
+        self.loader = loader
     }
 }
 
