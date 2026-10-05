@@ -1,6 +1,8 @@
 # Verder Kijker icon
 
-Generated with the built-in image generation tool. `verder-kijker-icon.png` is the original artwork; the asset catalogue contains resized 400×240, 800×480, and 1280×768 PNG exports for tvOS and the App Store.
+Generated with the built-in image generation tool. `verder-kijker-icon.png` is the original artwork; the asset catalogue contains 400×240, 800×480, and 1280×768 PNG exports of it for tvOS and the App Store.
+
+A tvOS icon is an image stack and needs at least two layers with content, so the artwork is split in two: the back layer is the flat orange (`#EF691F`, as generated), and the front layer is the white binoculars on a transparent background, cut out of the original by how far each pixel lies between that orange and white. The two layers composited give the original back; on the television the binoculars float above the background when the icon has focus.
 
 The artwork uses an opaque orange background and white binoculars. The mark is kept away from the edges for the television icon's focus treatment. It contains no lettering, so it stays readable at small sizes.
 
