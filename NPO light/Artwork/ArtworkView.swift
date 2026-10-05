@@ -62,7 +62,11 @@ struct ArtworkView: View {
     private func load() async {
         guard let url, image == nil else { return }
         // A failure leaves the placeholder, and the loader has logged it.
-        guard let image = try? await artwork.image(at: url, size: size), !Task.isCancelled else { return }
+        // An image that arrived is kept even when this task was called off
+        // meanwhile: it carries its address, so it is only ever drawn for
+        // the item it belongs to, and a tile that was laid out again while
+        // its image was on the way would otherwise stay empty.
+        guard let image = try? await artwork.image(at: url, size: size) else { return }
         loaded = Loaded(url: url, image: image)
     }
 }
