@@ -34,6 +34,7 @@ the old one as superseded instead of rewriting it.
 | [0023](0023-find-out-that-a-tile-is-gone-by-selecting-it.md) | Find out that a tile is gone by selecting it | Proposed |
 | [0024](0024-keep-what-npo-answered-and-ask-again-behind-it.md) | Keep what NPO answered, and ask again behind it | Proposed |
 | [0025](0025-go-on-with-the-last-admitted-account-offline.md) | Go on with the last admitted account when NPO cannot be asked | Proposed |
+| [0026](0026-try-a-request-again-only-when-it-is-safe.md) | Try a request again only when it is safe, and only a few times | Proposed |
 
 ## How to add one
 

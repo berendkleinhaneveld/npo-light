@@ -12,10 +12,6 @@ import SwiftUI
 /// was saved for later are the stores. Where each keeps its data is ADR 0015.
 @main
 struct NPOLightApp: App {
-    /// How long a request to NPO may stay unanswered before it fails, so that
-    /// no screen waits for ever on a backend that went quiet.
-    private static let requestTimeout: TimeInterval = 15
-
     /// The most the images kept on disk may take. tvOS may empty it sooner.
     private static let artworkDiskCeiling = 128 * 1024 * 1024
 
@@ -95,17 +91,18 @@ struct NPOLightApp: App {
 
     private static func makeBackend() -> Backend {
         if let scripted = scriptedBackend() { return scripted }
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.timeoutIntervalForRequest = requestTimeout
         let clock = SystemClock()
         let log = SystemLog()
         let detail = HTTPLogDetail(environment: ProcessInfo.processInfo.environment, allowsFull: allowsFullHTTPLog)
-        let session = URLSession(configuration: configuration)
-        let transport = LoggingTransport(wrapping: URLSessionTransport(session: session),
-                                         detail: detail,
-                                         log: log,
-                                         archive: detail == .full ? httpLogArchive(log: log) : nil,
-                                         clock: clock)
+        let session = URLSession(configuration: RequestPolicy.configuration)
+        // Every attempt is logged, so the retries go around the log
+        // (NFR-REL-03, ADR 0026).
+        let logged = LoggingTransport(wrapping: URLSessionTransport(session: session),
+                                      detail: detail,
+                                      log: log,
+                                      archive: detail == .full ? httpLogArchive(log: log) : nil,
+                                      clock: clock)
+        let transport = RetryingTransport(wrapping: logged, clock: clock)
         let authenticator = NPOAuthenticator(transport: transport, tokenStore: KeychainTokenStore(), clock: clock)
         let profiles = NPOProfiles(authenticator: authenticator)
         let streams = NPOStreams(authenticator: authenticator, profiles: profiles, transport: transport)
@@ -176,7 +173,7 @@ struct NPOLightApp: App {
     /// through the logging transport, which would keep every image whole.
     private static func artworkSession() -> URLSession {
         let configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForRequest = requestTimeout
+        configuration.timeoutIntervalForRequest = RequestPolicy.timeout
         configuration.urlCache = URLCache(memoryCapacity: 0, diskCapacity: artworkDiskCeiling)
         configuration.httpCookieStorage = nil
         configuration.urlCredentialStorage = nil

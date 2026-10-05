@@ -44,16 +44,21 @@ request results in a message the user can act on.
 
 ## NFR-REL-03 — Requests time out and back off
 
-- **Status:** Accepted
+- **Status:** Implemented
 
 Requests have timeouts; transient failures are retried with backoff; permanent
-failures are not retried in a loop.
+failures are not retried in a loop
+([ADR 0026](../adr/0026-try-a-request-again-only-when-it-is-safe.md)).
 
 **Acceptance criteria**
 
 - A request that does not complete within its timeout fails rather than hanging.
 - Retries use increasing delays and a maximum attempt count.
 - A 4xx that is not an expired session is not retried.
+- Only a request that changes nothing is retried: a renewal of the session is
+  sent once, because its token can be used once (FR-AUTH-07).
+- A request that timed out is not sent again, so that no page waits several
+  timeouts before it says anything (NFR-REL-02).
 
 ## NFR-REL-04 — Local data survives a hard stop
 
