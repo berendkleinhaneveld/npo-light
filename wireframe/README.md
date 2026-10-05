@@ -1,6 +1,6 @@
 # Interactive wireframe
 
-A clickable sketch of NPO light in a browser, drawn from the requirements in
+A clickable sketch of Verder Kijker in a browser, drawn from the requirements in
 [`docs/requirements/`](../docs/requirements/README.md). It is published to
 GitHub Pages from `master` by `.github/workflows/wireframe.yml`; why it exists
 and what it is not are in

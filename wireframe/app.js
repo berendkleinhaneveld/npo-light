@@ -1,4 +1,4 @@
-// NPO light, interactive wireframe.
+// Verder Kijker, interactive wireframe.
 //
 // A sketch of the tvOS app in a browser: one 1920x1080 "television", driven by
 // the keyboard or by the remote beside it. The behaviour follows the
@@ -521,7 +521,7 @@
     }
     const faded = signin.phase === 'waiting' || signin.phase === 'checking' ? '' : ' is-stale';
     return `<div class="screen signin">
-      <div class="signin-brand">NPO light</div>
+      <div class="signin-brand">Verder Kijker</div>
       <h1>Log in met je NPO Plus-account</h1>
       <div class="signin-body${faded}">
         <ol class="signin-steps">
@@ -552,7 +552,7 @@
 
     return `<div class="screen home">
       <header class="topbar">
-        <div class="brand">NPO light</div>
+        <div class="brand">Verder Kijker</div>
         ${modeBadge()}
         <nav class="topnav" aria-label="Hoofdmenu">
           ${focusable('top:search', { cls: 'pill', req: 'FR-SEARCH-01', label: 'Zoeken', onSelect: openSearch }, `${icon('search')}<span>Zoeken</span>`)}
@@ -1556,7 +1556,7 @@
         return;
       }
       openDialog({
-        title: 'NPO light werkt alleen met NPO Plus',
+        title: 'Verder Kijker werkt alleen met NPO Plus',
         body: [
           'Het account waarmee je bent ingelogd heeft geen NPO Plus.',
           'We melden het daarom weer af. Log in met een account dat NPO Plus heeft, of neem NPO Plus op npo.nl.',
