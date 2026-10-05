@@ -540,3 +540,62 @@ their season's list fetched before and after:
 The second is the one that settles it, since NPO might drop the position of a
 finished episode. NPO records a position when its own app reports one, and a
 stream that is merely asked for and played is not a report.
+
+## Q-13 — How is a playback position reported to NPO?
+
+- **Open** — raised 2026-10-05
+
+**Blocks:** nothing that is `Accepted`. NFR-PRIV-01 and
+[out-of-scope.md](out-of-scope.md) say that nothing about viewing is written
+back to the NPO Plus account, so no requirement asks for this. It would have to
+be answered before either could be amended to let a position travel between
+this app and NPO's own.
+
+[Q-12](#q-12--does-playing-through-npo-light-record-progress-at-npo) established
+that NPO keeps a position only when its own app reports one. How that report is
+made is not known: every capture shows a position arriving, and none shows one
+being written.
+
+**What the existing material shows**
+
+- *Reading.* An item in a list carries
+  `progress: { secondsWatched, fractionWatched }` when NPO has a position for
+  it (Q-12).
+- *The website's `user-stream-progress` is a read.* `POST
+  /start/api/domain/user-stream-progress` takes `{ item_ids, partyId,
+  profileGuid }` and answers `{ content: [] }`. It is a POST that carries no
+  position: it asks for the positions of the items named.
+- *The app backend shows no write.* In the app captures the only request to it
+  that is not a GET creates a profile. Around playback there is the player
+  call, the stream link and the licence exchange, and nothing else.
+- *The reference clients do not know either.* Retrospect has a commented-out
+  call to the retired `npostart.nl/api/progress/{prid}`, abandoned because the
+  write belongs to a profile it never configured. The POMS clients concern the
+  media catalogue, not what a viewer did.
+
+**The lead: NPO's analytics events.** The only requests in any capture that
+carry a position are the website player's events to `POST
+https://topspin.npo.nl/web-event`. Each `streamStart`, `streamPause` and
+`streamBuffering` event names the account and the profile, the programme's
+`prid`, its length and the position in seconds. The likeliest explanation is
+that NPO derives a profile's positions from this stream of events rather than
+from an endpoint of its own. That is an inference: nothing shows the two are
+connected.
+
+It would also explain the silence in the app captures, where `topspin.npo.nl`
+appears only as tunnels that were never decrypted — the capture notes set the
+host aside as analytics.
+
+**How to answer:** one more capture of NPO's own app with `topspin.npo.nl`
+decrypted — play a few minutes, pause, stop — to see the app's events and how
+they are authorised, which may differ from the website's. Then send the same
+events for an episode with no position and look for `progress` on it in its
+season's list, the way Q-12 was answered.
+
+**What an answer would cost.** If the events are the mechanism, reporting a
+position means sending NPO's analytics events, with the account and the profile
+in them, for as long as something plays. That touches NFR-PRIV-01 and the
+analytics exclusion in [out-of-scope.md](out-of-scope.md), and NFR-PRIV-03 —
+which is about third parties — would need to say where NPO's own measurement
+stands. Whether the app should do this at all is the owner's decision, and it
+comes before the capture.
