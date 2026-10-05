@@ -4,11 +4,10 @@
 //
 
 import Foundation
-import Synchronization
 import Testing
 @testable import NPO_light
 
-/// Tiles whose item NPO no longer has.
+/// Tiles whose item NPO turned out not to have any more.
 @MainActor
 struct UnavailableTileTests {
     nonisolated private static let series = SeriesSummary(id: ItemID(rawValue: "freek"),
@@ -20,13 +19,20 @@ struct UnavailableTileTests {
     private let history = ScriptedWatchHistory()
     private let later = ScriptedWatchLater()
     private let pins = ScriptedPins()
-    private let clock = TestClock(now: now)
+    private let asked = Counter()
 
-    private func model(_ catalogue: StubCatalogue) -> HomeModel {
+    /// A home page over a catalogue that counts what it is asked.
+    private func model() -> HomeModel {
         HomeModel(pins: pins,
                   watched: WatchedState(progress: ScriptedProgress(), history: history, later: later),
-                  catalogue: catalogue,
-                  clock: clock,
+                  catalogue: StubCatalogue(detail: { [asked] _ in
+                      asked.increment()
+                      return StubCatalogue.detail
+                  }, programme: { [asked] id in
+                      asked.increment()
+                      return StubCatalogue.film(id)
+                  }),
+                  clock: TestClock(now: Self.now),
                   mode: .normal)
     }
 
@@ -34,40 +40,44 @@ struct UnavailableTileTests {
         Playable(id: EpisodeID(rawValue: name), title: name, caption: nil, synopsis: nil, duration: nil, artwork: nil)
     }
 
-    /// A catalogue in which the programme called "gone" is gone.
-    private static func catalogue(counting asked: Counter = Counter()) -> StubCatalogue {
-        StubCatalogue(programme: { id in
-            asked.increment()
-            if id.rawValue == "gone" { throw BackendError.itemUnavailable }
-            return StubCatalogue.film(id)
-        })
+    /// What the player was asked for when it said that NPO no longer has it.
+    private static func request(_ name: String, _ origin: PlayOrigin = .single) -> PlayRequest {
+        PlayRequest(playable: playable(name), origin: origin)
     }
 
-    private func loaded(_ catalogue: StubCatalogue) async -> HomeModel {
-        let model = model(catalogue)
+    @Test("ADR 0023: the home page does not ask NPO about its tiles")
+    func homeAsksNothing() async {
+        await pins.pin(Self.series, in: .normal)
+        await later.save(SavedItem(Self.playable("film"), origin: .single), in: .normal)
+        let model = model()
+
         await model.refresh()
-        await model.checking?.value
-        return model
+
+        #expect(asked.value == 0)
+        #expect(model.later.first?.isUnavailable == false)
     }
 
-    @Test("FR-LATER-11: a saved item NPO no longer has keeps its tile, shown as unavailable with its own title")
-    func savedItemThatIsGone() async throws {
+    @Test("FR-LATER-11: a saved item that turned out to be gone keeps its tile, shown as unavailable with its title")
+    func savedItemThatIsGone() async {
         await later.save(SavedItem(Self.playable("gone"), origin: .single), in: .normal)
         await later.save(SavedItem(Self.playable("there"), origin: .single), in: .normal)
+        let model = model()
+        await model.refresh()
 
-        let model = await loaded(Self.catalogue())
+        await model.playbackEnded(unavailable: Self.request("gone"))
 
         #expect(model.later.map(\.title) == ["there", "gone"])
         #expect(model.later.map(\.isUnavailable) == [false, true])
+        #expect(asked.value == 0)
     }
 
     @Test("FR-CONTENT-05, FR-LATER-11: selecting an unavailable tile opens the page that explains, and plays nothing")
     func selectingAnUnavailableTile() async throws {
         await later.save(SavedItem(Self.playable("gone"), origin: .single), in: .normal)
-        let model = await loaded(Self.catalogue())
-        let tile = try #require(model.later.first)
+        let model = model()
+        await model.playbackEnded(unavailable: Self.request("gone"))
 
-        model.select(tile)
+        model.select(try #require(model.later.first))
 
         #expect(model.playing == nil)
         #expect(model.path == [.programme(Self.playable("gone"))])
@@ -76,7 +86,8 @@ struct UnavailableTileTests {
     @Test("FR-LATER-11: an unavailable item is not taken off the list by the app, and can be by hand")
     func unavailableItemStaysUntilRemoved() async throws {
         await later.save(SavedItem(Self.playable("gone"), origin: .single), in: .normal)
-        let model = await loaded(Self.catalogue())
+        let model = model()
+        await model.playbackEnded(unavailable: Self.request("gone"))
         #expect(await later.saved(in: .normal).count == 1)
 
         await model.removeSaved(try #require(model.later.first))
@@ -85,15 +96,18 @@ struct UnavailableTileTests {
         #expect(await later.saved(in: .normal).isEmpty)
     }
 
-    @Test("FR-CONTENT-05: a recently watched or pinned tile whose episode is gone says so, and can be removed")
+    @Test("FR-CONTENT-05: a recently watched or pinned tile whose episode turned out to be gone says so")
     func recentAndPinnedTiles() async throws {
+        let place = PlayOrigin.series(SeriesPlace(series: Self.series, season: Self.season))
         await pins.pin(Self.series, in: .normal)
         await history.record(WatchedEntry(series: Self.series,
                                           next: Upcoming(Self.playable("gone"), in: Self.season),
                                           playedAt: Self.now),
                              in: .normal)
+        let model = model()
 
-        let model = await loaded(Self.catalogue())
+        await model.playbackEnded(unavailable: Self.request("gone", place))
+
         #expect(model.pinned.first?.isUnavailable == true)
         #expect(model.continuing.first?.isUnavailable == true)
         // The series' page is where to pick another episode.
@@ -107,53 +121,14 @@ struct UnavailableTileTests {
         #expect(model.continuing.isEmpty)
     }
 
-    @Test("FR-CONTENT-05: a pinned series NPO no longer has is shown as unavailable")
-    func pinnedSeriesThatIsGone() async {
-        await pins.pin(Self.series, in: .normal)
-
-        let model = await loaded(StubCatalogue(detail: { _ in throw BackendError.itemUnavailable }))
-
-        #expect(model.pinned.first?.isUnavailable == true)
-        #expect(model.pinned.first?.title == "Freeks wilde wereld")
-    }
-
-    @Test("NFR-REL-02: a tile NPO could not be asked about is not called unavailable")
-    func unknownIsNotUnavailable() async {
+    @Test("FR-CONTENT-05: playback that ended in the ordinary way marks nothing")
+    func ordinaryEndMarksNothing() async {
         await later.save(SavedItem(Self.playable("film"), origin: .single), in: .normal)
+        let model = model()
 
-        let model = await loaded(StubCatalogue(programme: { _ in throw BackendError.unreachable }))
+        await model.playbackEnded()
 
         #expect(model.later.first?.isUnavailable == false)
         #expect(model.later.first?.request != nil)
-    }
-
-    @Test("NFR-PERF-03: NPO is asked about a tile once, and again only when the answer has aged")
-    func answersAreKept() async {
-        await later.save(SavedItem(Self.playable("film"), origin: .single), in: .normal)
-        let asked = Counter()
-        let model = await loaded(Self.catalogue(counting: asked))
-        #expect(asked.value == 1)
-
-        await model.refresh()
-        await model.checking?.value
-        #expect(asked.value == 1)
-
-        clock.advance(by: .seconds(HomeModel.availabilityAge))
-        await model.refresh()
-        await model.checking?.value
-
-        #expect(asked.value == 2)
-    }
-
-    @Test("FR-CONTENT-06: a programme NPO will not let this account play is unavailable too")
-    func unplayableIsUnavailable() async {
-        await later.save(SavedItem(Self.playable("film"), origin: .single), in: .normal)
-        let refused = StubCatalogue(programme: { id in
-            ProgrammeDetail(playable: StubCatalogue.film(id).playable, isPlayable: false)
-        })
-
-        let model = await loaded(refused)
-
-        #expect(model.later.first?.isUnavailable == true)
     }
 }

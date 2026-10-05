@@ -103,8 +103,10 @@ recently watched item that no longer exists must not break the home page.
 
 **Acceptance criteria**
 
-- A tile whose item can no longer be fetched is shown as unavailable, with the
-  cached title, and can still be removed or unpinned.
+- A tile whose item turned out to be gone when it was selected is shown as
+  unavailable from then on, with the cached title, and can still be removed
+  or unpinned. The app does not ask NPO about tiles nobody selected
+  ([ADR 0023](../adr/0023-find-out-that-a-tile-is-gone-by-selecting-it.md)).
 - Selecting an unavailable item explains that it is no longer available instead
   of failing to play.
 - Autoplay skips an unavailable next episode (FR-CONTENT-02).

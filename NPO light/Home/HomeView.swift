@@ -91,7 +91,9 @@ struct HomeView: View {
         .fullScreenCover(item: $model.playing) { request in
             PlayerScreen(request: request,
                          makeModel: playerModel,
-                         closed: { Task { await model.playbackEnded() } },
+                         closed: { unavailable in
+                             Task { await model.playbackEnded(unavailable: unavailable ? request : nil) }
+                         },
                          // Nobody is watching: back to the home page itself
                          // (FR-PLAY-08).
                          unattended: { model.path.removeAll() })
@@ -199,12 +201,12 @@ private struct ProgrammeDetailScreen: View {
 /// Keeps one model for as long as the player is presented.
 private struct PlayerScreen: View {
     @State private var model: PlayerModel
-    private let closed: () -> Void
+    private let closed: (_ wasUnavailable: Bool) -> Void
     private let unattended: () -> Void
 
     init(request: PlayRequest,
          makeModel: (PlayRequest) -> PlayerModel,
-         closed: @escaping () -> Void,
+         closed: @escaping (_ wasUnavailable: Bool) -> Void,
          unattended: @escaping () -> Void) {
         _model = State(initialValue: makeModel(request))
         self.closed = closed
@@ -212,7 +214,9 @@ private struct PlayerScreen: View {
     }
 
     var body: some View {
-        PlayerView(model: model, closed: closed, unattended: unattended)
+        PlayerView(model: model,
+                   closed: { closed(model.problem == .unavailable) },
+                   unattended: unattended)
     }
 }
 

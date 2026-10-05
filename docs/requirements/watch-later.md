@@ -209,8 +209,10 @@ That must not break the home page (FR-CONTENT-05).
 
 **Acceptance criteria**
 
-- A saved item that can no longer be fetched keeps its tile, shown as
-  unavailable with its cached title, and can still be removed.
+- A saved item that can no longer be fetched keeps its tile, and can still be
+  removed. Once selecting it has shown that it is gone, the tile is shown as
+  unavailable, with its cached title
+  ([ADR 0023](../adr/0023-find-out-that-a-tile-is-gone-by-selecting-it.md)).
 - Selecting it explains that it is no longer available instead of failing to
   play.
 - An unavailable item is not removed from the list on the app's own initiative;

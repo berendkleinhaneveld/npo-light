@@ -61,7 +61,7 @@ nonisolated struct HomeTile: Sendable, Equatable, Identifiable {
     /// The series whose page the tile can open, when it is of one.
     let series: SeriesSummary?
 
-    /// NPO no longer has what the tile would play, or will not play it: the
+    /// Selecting it showed that NPO no longer has what it would play: the
     /// tile says so, keeps its place, and can still be taken off its row
     /// (FR-CONTENT-05, FR-LATER-11).
     var isUnavailable = false
@@ -125,8 +125,8 @@ nonisolated struct HomeTile: Sendable, Equatable, Identifiable {
         return PlayRequest(playable: next.playable, origin: origin)
     }
 
-    /// What NPO is asked about to know whether the tile still works: the
-    /// episode it would play, or the series when it plays none.
+    /// What the tile stands or falls with: the episode it would play, or the
+    /// series when it plays none.
     var subject: Subject {
         if case .continues(let next, _) = state { return .playable(next.id) }
         return kind == .series ? .series(id) : .playable(EpisodeID(rawValue: id.rawValue))
