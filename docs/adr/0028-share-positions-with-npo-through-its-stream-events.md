@@ -130,9 +130,10 @@ has no way to remove them, and the confirmation says so.
 - **Send everything NPO's app sends** — the closest imitation, and the least
   likely to stand out. Rejected: it reports browsing, which no position needs.
 - **Send only a waypoint and a stop** — the least that was seen to move a
-  position. Rejected by the owner in favour of the stream events as NPO's
-  player sends them: NPO's row was seen not to list an episode that had only
-  a lone waypoint, and the reason was not found.
+  position, and enough to put an episode on NPO's row. Rejected by the owner
+  in favour of the stream events as NPO's player sends them: an account that
+  shows waypoints and nothing around them looks like nothing NPO's own apps
+  produce.
 - **NPO's position always wins** — simpler, and what the rule sounds like.
   Rejected for what it does when a report did not arrive, and to a remembered
   page.
@@ -162,6 +163,10 @@ has no way to remove them, and the confirmation says so.
   brand, platform, player and versions, borrowed as the client identifier is
   ([ADR 0007](0007-sign-in-with-the-device-code-grant.md)). They live in
   `NPOWire` with the rest.
+- **NPO's row is slower than its positions.** A position was back within
+  seconds of the report; the row took more than eight and less than forty to
+  list the episode, and some seconds to drop one. The minute the app leaves
+  between two looks at the row is longer than either.
 - **NPO can be up to thirty seconds behind**, and where it is, a look at
   NPO's answer before the last report arrived puts the television that far
   back too. The owner accepted that.

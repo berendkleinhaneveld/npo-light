@@ -543,8 +543,8 @@ stream that is merely asked for and played is not a report.
 
 ## Q-13 — How is a playback position reported to NPO?
 
-- **Answered:** 2026-10-06 — from two captures of NPO's own iPhone app, and
-  by sending one event from the proof-of-concept
+- **Answered:** 2026-10-06 — from three captures of NPO's own iPhone app, and
+  by sending two events and a removal from the proof-of-concept
 
 **Was blocking:** nothing that was `Accepted`. NFR-PRIV-01 and
 [out-of-scope.md](out-of-scope.md) said that nothing about viewing was written
@@ -656,8 +656,22 @@ profile after it:
   the second capture was off it an hour later.
 - *Not every position is on the row.* The episode given a position by the
   lone waypoint above was not listed, while the episode before it in the same
-  series was. Whether the row holds one episode a series, or wants more than
-  a waypoint, was not looked into.
+  series was. Once that one was off the row, another waypoint put the second
+  on it (below). Whether the row holds one episode a series, or leaves out
+  what was barely started, was not looked into.
+
+**NPO takes both from this app, as this app sends them.** With the owner's
+agreement, one event and one removal were sent in exactly the shape the app
+builds them, under the owner's own profile:
+
+- a `streamWaypoint` with the fields `NPOReports` sends and no others was
+  answered `204`, and the season's list carried its position eight seconds
+  later;
+- the row was slower: the episode was not on it after eight seconds and was
+  after forty, at the front, with the position rounded to a whole second;
+- a `DELETE` for that episode with the headers the app sends was answered
+  `200`, and twelve seconds later the episode was off the row with its
+  position unchanged.
 
 **What is still not known**
 
