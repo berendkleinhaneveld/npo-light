@@ -543,8 +543,8 @@ stream that is merely asked for and played is not a report.
 
 ## Q-13 — How is a playback position reported to NPO?
 
-- **Answered:** 2026-10-06 — from two captures of NPO's own iPhone app; not
-  yet tried from a client of our own
+- **Answered:** 2026-10-06 — from two captures of NPO's own iPhone app, and
+  by sending one event from the proof-of-concept
 
 **Blocks:** nothing that is `Accepted`. NFR-PRIV-01 and
 [out-of-scope.md](out-of-scope.md) say that nothing about viewing is written
@@ -623,14 +623,29 @@ The website sends the same events to `/web-event`.
 - *Everything else the app does* goes the same way: an `offer` for each tile
   shown, a `click`, a `choice`, a `contentView` for each page.
 
+**NPO takes the event from anyone.** One `streamWaypoint` was sent from the
+proof-of-concept for an episode with no position: a made-up party and session,
+a user agent of its own, and none of the events that normally surround a
+waypoint. Six seconds later the season's list carried that episode with
+`secondsWatched: 12.345678`, the position sent.
+
+- *What it took.* NPO refuses an event that lacks a field it needs with `406`,
+  and names the field. Beyond the envelope, `parameters.npo` and a `stream` of
+  `id`, `position`, `length` and `isLiveStream`, it asked for two:
+  `parameters.topspin.brand` and `parameters.topspin.platformType`. No page,
+  no screen, no player description, no media URL.
+- *The length is taken on trust too.* The event gave a length of 2400 seconds,
+  which is not the episode's, and `fractionWatched` came back as the position
+  divided by exactly that.
+- *Nothing ties the event to a session.* The profile the position landed on is
+  the one named in the body, and no token was sent with it.
+
 **What is still not known**
 
-- *Whether NPO accepts these from a client of our own.* Nothing in a request
-  proves who sent it, which suggests it would; nobody has tried. Sending one
-  waypoint for an episode with no position, and looking for it in the season's
-  list, would settle it.
-- *How little is enough.* Whether a lone waypoint is stored without the events
-  that normally surround it, and which of the fields are required.
+- *Which of the account fields are needed.* All four of `parameters.npo` were
+  sent; whether `profileId` alone would do was not tried.
+- *Whether a position can be taken back.* Nothing was sent to move one to
+  zero or to remove it.
 - *What a television sends.* Both captures are of the iPhone app, which
   describes itself as `npoplayer-ios` on `platformType: app`.
 - *What becomes of a finished episode.* A minute after it ended it was still on
@@ -643,5 +658,6 @@ NFR-PRIV-01 and the analytics exclusion in [out-of-scope.md](out-of-scope.md)
 as they are written, and NFR-PRIV-03 — which is about third parties — would
 need to say where NPO's own measurement stands. It also means writing to a
 store whose contract is whatever NPO's analytics team needs it to be, under an
-identity the server takes on trust. Whether the app should do this at all is
+identity the server takes on trust — a position can be written to any profile
+whose identifiers are known. Whether the app should do this at all is
 the owner's decision.
