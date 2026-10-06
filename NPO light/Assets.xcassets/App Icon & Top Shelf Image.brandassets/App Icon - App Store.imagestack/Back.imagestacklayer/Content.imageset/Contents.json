@@ -1,12 +1,12 @@
 {
-  "images": [
+  "images" : [
     {
-      "idiom": "tv",
-      "filename": "verder-kijker.png"
+      "filename" : "verder-kijker-background.png",
+      "idiom" : "tv"
     }
   ],
-  "info": {
-    "author": "xcode",
-    "version": 1
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
   }
 }
