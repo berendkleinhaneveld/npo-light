@@ -29,7 +29,10 @@ final class LoggedPlayback: PlaybackStarting {
         }
         guard let item = playback.player.currentItem else { return playback }
         let watch = PlaybackWatch(item: item, subject: subject, log: log, keeping: playback.keys)
-        return Playback(player: playback.player, keys: watch)
+        return Playback(player: playback.player,
+                        keys: watch,
+                        duration: playback.duration,
+                        position: playback.position)
     }
 }
 

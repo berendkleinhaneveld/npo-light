@@ -34,6 +34,10 @@ nonisolated struct Playable: Sendable, Hashable, Identifiable, Codable {
     let duration: Duration?
 
     let artwork: URL?
+
+    /// Where NPO says it was left, when the list it came in said so
+    /// (FR-PLAY-13).
+    var position: SharedPosition?
 }
 
 /// A programme that belongs to no series, as its own page describes it

@@ -67,7 +67,17 @@ final class HomeModel {
     private let catalogue: any Catalogue
     private let clock: any Clocking
 
-    init(pins: any Pins, watched: WatchedState, catalogue: any Catalogue, clock: any Clocking, mode: Mode) {
+    /// What brings in what was started on another device, or `nil` on a home
+    /// page that keeps to what the television knows (FR-HOME-12).
+    private let elsewhere: ContinuedElsewhere?
+
+    init(pins: any Pins,
+         watched: WatchedState,
+         catalogue: any Catalogue,
+         clock: any Clocking,
+         mode: Mode,
+         elsewhere: ContinuedElsewhere? = nil) {
+        self.elsewhere = elsewhere
         self.pins = pins
         self.watched = watched
         self.catalogue = catalogue
@@ -97,6 +107,14 @@ final class HomeModel {
         later = kept.map { HomeTile($0, positions: positions) }
         saved = Set(kept.map(\.id))
         mark()
+    }
+
+    /// Asks NPO what was started elsewhere, behind the rows the television
+    /// already shows, and reads them again when that changed them
+    /// (FR-HOME-12).
+    func catchUp() async {
+        guard let elsewhere, await elsewhere.take(in: mode) else { return }
+        await refresh()
     }
 
     /// Puts what is known about availability on the tiles.
@@ -158,9 +176,14 @@ final class HomeModel {
 
     /// Takes an item off the *Kijk verder* row, and leaves where it was
     /// watched to alone (FR-HOME-08).
+    ///
+    /// NPO's own row loses it too, behind the tile going away (FR-HOME-13).
     func remove(_ id: ItemID) async {
+        let entry = await watched.history.entry(for: id, in: mode)
         try? await watched.history.hide(id, in: mode)
         await refresh()
+        guard let episode = entry?.next?.id else { return }
+        await elsewhere?.remove(episode, in: mode)
     }
 
     /// A tile was selected: it plays what it continues with, or opens the

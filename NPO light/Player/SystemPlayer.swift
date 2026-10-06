@@ -21,9 +21,21 @@ struct SystemPlayer: UIViewControllerRepresentable {
     /// Somebody touched the remote: the transport bar came up (FR-PLAY-08).
     var interacted: () -> Void = {}
 
-    /// Hears from the player when its transport bar comes and goes.
+    /// Somebody moved to another point, from one position to another in
+    /// seconds (FR-PLAY-12).
+    var sought: (TimeInterval, TimeInterval) -> Void = { _, _ in }
+
+    /// Hears from the player when its transport bar comes and goes, and when
+    /// somebody moved through what plays.
     final class Coordinator: NSObject, AVPlayerViewControllerDelegate {
         var interacted: () -> Void = {}
+        var sought: (TimeInterval, TimeInterval) -> Void = { _, _ in }
+
+        func playerViewController(_ playerViewController: AVPlayerViewController,
+                                  willResumePlaybackAfterUserNavigatedFrom oldTime: CMTime,
+                                  to targetTime: CMTime) {
+            sought(oldTime.seconds, targetTime.seconds)
+        }
 
         func playerViewController(_ playerViewController: AVPlayerViewController,
                                   willTransitionToVisibilityOfTransportBar visible: Bool,
@@ -45,6 +57,7 @@ struct SystemPlayer: UIViewControllerRepresentable {
 
     func updateUIViewController(_ controller: AVPlayerViewController, context: Context) {
         context.coordinator.interacted = interacted
+        context.coordinator.sought = sought
         if controller.player !== player {
             controller.player = player
         }

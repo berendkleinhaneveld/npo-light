@@ -20,6 +20,10 @@ nonisolated final class NPOCatalogue: Catalogue {
     private let authenticator: NPOAuthenticator
     private let profiles: NPOProfiles
 
+    /// What NPO calls the row a profile goes on from, as its home page last
+    /// named it: the name carries a version.
+    private let row = Mutex<String?>(nil)
+
     init(authenticator: NPOAuthenticator, profiles: NPOProfiles) {
         self.authenticator = authenticator
         self.profiles = profiles
@@ -83,6 +87,37 @@ nonisolated final class NPOCatalogue: Catalogue {
         let detail = try await body(SeriesPageBody.self, from: page).detail
         return SeriesPlace(series: SeriesSummary(id: detail.id, title: detail.title, artwork: detail.artwork),
                            season: SeasonID(rawValue: season))
+    }
+
+    /// NPO's whole home page is asked for, and one row of it read: nothing
+    /// narrower is known to answer with it.
+    @concurrent
+    func continuing(in mode: Mode) async throws -> [Continued] {
+        let call = BackendCall(path: NPOWire.homePath, profile: try await profiles.profile(for: mode))
+        let home = try await body(HomePageBody.self, from: call)
+        if let named = home.continuingRow {
+            row.withLock { $0 = named }
+        }
+        return home.continuing
+    }
+
+    /// What NPO's own app does when something is taken off its row. NPO
+    /// answers at once and takes a few seconds to act on it.
+    @concurrent
+    func discontinue(_ episode: EpisodeID, in mode: Mode) async throws {
+        if row.withLock({ $0 }) == nil {
+            _ = try await continuing(in: mode)
+        }
+        // A home page without such a row has nothing to take off.
+        guard let row = row.withLock({ $0 }) else { return }
+        let call = BackendCall(method: "DELETE",
+                               path: NPOWire.rowPath(row, episode),
+                               profile: try await profiles.profile(for: mode))
+        let response = try await authenticator.backendResponse(to: call)
+        // Not being on the row is what was asked for.
+        guard (200..<300).contains(response.status) || response.status == 404 else {
+            throw BackendError.unexpectedResponse(status: response.status)
+        }
     }
 
     // MARK: the wire

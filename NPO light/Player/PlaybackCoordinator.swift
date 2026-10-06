@@ -53,6 +53,19 @@ final class PlaybackCoordinator {
         try? await history.record(entry, in: mode)
     }
 
+    /// NPO says where `id` was left, as playing it was asked for: taken over
+    /// when it is news, before the resume point is read (FR-PLAY-13).
+    func noticed(_ position: SharedPosition?, of id: EpisodeID, in mode: Mode) async {
+        guard let position else { return }
+        await SharedPositions(progress: progress, clock: clock).take([id: position], in: mode)
+    }
+
+    /// `id` was watched to its end on another device: everything that
+    /// finishing it here would have set off (FR-HOME-12).
+    func finishedElsewhere(_ id: EpisodeID, from origin: PlayOrigin, in mode: Mode) async {
+        await finished(id, origin, in: mode)
+    }
+
     /// Where playing `id` starts: its stored position, or `nil` for the
     /// beginning — nothing stored, or it was finished and is now played
     /// again deliberately.
@@ -87,7 +100,8 @@ final class PlaybackCoordinator {
                                       offset: passedThreshold ? nil : position,
                                       finishedAt: finishing ? clock.now : known?.finishedAt,
                                       updatedAt: clock.now,
-                                      duration: Self.known(duration) ?? known?.duration)
+                                      duration: Self.known(duration) ?? known?.duration,
+                                      shared: known?.shared)
         await write(update, in: mode, resting: resting || finishing)
         if passedThreshold {
             await finished(id, origin, in: mode)
@@ -108,7 +122,8 @@ final class PlaybackCoordinator {
                                       offset: nil,
                                       finishedAt: known?.finishedAt ?? clock.now,
                                       updatedAt: clock.now,
-                                      duration: known?.duration)
+                                      duration: known?.duration,
+                                      shared: known?.shared)
         await write(update, in: mode, resting: true)
         await finished(id, origin, in: mode)
         guard case .series(let place) = origin,

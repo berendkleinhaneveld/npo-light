@@ -80,6 +80,12 @@ nonisolated struct ScriptedCatalogue: Catalogue {
         return SeriesPlace(series: Self.results.series[0], season: season.id)
     }
 
+    func continuing(in mode: Mode) async throws -> [Continued] {
+        []
+    }
+
+    func discontinue(_ episode: EpisodeID, in mode: Mode) async throws {}
+
     /// Episodes that carry their season in their name, so that a test can
     /// tell which season is on screen — and more of them than fit on it, as a
     /// real season has: a list that scrolls is where focus went astray.

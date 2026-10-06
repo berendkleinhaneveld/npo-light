@@ -28,3 +28,11 @@ nonisolated struct SystemClock: Clocking {
         try await Task.sleep(for: duration)
     }
 }
+
+nonisolated extension Duration {
+    /// Seconds, for the arithmetic `Date` and a player want.
+    var timeInterval: TimeInterval {
+        let (seconds, attoseconds) = components
+        return TimeInterval(seconds) + TimeInterval(attoseconds) / 1e18
+    }
+}

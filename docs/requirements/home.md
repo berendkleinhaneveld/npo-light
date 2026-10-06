@@ -245,3 +245,56 @@ the position behind it (FR-HOME-08).
   [ADR 0006](../adr/0006-recently-watched-holds-unfinished-items.md)).
 - tvOS may still take an old one: only the most recent positions are kept where
   the system cannot evict them (NFR-REL-04).
+
+## FR-HOME-12 — What was started elsewhere is on the row
+
+- **Status:** Implemented
+
+The recently watched row takes in what NPO lists for the mode's profile to go
+on with — its own *Kijk verder* — so that something started on a phone is on
+the television's home page
+([ADR 0028](../adr/0028-share-positions-with-npo-through-its-stream-events.md)).
+
+**Acceptance criteria**
+
+- Something NPO lists that the row does not continue with is put at the front
+  of the row, in NPO's order, continuing with the episode NPO names and
+  showing how far in it is (FR-PLAY-13).
+- An episode is placed in its series by asking NPO
+  ([Q-10](open-questions.md#q-10--does-a-programme-in-a-list-belong-to-a-series)),
+  so that a series still has one tile (FR-HOME-06).
+- Something the row already continues with keeps its place, and stays off the
+  row when it was taken off by hand (FR-HOME-08).
+- NPO repeating what it listed before changes nothing: what the row has moved
+  on from since does not come back.
+- Something NPO lists as watched to its end starts nothing.
+- The cap and the seven days hold for what was taken in as for anything else
+  (FR-HOME-06, FR-HOME-07).
+- The home page shows what the television knows at once and asks NPO behind
+  it (NFR-PERF-03). NPO not answering leaves the row as it is.
+
+## FR-HOME-13 — Taking something off the row takes it off NPO's too
+
+- **Status:** Implemented
+
+Removing an item from the recently watched row (FR-HOME-08) also asks NPO to
+take it off the list its own apps go on from, the way NPO's app does when
+something is removed there
+([ADR 0028](../adr/0028-share-positions-with-npo-through-its-stream-events.md)).
+
+**Rationale.** The two rows are one list seen from two places (FR-HOME-12).
+Something taken off on the television that stays on the phone was not taken
+off, and NPO's removal means what FR-HOME-08 means: off the row, with the
+position kept.
+
+**Acceptance criteria**
+
+- Removing an item asks NPO to take the episode it continues with off its
+  list for the mode's profile (FR-MODE-05).
+- The tile goes at once and stays away, whether NPO was told or not, and
+  while NPO still lists the item: NPO acts on a removal some seconds after it
+  answers.
+- Neither the television nor NPO forgets where the item was watched to
+  (FR-HOME-08).
+- Something watched again, here or elsewhere, comes back to the row
+  (FR-HOME-08, FR-HOME-12).

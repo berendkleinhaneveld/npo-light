@@ -1,6 +1,6 @@
 # 0012. What the local store holds, and what it does not
 
-- **Status:** Accepted — amended by [0015](0015-local-data-in-two-places.md), which decides where each record lives
+- **Status:** Accepted — amended by [0015](0015-local-data-in-two-places.md), which decides where each record lives, and by [0028](0028-share-positions-with-npo-through-its-stream-events.md), which adds what NPO said to a position
 - **Accepted:** 2026-09-20 (schema only; storage location remains blocked by Q-09)
 - **Date:** 2026-09-03
 - **Deciders:** @berendkleinhaneveld

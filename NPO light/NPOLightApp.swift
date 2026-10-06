@@ -24,12 +24,21 @@ struct NPOLightApp: App {
     private let backend: Backend
     private let positions: PlaybackCoordinator
 
+    /// One for both modes: it knows when NPO was last asked, and when a
+    /// mode was erased (FR-HOME-12, FR-SET-05).
+    private let elsewhere: ContinuedElsewhere
+
     init() {
         let backend = Self.makeBackend()
         self.backend = backend
         positions = PlaybackCoordinator(watched: backend.watchedState,
                                         order: EpisodeOrder(catalogue: backend.catalogue),
                                         clock: SystemClock())
+        let elsewhere = ContinuedElsewhere(catalogue: backend.catalogue,
+                                           watched: backend.watchedState,
+                                           coordinator: positions,
+                                           clock: SystemClock())
+        self.elsewhere = elsewhere
         let appModel = backend.appModel
         _appModel = State(initialValue: appModel)
         _signInModel = State(initialValue: SignInModel(authenticator: backend.authenticator,
@@ -37,7 +46,7 @@ struct NPOLightApp: App {
                                                        onSignedIn: { appModel.admit($0) }))
         _modes = State(initialValue: backend.modes)
         _notice = State(initialValue: LaunchNotice(positionsWereReset: backend.positionsWereReset))
-        _settings = State(initialValue: backend.settings { appModel.signOut() })
+        _settings = State(initialValue: backend.settings(erasingWith: elsewhere) { appModel.signOut() })
     }
 
     var body: some Scene {
@@ -46,12 +55,13 @@ struct NPOLightApp: App {
                      signInModel: signInModel,
                      modes: modes,
                      settings: settings,
-                     homeModel: { [backend] mode in
+                     homeModel: { [backend, elsewhere] mode in
                          HomeModel(pins: backend.pins,
                                    watched: backend.watchedState,
                                    catalogue: backend.catalogue,
                                    clock: SystemClock(),
-                                   mode: mode)
+                                   mode: mode,
+                                   elsewhere: elsewhere)
                      },
                      searchModel: { [backend] mode in
                          SearchModel(catalogue: backend.catalogue,
@@ -79,6 +89,7 @@ struct NPOLightApp: App {
                                      starter: backend.playback,
                                      positions: positions,
                                      clock: SystemClock(),
+                                     reports: PlaybackReports(reporter: backend.reports),
                                      timings: { settings.timings })
                      })
                      .environment(\.artwork, backend.artwork)
@@ -105,7 +116,16 @@ struct NPOLightApp: App {
         let transport = RetryingTransport(wrapping: logged, clock: clock)
         let authenticator = NPOAuthenticator(transport: transport, tokenStore: KeychainTokenStore(), clock: clock)
         let profiles = NPOProfiles(authenticator: authenticator)
-        let streams = NPOStreams(authenticator: authenticator, profiles: profiles, transport: transport)
+        let products = NPOProducts()
+        let streams = NPOStreams(authenticator: authenticator,
+                                 profiles: profiles,
+                                 transport: transport,
+                                 products: products)
+        let reports = NPOReports(authenticator: authenticator,
+                                 profiles: profiles,
+                                 products: products,
+                                 transport: transport,
+                                 clock: clock)
         let npoPlayback = NPOPlayback(streams: streams,
                                       licenser: FairPlayLicenser(transport: transport),
                                       transport: transport,
@@ -121,8 +141,14 @@ struct NPOLightApp: App {
                                   keptIn: cache)
         return Backend(
             authenticator: LoggedAuthenticator(wrapping: authenticator, log: log),
-            catalogue: catalogue,
+            // The positions NPO's answers come with are taken into the store
+            // on their way up (ADR 0028).
+            catalogue: PositionTakingCatalogue(wrapping: catalogue,
+                                               positions: SharedPositions(progress: progress, clock: clock)),
             playback: LoggedPlayback(wrapping: playback, log: log),
+            // What plays in place of NPO's streams is not the programme, and
+            // NPO is not told about it (ADR 0019).
+            reports: simulatorPlayback == nil ? LoggedReports(wrapping: reports, log: log) : NoReports(),
             // An image that failed in passing is asked for again, like any
             // other request that changes nothing (ADR 0026).
             artwork: ArtworkLoader(transport: RetryingTransport(wrapping: artworkTransport(), clock: clock), log: log),
@@ -147,6 +173,7 @@ struct NPOLightApp: App {
         return Backend(authenticator: scripted,
                        catalogue: ScriptedCatalogue(),
                        playback: ScriptedPlayback(),
+                       reports: NoReports(),
                        artwork: NoArtwork(),
                        searchHistory: eraser.searches,
                        pins: eraser.pins,
@@ -222,6 +249,7 @@ private struct Backend {
     let authenticator: any Authenticating
     let catalogue: any Catalogue
     let playback: any PlaybackStarting
+    let reports: any PlaybackReporting
     let artwork: any ArtworkProviding
     let searchHistory: any SearchHistory
     let pins: any Pins
@@ -242,8 +270,10 @@ private struct Backend {
     /// The account a launch by a test was admitted with before (NFR-REL-01).
     var admittedBefore: Account?
 
+    /// Erasing a mode reaches NPO's row for it too (FR-SET-05).
     @MainActor
-    func settings(signOut: @escaping () -> Void) -> SettingsModel {
+    func settings(erasingWith elsewhere: ContinuedElsewhere, signOut: @escaping () -> Void) -> SettingsModel {
+        let eraser = ErasingElsewhere(wrapping: eraser, elsewhere: elsewhere)
         guard keepsSettings else {
             return SettingsModel(timings: Timings(), eraser: eraser, keep: { _, _ in }, signOut: signOut)
         }

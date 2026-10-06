@@ -206,6 +206,13 @@ SwiftLint settles formatting; these are the conventions it cannot check.
   series, a season or a programme is kept by `CachedCatalogue`, below the
   boundary. A page shows what the catalogue remembers first and asks the
   ordinary question behind it; it does not keep a cache of its own.
+- **What NPO is told.** As decided in ADR 0028, how far something was played
+  is shared with the NPO account and nothing else is. What plays is reported
+  through `PlaybackReports` and the injected `PlaybackReporting`, as the
+  stream events of NPO's player and none of its others; NPO's positions come
+  up through the catalogue into `ProgressStore`, which stays the one place a
+  page reads a position from. Do not add an event about a page, a tile or a
+  search.
 - **The player.** As decided in ADR 0021, video is shown by `SystemPlayer`,
   not by SwiftUI's `VideoPlayer`: a button the remote can reach while
   something plays is one of the system player's contextual actions.

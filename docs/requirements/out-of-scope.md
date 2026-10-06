@@ -10,11 +10,13 @@ probably an ADR.
   "kijk nu" rail. The app is for on-demand items only.
 - **Advertisements.** Sign-in is required precisely so the app never has to
   play, schedule or measure one (FR-AUTH-01, FR-AUTH-05).
-- **Account sync.** Nothing about viewing is written back to the NPO Plus
-  account, and nothing is read from it beyond what is needed to authenticate
-  and to play (NFR-PRIV-01). Whether NPO even offers this is beside the point:
-  the app does not use it.
-- **Analytics and tracking** of any kind (NFR-PRIV-03).
+- **Account sync beyond playback positions.** How far something was played
+  is shared with the NPO Plus account, both ways, and so is what is left to go
+  on with (FR-PLAY-12, FR-PLAY-13, FR-HOME-12, FR-HOME-13). Nothing else is:
+  pins, the watch later list and search history stay on the television, and
+  NPO's own lists of followed series are not read (NFR-PRIV-01).
+- **Analytics and tracking**, beyond the reports of playback that NPO keeps
+  a position from (FR-PLAY-12, NFR-PRIV-03).
 - **Downloads and offline playback.** Caching covers metadata, not streams
   (FR-CONTENT-04).
 - **Profiles beyond the two modes.** Normal and kids are modes, not accounts;

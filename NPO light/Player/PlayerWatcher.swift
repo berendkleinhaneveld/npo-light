@@ -6,7 +6,7 @@
 import AVFoundation
 import Foundation
 
-/// What the system player tells the app while something plays, as five
+/// What the system player tells the app while something plays, as six
 /// events on the main actor. It holds the observations, so that the model
 /// holds none.
 @MainActor
@@ -18,6 +18,9 @@ final class PlayerWatcher {
 
         /// Playback paused, whoever paused it.
         let paused: () -> Void
+
+        /// It plays: for the first time, or again after a pause.
+        let playing: () -> Void
 
         /// The interval at which the position is written came round
         /// (FR-PLAY-03).
@@ -45,8 +48,11 @@ final class PlayerWatcher {
             Task { @MainActor in events.failed() }
         }
         pauses = player.observe(\.timeControlStatus) { player, _ in
-            guard player.timeControlStatus == .paused else { return }
-            Task { @MainActor in events.paused() }
+            switch player.timeControlStatus {
+            case .paused: Task { @MainActor in events.paused() }
+            case .playing: Task { @MainActor in events.playing() }
+            default: break
+            }
         }
         let interval = CMTime(seconds: PlaybackCoordinator.interval, preferredTimescale: 600)
         let token = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { _ in

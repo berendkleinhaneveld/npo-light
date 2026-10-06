@@ -546,11 +546,11 @@ stream that is merely asked for and played is not a report.
 - **Answered:** 2026-10-06 — from two captures of NPO's own iPhone app, and
   by sending one event from the proof-of-concept
 
-**Blocks:** nothing that is `Accepted`. NFR-PRIV-01 and
-[out-of-scope.md](out-of-scope.md) say that nothing about viewing is written
-back to the NPO Plus account, so no requirement asks for this. It would have to
-be answered before either could be amended to let a position travel between
-this app and NPO's own.
+**Was blocking:** nothing that was `Accepted`. NFR-PRIV-01 and
+[out-of-scope.md](out-of-scope.md) said that nothing about viewing was written
+back to the NPO Plus account, so no requirement asked for this. It had to be
+answered before either could be amended to let a position travel between this
+app and NPO's own — which they since were (FR-PLAY-12, FR-PLAY-13).
 
 [Q-12](#q-12--does-playing-through-npo-light-record-progress-at-npo) established
 that NPO keeps a position only when its own app reports one. How that report is
@@ -640,24 +640,45 @@ waypoint. Six seconds later the season's list carried that episode with
 - *Nothing ties the event to a session.* The profile the position landed on is
   the one named in the body, and no token was sent with it.
 
+**What NPO lists to go on with is a row of its own.** A third capture, of
+taking something off *Kijk verder* in NPO's app, and a read of the same
+profile after it:
+
+- *Taking off is a request of its own.* `DELETE
+  /collection/continue-watching-v0/{programme}` on the app backend, as the
+  profile, answered `200` with an empty object. The row's name is the one the
+  home page gives it.
+- *NPO acts on it late.* A home page asked for two seconds after the answer
+  still listed the programme; eleven seconds after, it did not.
+- *The position stays.* The season's list carried the same position for the
+  programme after it was off the row.
+- *A finished episode leaves the row by itself.* The one played to its end in
+  the second capture was off it an hour later.
+- *Not every position is on the row.* The episode given a position by the
+  lone waypoint above was not listed, while the episode before it in the same
+  series was. Whether the row holds one episode a series, or wants more than
+  a waypoint, was not looked into.
+
 **What is still not known**
 
 - *Which of the account fields are needed.* All four of `parameters.npo` were
   sent; whether `profileId` alone would do was not tried.
-- *Whether a position can be taken back.* Nothing was sent to move one to
-  zero or to remove it.
+- *Whether a position can be taken back.* Taking a programme off the row
+  leaves it, and nothing was sent to move one to zero.
 - *What a television sends.* Both captures are of the iPhone app, which
   describes itself as `npoplayer-ios` on `platformType: app`.
-- *What becomes of a finished episode.* A minute after it ended it was still on
-  the home page at its full length, not removed.
-
 **What acting on the answer would cost.** Reporting a position means sending
 NPO's analytics events, with the account and the profile in them, for as long
 as something plays — there is no narrower way to do it. That contradicts
 NFR-PRIV-01 and the analytics exclusion in [out-of-scope.md](out-of-scope.md)
-as they are written, and NFR-PRIV-03 — which is about third parties — would
+as they were written, and NFR-PRIV-03 — which is about third parties — would
 need to say where NPO's own measurement stands. It also means writing to a
 store whose contract is whatever NPO's analytics team needs it to be, under an
 identity the server takes on trust — a position can be written to any profile
 whose identifiers are known. Whether the app should do this at all is
 the owner's decision.
+
+**Decided, 2026-10-06: it does.** The owner chose to share positions with NPO
+both ways. [ADR 0028](../adr/0028-share-positions-with-npo-through-its-stream-events.md)
+records how; FR-PLAY-12, FR-PLAY-13, FR-HOME-12, FR-HOME-13 and FR-SET-05 are
+the requirements, and NFR-PRIV-01 and NFR-PRIV-03 now say what is shared.

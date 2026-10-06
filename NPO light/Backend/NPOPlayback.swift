@@ -18,6 +18,13 @@ struct Playback {
     /// manifest. AVFoundation holds none of them strongly, so whoever holds
     /// the playback holds them.
     let keys: AnyObject?
+
+    /// How long NPO says it lasts, for as long as the player does not know
+    /// yet.
+    var duration: TimeInterval?
+
+    /// Where NPO says it was left, if anywhere (FR-PLAY-13).
+    var position: SharedPosition?
 }
 
 /// Starting playback of one item, in the app's own terms (ADR 0008).
@@ -67,7 +74,7 @@ final class NPOPlayback: PlaybackStarting {
         item.externalMetadata = [Self.titleMetadata(playable.title)]
         // A stream NPO sends in the clear needs no keys, and so no session.
         guard let protection = stream.protection else {
-            return Playback(player: AVPlayer(playerItem: item), keys: loader)
+            return Self.playback(AVPlayer(playerItem: item), of: stream, keeping: loader)
         }
 
         let handler = FairPlayKeyHandler(protection: protection,
@@ -82,8 +89,16 @@ final class NPOPlayback: PlaybackStarting {
         let session = AVContentKeySession(keySystem: .fairPlayStreaming)
         session.setDelegate(handler, queue: handler.queue)
         session.addContentKeyRecipient(asset)
-        return Playback(player: AVPlayer(playerItem: item),
-                        keys: KeySession(session: session, handler: handler, loader: loader))
+        return Self.playback(AVPlayer(playerItem: item),
+                             of: stream,
+                             keeping: KeySession(session: session, handler: handler, loader: loader))
+    }
+
+    private static func playback(_ player: AVPlayer, of stream: PlayableStream, keeping keys: AnyObject?) -> Playback {
+        Playback(player: player,
+                 keys: keys,
+                 duration: stream.duration?.timeInterval,
+                 position: stream.position)
     }
 
     /// The title the system player's info panel shows.

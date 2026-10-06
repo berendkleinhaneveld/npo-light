@@ -130,6 +130,13 @@ nonisolated final class NPOAuthenticator: Authenticating {
         return stored.deviceIdentifier
     }
 
+    /// Who the token says the session belongs to, under the name NPO's
+    /// reports go by (FR-PLAY-12). `nil` when the token does not say.
+    func subject() throws -> String? {
+        guard let stored = try tokenStore.load() else { throw BackendError.notSignedIn }
+        return NPOWire.subject(of: stored.idToken)
+    }
+
     private func account() async throws -> Account {
         let response = try await backendResponse(to: BackendCall(path: NPOWire.accountPath))
         guard response.status == 200 else {

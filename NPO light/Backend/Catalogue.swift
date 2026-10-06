@@ -35,6 +35,15 @@ nonisolated protocol Catalogue: Sendable {
     /// the episode does.
     func place(of episode: EpisodeID, in mode: Mode) async throws -> SeriesPlace?
 
+    /// What NPO lists for the mode's profile to go on with, the latest first,
+    /// each with how far it was watched (FR-HOME-12).
+    func continuing(in mode: Mode) async throws -> [Continued]
+
+    /// Takes `episode` off the list NPO has for the mode's profile to go on
+    /// with, and nothing else: NPO keeps where it was watched to
+    /// (FR-HOME-13).
+    func discontinue(_ episode: EpisodeID, in mode: Mode) async throws
+
     // MARK: What is remembered
 
     /// A series as an earlier answer described it, however long ago, without

@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import Synchronization
 
 /// What is needed to play one item now.
 ///
@@ -25,6 +26,9 @@ nonisolated struct PlayableStream: Sendable, Equatable {
 
     /// How long it lasts, if NPO said.
     var duration: Duration?
+
+    /// Where NPO says the profile left it, if anywhere (FR-PLAY-13).
+    var position: SharedPosition?
 }
 
 /// Subtitles in one language, as one file of the whole programme.
@@ -60,11 +64,16 @@ nonisolated final class NPOStreams: Sendable {
     private let authenticator: NPOAuthenticator
     private let profiles: NPOProfiles
     private let transport: any HTTPTransport
+    private let products: NPOProducts
 
-    init(authenticator: NPOAuthenticator, profiles: NPOProfiles, transport: any HTTPTransport) {
+    init(authenticator: NPOAuthenticator,
+         profiles: NPOProfiles,
+         transport: any HTTPTransport,
+         products: NPOProducts = NPOProducts()) {
         self.authenticator = authenticator
         self.profiles = profiles
         self.transport = transport
+        self.products = products
     }
 
     /// Fresh stream details for `episode`. Every call asks NPO again.
@@ -76,16 +85,37 @@ nonisolated final class NPOStreams: Sendable {
                                query: [URLQueryItem(name: "player-environment", value: "production")],
                                profile: try await profiles.profile(for: mode))
         let player = try await authenticator.backendBody(PlayerBody.self, from: call)
+        if let product = player.program?.prid {
+            products.note(product, for: episode)
+        }
 
         let response = try await transport.reaching(NPOWire.streamLinkRequest(playerToken: player.token))
         guard response.status == 200 else {
             throw BackendError.unexpectedResponse(status: response.status)
         }
         guard let body = try? JSONDecoder().decode(StreamLinkBody.self, from: response.body),
-              let stream = body.playableStream else {
+              var stream = body.playableStream else {
             throw BackendError.unexpectedResponse(status: response.status)
         }
+        // Measured against the stream's own length, which is what the
+        // position is a part of.
+        stream.position = player.program?.progress?.position(of: nil)
         return stream
+    }
+}
+
+/// NPO's own name for each programme that was asked to play: what a report
+/// about it has to carry (FR-PLAY-12). It stays below the boundary
+/// (ADR 0012).
+nonisolated final class NPOProducts: Sendable {
+    private let known = Mutex<[EpisodeID: String]>([:])
+
+    func note(_ product: String, for episode: EpisodeID) {
+        known.withLock { $0[episode] = product }
+    }
+
+    func product(for episode: EpisodeID) -> String? {
+        known.withLock { $0[episode] }
     }
 }
 
@@ -100,6 +130,12 @@ nonisolated struct PlayerBody: Decodable {
 
         /// The season's identifier, whatever the field is called.
         let seasonSlug: String?
+
+        /// NPO's own name for the programme, which its reports go by.
+        let prid: String?
+
+        /// Only when the profile has a position for it.
+        let progress: ProgressBody?
     }
 
     let token: String

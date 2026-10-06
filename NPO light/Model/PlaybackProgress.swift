@@ -26,6 +26,10 @@ nonisolated struct PlaybackProgress: Sendable, Equatable, Codable {
     /// into how far in it is (FR-HOME-06).
     var duration: TimeInterval?
 
+    /// The position NPO was last seen to have for it: what tells a position
+    /// that is news from one that was taken over before (FR-PLAY-13).
+    var shared: TimeInterval?
+
     var isFinished: Bool { finishedAt != nil }
 
     /// How far in the resume point is, from 0 to 1, when both are known.

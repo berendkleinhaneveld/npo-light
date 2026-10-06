@@ -1,20 +1,32 @@
 # Privacy and data handling
 
-Prefix `NFR-PRIV`. Everything the family does in this app stays on this Apple
-TV.
+Prefix `NFR-PRIV`. What the family does in this app stays on this Apple TV,
+except for how far something was played, which NPO is told.
 
-## NFR-PRIV-01 — Local only, no sync
+## NFR-PRIV-01 — Local, except the position of what plays
 
 - **Status:** Accepted
 
-Pins, recently watched, playback positions and search history are stored on the
-device and are never sent anywhere — not to the NPO Plus account, not to
-iCloud, not to a server of the app's own.
+Pins, the watch later list, search history and the recently watched row are
+stored on the device and are never sent anywhere — not to the NPO Plus
+account, not to iCloud, not to a server of the app's own.
+
+One thing is shared with the NPO account, deliberately: **where playback of a
+programme is**, reported to NPO while it plays (FR-PLAY-12) and read back from
+it (FR-PLAY-13, FR-HOME-12), together with taking a programme off NPO's list
+of what to go on with (FR-HOME-13, FR-SET-05). It is what makes an episode
+watched on the television watched in NPO's own apps, and it is all of it
+([ADR 0028](../adr/0028-share-positions-with-npo-through-its-stream-events.md)).
 
 **Acceptance criteria**
 
-- No request body carries watch history, pins or search terms, beyond the
-  search query needed to answer the search itself.
+- No request body carries pins, the watch later list or search terms, beyond
+  the search query needed to answer the search itself.
+- Taking something off NPO's list names the programme and the profile, and
+  nothing else.
+- A report to NPO carries the account, the profile, the programme, the
+  position and the programme's length, and what NPO's backend needs to accept
+  it. It carries no page, no tile, no search and nothing that was not played.
 - `UserDefaults` and the SwiftData store are local; no CloudKit container and
   no iCloud key-value store is configured.
 - Signing in on another device does not carry any of this across.
@@ -51,9 +63,13 @@ the device, and no advertising identifier use.
   content delivery network its streams are served from — plus Apple's own
   services. Some of those are run for NPO by third parties, which is why this
   is a list of purposes rather than a list of domains.
-- The app contacts no advertising or measurement host, and does not follow the
+- The app contacts no advertising host, and does not follow the
   advertisement and tracking URLs NPO's own responses may contain
   (FR-AUTH-05).
+- The one measurement host it contacts is NPO's own, because that is where
+  NPO takes a playback position from, and only with the reports FR-PLAY-12
+  describes: none of the page views, clicks and offers NPO's own app sends
+  there.
 
 ## NFR-PRIV-04 — Erasing really erases
 

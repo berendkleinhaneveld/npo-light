@@ -61,3 +61,24 @@ positions, search history and the watch later list — for one mode or for both.
 - After erasing, the affected home page shows its empty states (FR-HOME-09) and
   its watch later row is gone (FR-LATER-05).
 - Erasing does not sign the user out.
+
+## FR-SET-05 — Erasing reaches NPO's list of what to go on with
+
+- **Status:** Implemented
+
+Erasing a mode (FR-SET-04) also takes everything off the list NPO keeps for
+that mode's profile to go on with, so that the row that was erased is not
+filled again from NPO (FR-HOME-12,
+[ADR 0028](../adr/0028-share-positions-with-npo-through-its-stream-events.md)).
+
+**Acceptance criteria**
+
+- After erasing a mode, its home page shows its empty states and keeps
+  showing them (FR-SET-04, FR-HOME-09), also while NPO has not yet acted on
+  the removals.
+- Only the erased mode's NPO profile is touched (FR-MODE-05).
+- The television is erased whether or not NPO can be reached.
+- What NPO keeps beyond that list is not the app's to erase: NPO still knows
+  how far each thing was watched, and the television takes that over again
+  where it meets it (FR-PLAY-13).
+- The confirmation says both: what goes at NPO, and what NPO keeps.

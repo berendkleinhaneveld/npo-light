@@ -28,6 +28,9 @@ is here is extracted and rewritten, not copied.
 | `player-200.json` | `GET ios.bff.start.npox.nl/programs/player/{guid}?player-environment=production` | 2026-08-31 |
 | `stream-link-200.json` | `POST prod.npoplayer.nl/stream-link`, for a Plus account; the manifest address and both tokens are placeholders | 2026-08-31 |
 | `stream-link-signed-address-200.json` | `POST prod.npoplayer.nl/stream-link`, for a Plus account and an older children's programme: no credential header, the authorisation is in the licence address; the manifest address and the `auth` and `sig` values are placeholders. From the app's own request log on an Apple TV | 2026-10-04 |
+| `home-200.json` | `GET ios.bff.start.npox.nl/pages/by/slug/home`, as the general profile: the row NPO's app goes on from, with an episode and a film that each have a position, and one of the nineteen rows that are not read. From a capture of NPO's iPhone app | 2026-10-06 |
+| `season-programs-progress-200.json` | `GET ios.bff.start.npox.nl/series/seasons/{guid}/programs?sort=asc`, as the general profile, half a minute into the first episode; two episodes kept. Same capture | 2026-10-06 |
+| `player-progress-200.json` | `GET ios.bff.start.npox.nl/programs/player/{guid}?player-environment=production` for a programme the profile has a position for. Same capture | 2026-10-06 |
 
 ## The rules
 
@@ -37,6 +40,11 @@ sequential rather than real. The one exception is the `user_code` in
 `device-authorization-200.json`, which is the eight-digit code from the recon
 run: it is one-time, it lapsed five minutes after it was issued, and keeping it
 matches the note it came from.
+
+**A position is left as it is too.** The three fixtures of 2026-10-06 carry how
+far the capturing account had watched something: that is the field they are
+there for, and the pair of numbers has to stay a pair — the length NPO measured
+against is only found by dividing one by the other.
 
 **Catalogue data is left as it is.** Titles, synopses, image addresses and the
 identifiers of series and episodes are NPO's public catalogue, not anything
