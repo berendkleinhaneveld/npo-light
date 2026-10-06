@@ -37,6 +37,14 @@ nonisolated struct RememberingCatalogue: Catalogue {
         try await fresh.place(of: episode, in: mode)
     }
 
+    func continuing(in mode: Mode) async throws -> [Continued] {
+        try await fresh.continuing(in: mode)
+    }
+
+    func discontinue(_ episode: EpisodeID, in mode: Mode) async throws {
+        try await fresh.discontinue(episode, in: mode)
+    }
+
     func rememberedSeries(_ id: ItemID, in mode: Mode) async -> SeriesDetail? { series }
 
     func rememberedEpisodes(of season: SeasonID, in mode: Mode) async -> [Playable]? { episodes[season] }

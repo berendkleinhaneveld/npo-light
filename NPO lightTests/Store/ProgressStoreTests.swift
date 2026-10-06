@@ -32,6 +32,20 @@ struct ProgressStoreTests {
         try await body(directory, name)
     }
 
+    @Test("FR-PLAY-13: what NPO was last seen to have is kept with the position, across launches")
+    func whatNPOSaidIsKept() async throws {
+        try await withStorage { directory, suite in
+            var position = Self.progress("one", at: 300)
+            position.shared = 290.5
+            try await ProgressStore.open(in: directory, suite: suite).note(position, in: .normal)
+
+            let reopened = ProgressStore.open(in: directory, suite: suite)
+
+            #expect(await reopened.progress(of: position.id, in: .normal)?.shared == 290.5)
+            #expect(!reopened.wasReset)
+        }
+    }
+
     @Test("FR-PLAY-03: a position that was written is read back, and a later one replaces it")
     func positionIsReadBack() async throws {
         try await withStorage { directory, suite in

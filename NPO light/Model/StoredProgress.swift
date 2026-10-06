@@ -24,6 +24,7 @@ nonisolated final class StoredProgress {
     var finishedAt: Date?
     var updatedAt: Date
     var duration: Double?
+    var shared: Double?
 
     init(_ progress: PlaybackProgress, mode: Mode) {
         self.mode = mode.rawValue
@@ -32,6 +33,7 @@ nonisolated final class StoredProgress {
         finishedAt = progress.finishedAt
         updatedAt = progress.updatedAt
         duration = progress.duration
+        shared = progress.shared
     }
 
     var progress: PlaybackProgress {
@@ -39,7 +41,8 @@ nonisolated final class StoredProgress {
                          offset: offset,
                          finishedAt: finishedAt,
                          updatedAt: updatedAt,
-                         duration: duration)
+                         duration: duration,
+                         shared: shared)
     }
 
     func take(_ progress: PlaybackProgress) {
@@ -47,5 +50,6 @@ nonisolated final class StoredProgress {
         finishedAt = progress.finishedAt
         updatedAt = progress.updatedAt
         duration = progress.duration
+        shared = progress.shared
     }
 }

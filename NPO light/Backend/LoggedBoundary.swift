@@ -116,4 +116,16 @@ nonisolated struct LoggedCatalogue: Catalogue {
             try await wrapped.place(of: episode, in: mode)
         }
     }
+
+    func continuing(in mode: Mode) async throws -> [Continued] {
+        try await LoggedCall.run("continuing in \(mode)", in: .catalogue, log: log) {
+            try await wrapped.continuing(in: mode)
+        }
+    }
+
+    func discontinue(_ episode: EpisodeID, in mode: Mode) async throws {
+        try await LoggedCall.run("discontinue \(episode.rawValue) in \(mode)", in: .catalogue, log: log) {
+            try await wrapped.discontinue(episode, in: mode)
+        }
+    }
 }

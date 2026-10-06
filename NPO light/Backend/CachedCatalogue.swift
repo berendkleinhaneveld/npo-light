@@ -52,6 +52,16 @@ nonisolated final class CachedCatalogue: Catalogue {
         try await wrapped.place(of: episode, in: mode)
     }
 
+    /// Not kept: what was watched a minute ago on another device is the
+    /// point of asking.
+    func continuing(in mode: Mode) async throws -> [Continued] {
+        try await wrapped.continuing(in: mode)
+    }
+
+    func discontinue(_ episode: EpisodeID, in mode: Mode) async throws {
+        try await wrapped.discontinue(episode, in: mode)
+    }
+
     func series(_ id: ItemID, in mode: Mode) async throws -> SeriesDetail {
         let detail = try await answer(for: Self.key(series: id, mode), pace: { Self.pace(of: $0) }, asking: {
             try await wrapped.series(id, in: mode)

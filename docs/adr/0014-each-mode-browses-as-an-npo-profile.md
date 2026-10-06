@@ -1,6 +1,6 @@
 # 0014. Each mode browses as one of the account's NPO profiles
 
-- **Status:** Accepted
+- **Status:** Accepted — amended by [0028](0028-share-positions-with-npo-through-its-stream-events.md): positions are now sent to the profile, deliberately
 - **Accepted:** 2026-10-03
 - **Date:** 2026-10-03
 - **Deciders:** @berendkleinhaneveld

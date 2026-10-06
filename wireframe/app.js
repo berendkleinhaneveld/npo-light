@@ -1080,7 +1080,7 @@
             </section>
             <section class="settings-group" aria-label="Gegevens op deze Apple TV">
               <h2 class="row-title">Gegevens op deze Apple TV</h2>
-              <p class="setting-note">Vastgezet, recent bekeken, later kijken, kijkposities en zoekgeschiedenis staan alleen hier. Er wordt niets gesynchroniseerd.</p>
+              <p class="setting-note">Wat je vastzet, bewaart en zoekt staat alleen hier. Hoe ver je iets hebt gekeken weet NPO ook.</p>
               <div class="button-stack" data-row="erase">
                 ${focusable('set:erase:normal', { cls: 'btn', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['normal']) }, 'Wis gewone modus')}
                 ${focusable('set:erase:kids', { cls: 'btn', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['kids']) }, 'Wis kindermodus')}
@@ -1504,10 +1504,11 @@
     openDialog({
       title: `Gegevens van ${names} wissen?`,
       body: [
-        `Dit verwijdert voorgoed van deze Apple TV: vastgezette programma’s, recent bekeken, later kijken, kijkposities en zoekgeschiedenis van ${names}.`,
+        `Dit verwijdert van deze Apple TV: vastgezette programma’s, recent bekeken, later kijken, kijkposities en zoekgeschiedenis van ${names}.`,
+        'Bij NPO gaat het uit ‘Kijk verder’, maar NPO onthoudt hoe ver je iets hebt gekeken.',
         modes.length === 2 ? 'Je blijft ingelogd.' : 'De andere modus blijft zoals hij is, en je blijft ingelogd.',
       ],
-      req: 'FR-SET-04 NFR-PRIV-04',
+      req: 'FR-SET-04 FR-SET-05 NFR-PRIV-04',
       actions: [
         { label: 'Wissen', run: () => { modes.forEach((mode) => { S.modes[mode] = emptyMode(); }); toast('Gegevens gewist'); T.focus = `set:erase:${modes.length === 2 ? 'both' : modes[0]}`; commit(); } },
         { label: 'Annuleren', run: () => { T.focus = T.dialogReturn; render(); } },

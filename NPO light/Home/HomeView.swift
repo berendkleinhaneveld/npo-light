@@ -61,11 +61,17 @@ struct HomeView: View {
                     }
                 }
             }
-            .task { await model.refresh() }
+            .task {
+                await model.refresh()
+                await model.catchUp()
+            }
             .onChange(of: model.path.isEmpty) { _, isHome in
                 // Back from a page where something may have been pinned.
                 guard isHome else { return }
-                Task { await model.refresh() }
+                Task {
+                    await model.refresh()
+                    await model.catchUp()
+                }
             }
             .navigationDestination(for: Destination.self) { destination in
                 switch destination {

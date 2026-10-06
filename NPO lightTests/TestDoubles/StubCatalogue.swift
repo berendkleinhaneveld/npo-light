@@ -37,6 +37,8 @@ nonisolated final class StubCatalogue: Catalogue {
     private let season: @Sendable (SeasonID) async throws -> [Playable]
     private let place: @Sendable (EpisodeID) async throws -> SeriesPlace?
     private let programme: @Sendable (EpisodeID) async throws -> ProgrammeDetail
+    private let listed = Mutex<Result<[Continued], BackendError>>(.success([]))
+    private let removed = Mutex<[EpisodeID]>([])
     private let asked = Mutex<[Search]>([])
     private let askedSeasons = Mutex<[SeasonID]>([])
 
@@ -107,5 +109,23 @@ nonisolated final class StubCatalogue: Catalogue {
 
     func programme(_ id: EpisodeID, in mode: Mode) async throws -> ProgrammeDetail {
         try await programme(id)
+    }
+
+    /// What NPO lists to go on with from now on, or the error it fails with.
+    func list(_ continuing: Result<[Continued], BackendError>) {
+        listed.withLock { $0 = continuing }
+    }
+
+    func continuing(in mode: Mode) async throws -> [Continued] {
+        try listed.withLock { $0 }.get()
+    }
+
+    /// Everything NPO was asked to take off its list, oldest first.
+    var discontinued: [EpisodeID] { removed.withLock { $0 } }
+
+    /// Fails as listing does, when that was made to fail.
+    func discontinue(_ episode: EpisodeID, in mode: Mode) async throws {
+        _ = try listed.withLock { $0 }.get()
+        removed.withLock { $0.append(episode) }
     }
 }

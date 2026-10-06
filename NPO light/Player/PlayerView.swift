@@ -56,7 +56,10 @@ struct PlayerView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .focusable()
         case .playing(let playback):
-            SystemPlayer(player: playback.player, action: stopAction, interacted: { model.interacted() })
+            SystemPlayer(player: playback.player,
+                         action: stopAction,
+                         interacted: { model.interacted() },
+                         sought: { model.sought(from: $0, to: $1) })
                 .ignoresSafeArea()
                 .overlay(alignment: .topLeading) {
                     if let announced = model.announced {

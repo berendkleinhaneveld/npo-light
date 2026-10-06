@@ -20,9 +20,9 @@ the old one as superseded instead of rewriting it.
 | [0009](0009-test-doubles-at-two-seams.md) | Test doubles at two seams, with captured fixtures for the shapes | Accepted |
 | [0010](0010-publish-an-interactive-wireframe.md) | Publish an interactive wireframe, drawn from the requirements | Accepted |
 | [0011](0011-four-layers-above-the-npo-boundary.md) | Four layers above the NPO boundary | Accepted |
-| [0012](0012-what-the-local-store-holds.md) | What the local store holds, and what it does not | Accepted, amended by 0015 |
+| [0012](0012-what-the-local-store-holds.md) | What the local store holds, and what it does not | Accepted, amended by 0015 and 0028 |
 | [0013](0013-sign-simulator-builds-ad-hoc.md) | Sign simulator builds ad hoc, so the tests can reach the Keychain | Accepted |
-| [0014](0014-each-mode-browses-as-an-npo-profile.md) | Each mode browses as one of the account's NPO profiles | Accepted |
+| [0014](0014-each-mode-browses-as-an-npo-profile.md) | Each mode browses as one of the account's NPO profiles | Accepted, amended by 0028 |
 | [0015](0015-local-data-in-two-places.md) | Keep what the family chose in UserDefaults, and every position in an evictable store | Accepted |
 | [0016](0016-log-at-the-seams.md) | Log at the seams, and keep whole exchanges in files in debug builds | Proposed |
 | [0017](0017-load-artwork-at-the-size-it-is-shown.md) | Load artwork at the size it is shown, off the main actor | Proposed |
@@ -36,6 +36,7 @@ the old one as superseded instead of rewriting it.
 | [0025](0025-go-on-with-the-last-admitted-account-offline.md) | Go on with the last admitted account when NPO cannot be asked | Proposed |
 | [0026](0026-try-a-request-again-only-when-it-is-safe.md) | Try a request again only when it is safe, and only a few times | Proposed |
 | [0027](0027-add-npos-subtitles-to-the-manifest.md) | Add NPO's subtitles to the manifest the player is given | Proposed |
+| [0028](0028-share-positions-with-npo-through-its-stream-events.md) | Share playback positions with NPO through its stream events | Proposed |
 
 ## How to add one
 

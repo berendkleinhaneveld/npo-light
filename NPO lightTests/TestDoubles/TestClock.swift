@@ -48,11 +48,3 @@ nonisolated final class TestClock: Clocking {
         state.withLock { $0.now += duration.timeInterval }
     }
 }
-
-extension Duration {
-    /// Seconds, for the arithmetic `Date` wants.
-    var timeInterval: TimeInterval {
-        let (seconds, attoseconds) = components
-        return TimeInterval(seconds) + TimeInterval(attoseconds) / 1e18
-    }
-}

@@ -23,6 +23,24 @@ nonisolated struct ImageBody: Decodable {
     let role: String?
 }
 
+/// How far a profile watched something, on the items NPO has a position for
+/// and on no others.
+nonisolated struct ProgressBody: Decodable {
+    let secondsWatched: Double?
+    let fractionWatched: Double?
+
+    /// The length is the one the position was measured against, which is the
+    /// stream's and not always the one a list gives.
+    func position(of listed: Int?) -> SharedPosition? {
+        guard let seconds = secondsWatched, seconds.isFinite, seconds > 0 else { return nil }
+        var duration = listed.map(TimeInterval.init)
+        if let fraction = fractionWatched, fraction.isFinite, fraction > 0 {
+            duration = seconds / fraction
+        }
+        return SharedPosition(offset: seconds, duration: duration)
+    }
+}
+
 /// An item in a collection or a season. A collection mixes types, and only the
 /// fields every type shares are certain; the rest is there for some of them.
 nonisolated struct CatalogueItemBody: Decodable {
@@ -43,6 +61,7 @@ nonisolated struct CatalogueItemBody: Decodable {
     /// Only in a collection. A season's list has none.
     let target: String?
     let images: [ImageBody]?
+    let progress: ProgressBody?
 
     var artwork: URL? {
         images?.first { $0.role == ImageBody.artworkRole }?.url.flatMap(URL.init(string:))
@@ -60,7 +79,37 @@ nonisolated struct CatalogueItemBody: Decodable {
                         caption: subtitle,
                         synopsis: synopsis,
                         duration: durationInSeconds.map { .seconds($0) },
-                        artwork: artwork)
+                        artwork: artwork,
+                        position: progress?.position(of: durationInSeconds))
+    }
+}
+
+/// `GET /pages/by/slug/home`: the rows of NPO's own home page, of which one
+/// is read.
+nonisolated struct HomePageBody: Decodable {
+    struct Collection: Decodable {
+        /// What NPO calls the row a profile goes on from, whatever version
+        /// of it this is: `continue-watching-v0`, `-v1`.
+        static let continuingPrefix = "continue-watching"
+
+        let guid: String?
+        let items: [CatalogueItemBody]?
+    }
+
+    let collections: [Collection]
+
+    /// The row a profile goes on from, under the name this answer gives it.
+    var continuingRow: String? {
+        collections.compactMap(\.guid).first { $0.hasPrefix(Collection.continuingPrefix) }
+    }
+
+    /// What the profile can go on with, in NPO's order.
+    var continuing: [Continued] {
+        let rows = collections.filter { $0.guid?.hasPrefix(Collection.continuingPrefix) == true }
+        return rows.flatMap { $0.items ?? [] }.compactMap { item in
+            guard item.type == CatalogueItemBody.programType, let playable = item.playable else { return nil }
+            return Continued(playable: playable, isSingle: item.target == CatalogueItemBody.singleProgrammeTarget)
+        }
     }
 }
 
@@ -151,6 +200,7 @@ nonisolated struct ProgrammePageBody: Decodable {
         let durationInSeconds: Int?
         let images: [ImageBody]?
         let playButton: PlayButton?
+        let progress: ProgressBody?
     }
 
     struct PlayButton: Decodable {
@@ -177,7 +227,8 @@ nonisolated struct ProgrammePageBody: Decodable {
                                caption: metadata,
                                synopsis: synopsis,
                                duration: header.durationInSeconds.map { .seconds($0) },
-                               artwork: artwork),
+                               artwork: artwork,
+                               position: header.progress?.position(of: header.durationInSeconds)),
             // NPO says so on the button it would draw. Not saying is not a
             // refusal: the stream is still asked for, and may be.
             isPlayable: header.playButton?.enabled ?? true

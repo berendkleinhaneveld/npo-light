@@ -223,3 +223,63 @@ playback starts, not held from earlier
   the expired ones.
 - Resuming (FR-PLAY-02) and autoplaying the next episode (FR-PLAY-05) each
   obtain their own stream details.
+
+## FR-PLAY-12 — What plays is reported to NPO
+
+- **Status:** Implemented
+
+While something plays, the app tells NPO where playback is, the way NPO's own
+app does, so that the household's NPO profile knows how far it was watched and
+any of NPO's apps can go on from there
+([ADR 0028](../adr/0028-share-positions-with-npo-through-its-stream-events.md)).
+
+**Rationale.** NPO keeps a position only when an app reports one
+([Q-12](open-questions.md#q-12--does-playing-through-npo-light-record-progress-at-npo)),
+and the only report it takes is the stream of events its player sends
+([Q-13](open-questions.md#q-13--how-is-a-playback-position-reported-to-npo)).
+Without them an episode watched on the television is unwatched on a phone.
+
+**Acceptance criteria**
+
+- Starting, pausing, resuming, moving to another point, reaching the end and
+  leaving the player are each reported, with the position at that moment.
+- While something plays, a position is reported for at least every thirty
+  seconds of it.
+- A report names the NPO profile of the mode it was played in (FR-MODE-05),
+  the programme, the position and the programme's length. It says nothing
+  about a page, a tile or a search (NFR-PRIV-01).
+- A report that cannot be delivered is dropped: it never holds up or stops
+  what is playing, and it is not kept to be sent later.
+- Nothing is reported about something whose length is not known.
+- The generated video a debug build plays on the simulator is not reported:
+  it is not the programme
+  ([ADR 0019](../adr/0019-play-a-generated-video-where-fairplay-cannot-run.md)).
+
+## FR-PLAY-13 — A position NPO has is taken over
+
+- **Status:** Implemented
+
+Where NPO has a position for something — written by this app or by any other
+of the account's devices — the television uses it: to resume, and to show how
+far something was watched
+([ADR 0028](../adr/0028-share-positions-with-npo-through-its-stream-events.md)).
+
+**Acceptance criteria**
+
+- Playing something NPO has a position for resumes there (FR-PLAY-02),
+  wherever it was last watched.
+- A position NPO reports that is news — not the one it reported before —
+  replaces the television's own. One it reported before does not: what the
+  television wrote since then stands, so a report that never reached NPO does
+  not cost the position it was about.
+- A position past the completion threshold marks the item finished
+  (FR-PLAY-04), and one before it never makes a finished item unfinished.
+- A list of episodes shows the positions NPO sent with it like the
+  television's own.
+- When NPO has no position for something, or cannot be reached, the
+  television's own is used.
+- A position is taken over into the mode whose NPO profile it belongs to, and
+  no other (FR-MODE-05).
+- Erasing local data (FR-SET-04) erases what the television keeps. What NPO
+  keeps is not the app's to erase, and is taken over again when NPO next
+  reports it.

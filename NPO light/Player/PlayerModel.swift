@@ -66,6 +66,9 @@ final class PlayerModel {
 
     private let starter: any PlaybackStarting
     private let positions: PlaybackCoordinator
+
+    /// What NPO is told of this sitting, or `nil` when it is told nothing.
+    let reports: PlaybackReports?
     private let clock: any Clocking
     private let timings: () -> Timings
     /// The wait after which the announcement goes away, while it runs.
@@ -86,7 +89,9 @@ final class PlayerModel {
          starter: any PlaybackStarting,
          positions: PlaybackCoordinator,
          clock: any Clocking,
+         reports: PlaybackReports? = nil,
          timings: @escaping () -> Timings = { Timings() }) {
+        self.reports = reports
         self.playable = playable
         self.origin = origin
         self.mode = mode
@@ -119,12 +124,16 @@ final class PlayerModel {
         state = .preparing
         do {
             let playback = try await starter.playback(of: playable, in: mode)
+            // Before the resume point is read: where it was left on another
+            // device is where it goes on (FR-PLAY-13).
+            await positions.noticed(playback.position, of: playable.id, in: mode)
             await resume(playback.player)
             watch(playback.player)
             state = .playing(playback)
             // The app starting something is nobody touching the remote.
             attention.expectOwnChange(at: clock.now)
             playback.player.play()
+            report { $0.began($1) }
             // After it plays, so that asking NPO which series an episode
             // from search belongs to does not hold the picture up.
             origin = await positions.origin(of: playable, given: origin, in: mode)
@@ -153,6 +162,7 @@ final class PlayerModel {
         announcing?.cancel()
         asking?.cancel()
         rest()
+        report { $0.stopped($1) }
         stopWatching()
         playback?.player.pause()
     }
@@ -188,6 +198,33 @@ final class PlayerModel {
         watcher.stop()
     }
 
+    /// Where playback is now, as NPO is told (FR-PLAY-12). The length is the
+    /// player's, and NPO's own for as long as the player does not know.
+    private var moment: PlaybackReports.Moment? {
+        guard let playback, let item = playback.player.currentItem else { return nil }
+        let length = item.duration.seconds
+        return PlaybackReports.Moment(episode: playable.id,
+                                      position: playback.player.currentTime().seconds,
+                                      duration: length.isFinite && length > 0 ? length : playback.duration,
+                                      mode: mode)
+    }
+
+    private func report(_ what: (PlaybackReports, PlaybackReports.Moment) -> Void) {
+        guard let reports, let moment else { return }
+        what(reports, moment)
+    }
+
+    /// Somebody moved through what plays, from one position to another.
+    func sought(from origin: TimeInterval, to target: TimeInterval) {
+        report { reports, moment in
+            reports.sought(from: origin,
+                           to: PlaybackReports.Moment(episode: moment.episode,
+                                                      position: target,
+                                                      duration: moment.duration,
+                                                      mode: moment.mode))
+        }
+    }
+
     /// A stream that stops being playable — a licence that could not be
     /// obtained, a manifest that would not load — becomes a problem with a
     /// retry rather than a black screen.
@@ -197,9 +234,14 @@ final class PlayerModel {
     private func watch(_ player: AVPlayer) {
         watcher.watch(player, telling: PlayerWatcher.Events(
             failed: { [weak self] in self?.playbackFailed() },
-            paused: { [weak self] in self?.rest() },
+            paused: { [weak self] in
+                self?.rest()
+                self?.report { $0.paused($1) }
+            },
+            playing: { [weak self] in self?.report { $0.resumed($1) } },
             tick: { [weak self] in
                 self?.record(resting: false)
+                self?.report { $0.ticked($1) }
                 self?.checkAttention()
             },
             ended: { [weak self] in self?.playedToEnd() },
@@ -221,6 +263,7 @@ final class PlayerModel {
     /// counts it down: a moment to stop before the next episode carries a
     /// child along. A pause of nothing is normal mode's way (FR-PLAY-06).
     func ended() async {
+        report { $0.completed($1) }
         let next = await positions.playedToEnd(playable.id, from: origin, in: mode)
         guard !isClosed else { return }
         guard let next else {

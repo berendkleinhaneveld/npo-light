@@ -1,0 +1,74 @@
+{
+  "guid": "home",
+  "slug": "home",
+  "collections": [
+    {
+      "guid": "continue-watching-v0",
+      "title": "Kijk verder",
+      "type": "program",
+      "items": [
+        {
+          "guid": "004abf1c-8e68-47c0-945b-367848f2a9ee",
+          "type": "program",
+          "prid": "VPWON_1293651",
+          "slug": "de-harmonie",
+          "title": "A'dam - E.V.A.",
+          "subtitle": "46m • Afl. 5: De harmonie",
+          "synopsis": "Adam en Eva wonen inmiddels samen. Eva vraagt Adam ten huwelijk. Ze ontmoeten elkaars familie. Eva ontdekt een geheim uit Adams verleden.",
+          "durationInSeconds": 2799,
+          "target": "player",
+          "images": [
+            {
+              "url": "https://assets-start.npo.nl/resources/2023/07/01/1faa004a-dbbd-4a28-aef6-7c5b8f11076a.jpg",
+              "role": "default"
+            }
+          ],
+          "progress": {
+            "fractionWatched": 0.4699944257736206,
+            "secondsWatched": 1316
+          }
+        },
+        {
+          "guid": "77ecf296-7cda-4895-985c-4455605701cb",
+          "type": "program",
+          "prid": "VPWON_1329040",
+          "slug": "sweet-dreams_1",
+          "title": "Sweet Dreams",
+          "subtitle": "1u 40m",
+          "synopsis": "Te midden van de zoveelste suikercrisis sterft patriarch Jan, hoofd van de suikerfabriek. Zijn twee vrouwen zijn aan hun lot overgelaten: echtgenote Agathe en de inlandse moeder van zijn bastaardzoon.",
+          "durationInSeconds": 6012,
+          "target": "detail",
+          "images": [
+            {
+              "url": "https://assets-start.npo.nl/resources/2025/09/08/cf5bedbf-72b0-4d78-bd8b-c4c7f8dfa514.jpg",
+              "role": "default"
+            }
+          ],
+          "progress": {
+            "fractionWatched": 0.4906611144542694,
+            "secondsWatched": 2907
+          }
+        }
+      ]
+    },
+    {
+      "guid": "trending-plus-v0",
+      "title": "Trending",
+      "type": "series",
+      "items": [
+        {
+          "guid": "53a7d68a-85a5-4d61-adf9-fd1d68298e3f",
+          "type": "series",
+          "slug": "vier-handen-op-een-buik",
+          "title": "Vier Handen Op Eén Buik",
+          "images": [
+            {
+              "url": "https://assets-start.npo.nl/resources/2026/09/22/24680ee2-04a6-4f5e-b7b1-b168cde31f9d.jpg",
+              "role": "default"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

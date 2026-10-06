@@ -1,0 +1,34 @@
+[
+  {
+    "guid": "a9df7b99-aa19-4956-afdd-79e3c18aa5ea",
+    "prid": "KN_1736787",
+    "slug": "kalverliefde_1",
+    "title": "Kalverliefde",
+    "subtitle": "Afl. 1 • 40m",
+    "synopsis": "Na een jeugd in het teken van ziekte, stort Emma zich in het studentenleven, ontmoet haar eerste liefde, trouwt en verhuist naar New York. Alles lijkt perfect, totdat Emma's droom in duigen valt.",
+    "images": [
+      {
+        "url": "https://assets-start.npo.nl/resources/2025/03/31/2929a833-d327-423b-9786-9d2cfee37579.jpg",
+        "role": "default"
+      }
+    ],
+    "progress": {
+      "fractionWatched": 0.012431212245270797,
+      "secondsWatched": 29.93982882
+    }
+  },
+  {
+    "guid": "b0557af4-5f9d-4515-acdc-18c204fe42e4",
+    "prid": "KN_1736788",
+    "slug": "verwenteld",
+    "title": "Verwenteld",
+    "subtitle": "Afl. 2 • 42m",
+    "synopsis": "Emma's ambitie leidt tot een breuk met Seb. Ze verhuist naar het platteland voor wat rust, maar dit is van korte duur. Ze keert weer terug naar Amsterdam, waar ze de sexy talkshowhost Alex ontmoet.",
+    "images": [
+      {
+        "url": "https://assets-start.npo.nl/resources/2025/04/08/4483a87c-c029-42b2-8b9c-367923b14340.jpg",
+        "role": "default"
+      }
+    ]
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "token": "sanitised.player.token",
+  "program": {
+    "guid": "7c41b9e2-4bee-4003-8450-a59bee7c6830",
+    "prid": "AT_300024566",
+    "programSlug": "eva_332",
+    "seasonSlug": "2c0b273d-8f43-45ff-a5cb-44d51fd8566a",
+    "seriesSlug": "eva",
+    "contentIndication": "freeContent_premiumAccount",
+    "progress": {
+      "fractionWatched": 0.03082489940401759,
+      "secondsWatched": 88.965560839
+    }
+  }
+}

@@ -33,6 +33,13 @@ nonisolated enum NPOWire {
     static let accountPath = "/account"
     static let profilesPath = "/profiles"
     static let searchPath = "/search"
+    static let homePath = "/pages/by/slug/home"
+
+    /// One programme on one of the rows of NPO's home page: what a DELETE
+    /// takes off the row a profile goes on from.
+    static func rowPath(_ row: String, _ programme: EpisodeID) -> String {
+        "/collection/\(row)/\(programme.rawValue)"
+    }
 
     static func seriesPath(_ series: ItemID) -> String {
         "/series/page/\(series.rawValue)"
@@ -98,9 +105,10 @@ nonisolated enum NPOWire {
         return request
     }
 
-    /// A GET to the app backend on behalf of `session`.
+    /// A call to the app backend on behalf of `session`.
     static func backendRequest(_ call: BackendCall, session: Session) throws -> URLRequest {
         var request = URLRequest(url: try url(host: backendHost, path: call.path, query: call.query))
+        request.httpMethod = call.method
         if let profile = call.profile {
             // The whole of the catalogue switch: the same address answers with
             // a different catalogue for a different profile (ADR 0014).
@@ -152,6 +160,52 @@ nonisolated enum NPOWire {
         return request
     }
 
+    // MARK: reports of playback
+
+    /// Where NPO's player reports what it plays, and where NPO takes a
+    /// profile's positions from (Q-13, ADR 0028).
+    static let reportsHost = "topspin.npo.nl"
+    static let reportPath = "/mob-event"
+
+    /// How NPO's app describes itself in a report, as captured. The first two
+    /// are what the host refuses a report without.
+    static let reportBrand = "npostart"
+    static let reportPlatform = "app"
+    static let reportBrandID = 631_160
+    static let reportPlatformVersion = "11.12.0"
+    static let reportEnvironment = "prod"
+    static let reportSDKVersion = "2.3.2"
+    static let reportPlayer = "npoplayer-ios"
+    static let reportPlayerVersion = "6.7.1"
+
+    /// One report. Nothing authorises it: the account is named in the body,
+    /// and the host takes that on trust.
+    static func reportRequest(body: Data, device: String) throws -> URLRequest {
+        var request = URLRequest(url: try url(host: reportsHost,
+                                              path: reportPath,
+                                              query: [URLQueryItem(name: "p", value: device)]))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("*/*", forHTTPHeaderField: "Accept")
+        request.setValue(acceptLanguage, forHTTPHeaderField: "Accept-Language")
+        request.httpBody = body
+        return request
+    }
+
+    /// The subject of a token, read from its middle part without checking
+    /// anything: it is sent back to who signed it.
+    static func subject(of token: String) -> String? {
+        struct Claims: Decodable {
+            let sub: String?
+        }
+        let parts = token.split(separator: ".")
+        guard parts.count == 3 else { return nil }
+        var payload = parts[1].replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/")
+        payload += String(repeating: "=", count: (4 - payload.count % 4) % 4)
+        guard let data = Data(base64Encoded: payload) else { return nil }
+        return (try? JSONDecoder().decode(Claims.self, from: data))?.sub
+    }
+
     /// A fresh `party-id`, in the shape NPO's app sends: `0:<8>:<32>`.
     static func makeDeviceIdentifier() -> String {
         let alphabet = Array("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
@@ -174,8 +228,10 @@ nonisolated enum NPOWire {
     }
 }
 
-/// One GET to the app backend.
+/// One call to the app backend.
 nonisolated struct BackendCall: Sendable, Equatable {
+    /// A GET, but for the one thing the app takes away at NPO.
+    var method = "GET"
     let path: String
     var query: [URLQueryItem] = []
     /// The NPO profile to ask as. Account-level calls carry none.

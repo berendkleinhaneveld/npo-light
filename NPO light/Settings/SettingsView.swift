@@ -93,7 +93,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Gegevens op deze Apple TV")
                 .font(.headline)
-            Text("Wat je vastzet, bekijkt, bewaart en zoekt staat alleen hier. Er wordt niets gesynchroniseerd.")
+            Text("Wat je vastzet, bewaart en zoekt staat alleen hier. Hoe ver je iets hebt gekeken weet NPO ook.")
                 .foregroundStyle(.secondary)
             Button("Wis gewone modus") { question = .erase([.normal]) }
                 .accessibilityIdentifier("settings-erase-normal")
@@ -128,16 +128,21 @@ struct SettingsView: View {
                             "Hij blijft wel gekoppeld aan je NPO-account, tot je hem daar verwijdert.",
                             "Wat je hebt vastgezet, bekeken, bewaard en gezocht blijft op deze Apple TV staan."])
         case .erase(let modes) where modes.count > 1:
-            Self.sentences([Self.erasing, "Dat geldt voor beide modi.", "Je blijft ingelogd."])
+            Self.sentences([Self.erasing, Self.erasingAtNPO, "Dat geldt voor beide modi.", "Je blijft ingelogd."])
         case .erase:
             Self.sentences([Self.erasing,
+                            Self.erasingAtNPO,
                             "De andere modus blijft zoals hij is.",
                             "Je blijft ingelogd."])
         }
     }
 
     private static let erasing: LocalizedStringKey =
-        "Dit verwijdert voorgoed wat is vastgezet, bekeken en bewaard, de kijkposities en de zoekgeschiedenis."
+        "Dit verwijdert van deze Apple TV wat is vastgezet, bekeken en bewaard, de kijkposities en de zoekgeschiedenis."
+
+    /// What erasing does and does not reach at NPO (FR-SET-05).
+    private static let erasingAtNPO: LocalizedStringKey =
+        "Bij NPO gaat het uit ‘Kijk verder’, maar NPO onthoudt hoe ver je iets hebt gekeken."
 
     private static func sentences(_ keys: [LocalizedStringKey]) -> Text {
         keys.reduce(Text(verbatim: "")) { text, key in Text("\(text)\(Text(key)) ") }
