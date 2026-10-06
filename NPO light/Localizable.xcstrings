@@ -1,121 +1,370 @@
 {
   "sourceLanguage" : "nl",
   "strings" : {
-    "%@ uur" : {},
-    "%@, direct openen" : {},
-    "%@, serie" : {},
-    "%lld min" : {},
-    "%lld s" : {},
-    "Account" : {},
-    "Afleveringen" : {},
-    "Afmelden" : {},
-    "Afmelden gebeurt alleen op deze Apple TV." : {},
-    "Afmelden?" : {},
-    "Afspelen" : {},
-    "Afspelen is niet gelukt. Probeer het opnieuw." : {},
-    "Alle afleveringen gezien" : {},
-    "Alle recente zoekopdrachten verdwijnen. De andere modus houdt zijn eigen geschiedenis." : {},
-    "Annuleren" : {},
-    "Bij NPO gaat het uit ‘Kijk verder’, maar NPO onthoudt hoe ver je iets hebt gekeken." : {},
-    "Code aanvragen…" : {},
-    "Dat geldt voor beide modi." : {},
-    "De afleveringen konden niet worden opgehaald." : {},
-    "De andere modus blijft zoals hij is." : {},
-    "De code is verlopen." : {},
-    "De kijkposities konden niet worden gelezen en zijn opnieuw begonnen." : {},
-    "Details" : {},
-    "Deze Apple TV vergeet je inlog." : {},
-    "Deze serie is niet meer beschikbaar." : {},
-    "Deze tv kan NPO nu niet bereiken. Controleer het netwerk en probeer het opnieuw." : {},
-    "Dit is niet meer beschikbaar bij NPO." : {},
-    "Dit verwijdert van deze Apple TV wat is vastgezet, bekeken en bewaard, de kijkposities en de zoekgeschiedenis." : {},
-    "Doorkijken" : {},
-    "Er is %@ achter elkaar gekeken." : {},
-    "Er is niet op tijd goedgekeurd. Vraag een nieuwe code aan en probeer het nog eens." : {},
-    "Films en losse programma's" : {},
-    "Geen" : {},
-    "Geen verbinding met NPO." : {},
-    "Gegevens gewist" : {},
-    "Gegevens op deze Apple TV" : {},
-    "Gegevens van beide modi wissen?" : {},
-    "Gegevens van gewone modus wissen?" : {},
-    "Gegevens van kindermodus wissen?" : {},
-    "Gezien" : {},
-    "Half gezien" : {},
-    "Het account waarmee je bent ingelogd heeft geen NPO Plus." : {},
-    "Hij blijft wel gekoppeld aan je NPO-account, tot je hem daar verwijdert." : {},
-    "Houd de selectieknop ingedrukt op een aflevering om hem voor later te bewaren." : {},
-    "Houd de selectieknop ingedrukt op een programma om het voor later te bewaren." : {},
-    "Houd de selectieknop ingedrukt op een zoekterm om hem te verwijderen." : {},
-    "Inloggen is afgebroken." : {},
-    "Inloggen is niet gelukt." : {},
-    "Instellingen" : {},
-    "Je blijft ingelogd." : {},
-    "Je hebt nog niet gezocht. Typ een paar letters; de resultaten verschijnen terwijl je typt." : {},
-    "Je zoekt in het aanbod voor kinderen." : {},
-    "Kijk je nog?" : {},
-    "Kijk verder" : {},
-    "Kindermodus" : {},
-    "Later kijken" : {},
-    "Log in bij NPO en keur de koppeling goed." : {},
-    "Log in met je NPO Plus-account" : {},
-    "Losmaken" : {},
-    "NPO gaf een antwoord dat deze app niet begrijpt. Probeer het later opnieuw." : {},
-    "Verder Kijker werkt alleen met NPO Plus" : {},
-    "Naar de serie" : {},
-    "Naar gewone modus" : {},
-    "Naar kindermodus" : {},
-    "Niet gezien" : {},
-    "Niet meer beschikbaar" : {},
-    "Niets gevonden voor “%@”." : {},
-    "Nieuwe code" : {},
-    "Nog niets bekeken." : {},
-    "Nog niets gekozen" : {},
-    "Nog niets vastgezet." : {},
-    "OK" : {},
-    "OK, afmelden" : {},
-    "Op de telefoon is het koppelen geweigerd of gestopt. Je kunt het opnieuw proberen." : {},
-    "Opnieuw beginnen" : {},
-    "Opnieuw proberen" : {},
-    "Pauze tussen afleveringen in kindermodus" : {},
-    "QR-code om in te loggen" : {},
-    "Recente zoekopdrachten" : {},
-    "Scan de QR-code met je telefoon, of ga naar" : {},
-    "Serie" : {},
-    "Series" : {},
-    "Stoppen" : {},
-    "Vastgezet" : {},
-    "Vastzetten" : {},
-    "Verder kijken" : {},
-    "Verwijderen" : {},
-    "Verwijderen uit Kijk verder" : {},
-    "Verwijderen uit Later kijken" : {},
-    "Volgende aflevering speelt" : {},
-    "Voor de kindermodus is een kinderprofiel nodig. Maak er een in de app van NPO of op npo.nl." : {},
-    "Vul deze code in:" : {},
-    "Wachten op goedkeuring. Deze tv gaat vanzelf verder." : {},
-    "Wat je gaat kijken, komt hier te staan. Zoek iets om te beginnen." : {},
-    "Wat je hebt vastgezet, bekeken, bewaard en gezocht blijft op deze Apple TV staan." : {},
-    "Wat je hebt vastgezet, bewaard en gezocht is er nog. Je bent ook nog ingelogd." : {},
-    "Wat je vastzet, bewaart en zoekt staat alleen hier. Hoe ver je iets hebt gekeken weet NPO ook." : {},
-    "We melden het daarom weer af. Log in met een account dat NPO Plus heeft, of neem NPO Plus op npo.nl." : {},
-    "Wis beide modi" : {},
-    "Wis gewone modus" : {},
-    "Wis kindermodus" : {},
-    "Wissen" : {},
-    "Zo meteen:" : {},
-    "Zoek een serie en zet hem vast. Dan staat hij hier, met de volgende aflevering klaar." : {},
-    "Zoek een serie, film of aflevering" : {},
-    "Zoek in het aanbod voor kinderen" : {},
-    "Zoek naar “%@”" : {},
-    "Zoek opnieuw naar %@" : {},
-    "Zoeken" : {},
-    "Zoeken is niet gelukt." : {},
-    "Zoekgeschiedenis wissen" : {},
-    "Zoekgeschiedenis wissen?" : {},
-    "Zonder antwoord stopt het afspelen over %lld seconden." : {},
-    "“Kijk je nog?” in gewone modus, na" : {},
-    "“Kijk je nog?” in kindermodus, na" : {}
+    "" : {
+
+    },
+    "“Kijk je nog?” in gewone modus, na" : {
+
+    },
+    "“Kijk je nog?” in kindermodus, na" : {
+
+    },
+    "%@ uur" : {
+
+    },
+    "%@, direct openen" : {
+
+    },
+    "%@, serie" : {
+
+    },
+    "%@%@ " : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@ "
+          }
+        }
+      }
+    },
+    "%lld min" : {
+
+    },
+    "%lld s" : {
+
+    },
+    "Account" : {
+
+    },
+    "Afleveringen" : {
+
+    },
+    "Afmelden" : {
+
+    },
+    "Afmelden gebeurt alleen op deze Apple TV." : {
+
+    },
+    "Afmelden?" : {
+
+    },
+    "Afspelen" : {
+
+    },
+    "Afspelen is niet gelukt. Probeer het opnieuw." : {
+
+    },
+    "Alle afleveringen gezien" : {
+
+    },
+    "Alle recente zoekopdrachten verdwijnen. De andere modus houdt zijn eigen geschiedenis." : {
+
+    },
+    "Annuleren" : {
+
+    },
+    "Bij NPO gaat het uit ‘Kijk verder’, maar NPO onthoudt hoe ver je iets hebt gekeken." : {
+
+    },
+    "Code aanvragen…" : {
+
+    },
+    "Dat geldt voor beide modi." : {
+
+    },
+    "De afleveringen konden niet worden opgehaald." : {
+
+    },
+    "De andere modus blijft zoals hij is." : {
+
+    },
+    "De code is verlopen." : {
+
+    },
+    "De kijkposities konden niet worden gelezen en zijn opnieuw begonnen." : {
+
+    },
+    "Details" : {
+
+    },
+    "Deze Apple TV vergeet je inlog." : {
+
+    },
+    "Deze serie is niet meer beschikbaar." : {
+
+    },
+    "Deze tv kan NPO nu niet bereiken." : {
+
+    },
+    "Deze tv kan NPO nu niet bereiken. Controleer het netwerk en probeer het opnieuw." : {
+
+    },
+    "Dit is niet meer beschikbaar bij NPO." : {
+
+    },
+    "Dit verwijdert van deze Apple TV wat is vastgezet, bekeken en bewaard, de kijkposities en de zoekgeschiedenis." : {
+
+    },
+    "Doorkijken" : {
+
+    },
+    "Er is %@ achter elkaar gekeken." : {
+
+    },
+    "Er is niet op tijd goedgekeurd. Vraag een nieuwe code aan en probeer het nog eens." : {
+
+    },
+    "Films en losse programma's" : {
+
+    },
+    "Geen" : {
+
+    },
+    "Geen verbinding met NPO." : {
+
+    },
+    "Gegevens gewist" : {
+
+    },
+    "Gegevens op deze Apple TV" : {
+
+    },
+    "Gegevens van beide modi wissen?" : {
+
+    },
+    "Gegevens van gewone modus wissen?" : {
+
+    },
+    "Gegevens van kindermodus wissen?" : {
+
+    },
+    "Gezien" : {
+
+    },
+    "Half gezien" : {
+
+    },
+    "Het account waarmee je bent ingelogd heeft geen NPO Plus." : {
+
+    },
+    "Hij blijft wel gekoppeld aan je NPO-account, tot je hem daar verwijdert." : {
+
+    },
+    "Houd de selectieknop ingedrukt op een aflevering om hem voor later te bewaren." : {
+
+    },
+    "Houd de selectieknop ingedrukt op een programma om het voor later te bewaren." : {
+
+    },
+    "Houd de selectieknop ingedrukt op een zoekterm om hem te verwijderen." : {
+
+    },
+    "Inloggen is afgebroken." : {
+
+    },
+    "Inloggen is niet gelukt." : {
+
+    },
+    "Instellingen" : {
+
+    },
+    "Je blijft ingelogd." : {
+
+    },
+    "Je hebt nog niet gezocht. Typ een paar letters; de resultaten verschijnen terwijl je typt." : {
+
+    },
+    "Je ziet wat eerder is opgehaald. Afspelen en zoeken kan weer als er verbinding is." : {
+
+    },
+    "Je zoekt in het aanbod voor kinderen." : {
+
+    },
+    "Kijk je nog?" : {
+
+    },
+    "Kijk verder" : {
+
+    },
+    "Kindermodus" : {
+
+    },
+    "Later kijken" : {
+
+    },
+    "Log in bij NPO en keur de koppeling goed." : {
+
+    },
+    "Log in met je NPO Plus-account" : {
+
+    },
+    "Losmaken" : {
+
+    },
+    "Naar de serie" : {
+
+    },
+    "Naar gewone modus" : {
+
+    },
+    "Naar kindermodus" : {
+
+    },
+    "Niet gezien" : {
+
+    },
+    "Niet meer beschikbaar" : {
+
+    },
+    "Niets gevonden voor “%@”." : {
+
+    },
+    "Nieuwe code" : {
+
+    },
+    "Nog niets bekeken." : {
+
+    },
+    "Nog niets gekozen" : {
+
+    },
+    "Nog niets vastgezet." : {
+
+    },
+    "NPO gaf een antwoord dat deze app niet begrijpt. Probeer het later opnieuw." : {
+
+    },
+    "OK" : {
+
+    },
+    "OK, afmelden" : {
+
+    },
+    "Op de telefoon is het koppelen geweigerd of gestopt. Je kunt het opnieuw proberen." : {
+
+    },
+    "Opnieuw beginnen" : {
+
+    },
+    "Opnieuw proberen" : {
+
+    },
+    "Pauze tussen afleveringen in kindermodus" : {
+
+    },
+    "QR-code om in te loggen" : {
+
+    },
+    "Recente zoekopdrachten" : {
+
+    },
+    "Scan de QR-code met je telefoon, of ga naar" : {
+
+    },
+    "Serie" : {
+
+    },
+    "Series" : {
+
+    },
+    "Stoppen" : {
+
+    },
+    "Vastgezet" : {
+
+    },
+    "Vastzetten" : {
+
+    },
+    "Verder kijken" : {
+
+    },
+    "Verder Kijker werkt alleen met NPO Plus" : {
+
+    },
+    "Verwijderen" : {
+
+    },
+    "Verwijderen uit Kijk verder" : {
+
+    },
+    "Verwijderen uit Later kijken" : {
+
+    },
+    "Volgende aflevering speelt" : {
+
+    },
+    "Voor de kindermodus is een kinderprofiel nodig. Maak er een in de app van NPO of op npo.nl." : {
+
+    },
+    "Vul deze code in:" : {
+
+    },
+    "Wachten op goedkeuring. Deze tv gaat vanzelf verder." : {
+
+    },
+    "Wat je gaat kijken, komt hier te staan. Zoek iets om te beginnen." : {
+
+    },
+    "Wat je hebt vastgezet, bekeken, bewaard en gezocht blijft op deze Apple TV staan." : {
+
+    },
+    "Wat je hebt vastgezet, bewaard en gezocht is er nog. Je bent ook nog ingelogd." : {
+
+    },
+    "Wat je vastzet, bewaart en zoekt staat alleen hier. Hoe ver je iets hebt gekeken weet NPO ook." : {
+
+    },
+    "We melden het daarom weer af. Log in met een account dat NPO Plus heeft, of neem NPO Plus op npo.nl." : {
+
+    },
+    "Wis beide modi" : {
+
+    },
+    "Wis gewone modus" : {
+
+    },
+    "Wis kindermodus" : {
+
+    },
+    "Wissen" : {
+
+    },
+    "Zo meteen:" : {
+
+    },
+    "Zoek een serie en zet hem vast. Dan staat hij hier, met de volgende aflevering klaar." : {
+
+    },
+    "Zoek een serie, film of aflevering" : {
+
+    },
+    "Zoek in het aanbod voor kinderen" : {
+
+    },
+    "Zoek naar “%@”" : {
+
+    },
+    "Zoek opnieuw naar %@" : {
+
+    },
+    "Zoeken" : {
+
+    },
+    "Zoeken is niet gelukt." : {
+
+    },
+    "Zoekgeschiedenis wissen" : {
+
+    },
+    "Zoekgeschiedenis wissen?" : {
+
+    },
+    "Zonder antwoord stopt het afspelen over %lld seconden." : {
+
+    }
   },
   "version" : "1.0"
 }
