@@ -13,8 +13,6 @@ struct SeasonEpisodesView: View {
     /// Focus came to an episode.
     var focusEntered: () -> Void = {}
 
-    @FocusState private var focused: EpisodeID?
-
     var body: some View {
         switch model.episodes {
         case .loading:
@@ -29,18 +27,8 @@ struct SeasonEpisodesView: View {
             .focusSection()
         case .loaded(let episodes):
             HStack(alignment: .top, spacing: 60) {
-                list(episodes)
-                if let previewed = model.previewed {
-                    VStack(alignment: .leading, spacing: 32) {
-                        EpisodePreview(episode: previewed, watched: model.watched(previewed.id))
-                        // The long press is not the only way to learn it
-                        // exists (NFR-A11Y-01).
-                        Text("Houd de selectieknop ingedrukt op een aflevering om hem voor later te bewaren.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .frame(width: 560, alignment: .leading)
-                    }
-                }
+                SeasonEpisodeList(model: model, episodes: episodes, play: play, focusEntered: focusEntered)
+                SeasonEpisodePreview(model: model)
             }
             // The whole width takes focus: a season far along the picker is
             // not above the list, and down from it has to arrive here all
@@ -49,63 +37,22 @@ struct SeasonEpisodesView: View {
             .focusSection()
         }
     }
+}
 
-    private func list(_ episodes: [Playable]) -> some View {
-        ScrollView {
-            // Not a lazy stack: in one, the last episode of a season was
-            // drawn and could not take focus. A season is a few hundred
-            // one-line rows at most.
-            VStack(alignment: .leading, spacing: 12) {
-                ForEach(episodes) { episode in
-                    Button { play(episode) } label: {
-                        HStack {
-                            HStack(spacing: 16) {
-                                WatchedMark(watched: model.watched(episode.id))
-                                Text(verbatim: episode.title)
-                                    .lineLimit(1)
-                            }
-                            Spacer()
-                            // In words and a symbol, not by dimming alone
-                            // (NFR-A11Y-04).
-                            if model.unavailable.contains(episode.id) {
-                                Label("Niet meer beschikbaar", systemImage: "nosign")
-                                    .foregroundStyle(.secondary)
-                            } else if let caption = episode.caption {
-                                Text(verbatim: caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                    .focused($focused, equals: episode.id)
-                    .contextMenu {
-                        // The label says which of the two it does
-                        // (FR-LATER-03).
-                        if model.saved.contains(episode.id) {
-                            Button("Verwijderen uit Later kijken", systemImage: "bookmark.slash") {
-                                Task { await model.toggleSave(episode) }
-                            }
-                        } else {
-                            Button("Later kijken", systemImage: "bookmark") {
-                                Task { await model.toggleSave(episode) }
-                            }
-                        }
-                    }
-                    // The description is read out with the episode, since the
-                    // preview beside the list is not where VoiceOver is.
-                    .accessibilityValue(Text(verbatim: episode.synopsis ?? ""))
-                    .accessibilityHint(WatchedMark.words(for: model.watched(episode.id)))
-                    .accessibilityIdentifier("episode-\(episode.id.rawValue)")
-                }
+/// Only this view observes the preview selection, so a focus move does not
+/// rebuild the eager list beside it.
+private struct SeasonEpisodePreview: View {
+    let model: SeriesDetailModel
+
+    var body: some View {
+        if let previewed = model.previewed {
+            VStack(alignment: .leading, spacing: 32) {
+                EpisodePreview(episode: previewed, watched: model.watched(previewed.id))
+                Text("Houd de selectieknop ingedrukt op een aflevering om hem voor later te bewaren.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 560, alignment: .leading)
             }
-            .padding(.vertical, 16)
-        }
-        .frame(width: 900)
-        .focusSection()
-        .onChange(of: focused) { _, episode in
-            guard let episode else { return }
-            focusEntered()
-            model.focus(episode)
         }
     }
 }
@@ -180,6 +127,10 @@ struct EpisodePreview: View {
 #if DEBUG
 #Preview("Episodes") {
     SeasonEpisodesView(model: .scripted(ScriptedCatalogue.results.series[0]), play: { _ in })
+}
+
+#Preview("Selection") {
+    SeasonEpisodePreview(model: .scripted(ScriptedCatalogue.results.series[0]))
 }
 
 #Preview("Preview") {
