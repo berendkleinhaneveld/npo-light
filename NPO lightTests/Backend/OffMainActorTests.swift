@@ -48,4 +48,31 @@ struct OffMainActorTests {
         #expect(recorder.count >= 3)
         #expect(!recorder.sawMainThread)
     }
+
+    @Test("FR-CONTENT-02, NFR-PERF-05: series and season requests leave the main actor")
+    func seriesLeavesTheMainActor() async throws {
+        let recorder = ThreadRecorder()
+        let series = try Fixture.data("series-page-200")
+        let episodes = try Fixture.data("season-programs-200")
+        let profiles = try Fixture.data("profiles-200")
+        let harness = SignInHarness(backend: { request in
+            recorder.record()
+            switch request.url?.path {
+            case "/profiles": return HTTPResponse(status: 200, body: profiles)
+            case "/series/page/s-1": return HTTPResponse(status: 200, body: series)
+            case "/series/seasons/season-1/programs": return HTTPResponse(status: 200, body: episodes)
+            default: return .json(SignInHarness.premiumAccount)
+            }
+        })
+        try await harness.signIn()
+        let catalogue: any Catalogue = NPOCatalogue(authenticator: harness.authenticator)
+
+        let detail = try await catalogue.series(ItemID(rawValue: "s-1"), in: .normal)
+        let listed = try await catalogue.episodes(of: SeasonID(rawValue: "season-1"), in: .normal)
+
+        #expect(!detail.seasons.isEmpty)
+        #expect(listed.count == 3)
+        #expect(recorder.count >= 4)
+        #expect(!recorder.sawMainThread)
+    }
 }

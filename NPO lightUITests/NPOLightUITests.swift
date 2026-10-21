@@ -315,6 +315,10 @@ final class NPOLightUITests: XCTestCase {
             remote.press(.down)
         }
         XCTAssertTrue(last.hasFocus)
+        XCTAssertTrue(app.staticTexts["Beschrijving van aflevering 12."].exists)
+        remote.press(.up)
+        XCTAssertTrue(app.buttons["episode-season-1-episode-11"].hasFocus)
+        XCTAssertTrue(app.staticTexts["Beschrijving van aflevering 11."].exists)
         XCTAssertTrue(app.buttons["episode-season-1-episode-1"].exists)
     }
 }
