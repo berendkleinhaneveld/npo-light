@@ -49,6 +49,12 @@ It is not a check on the app. The wireframe follows the requirements, never the
 other way round: when a change alters behaviour it illustrates, update it in the
 same pull request if you can, and say so if you cannot.
 
+A third, `testflight.yml`, uploads `master` to the internal TestFlight testers
+with `./scripts/upload-testflight.sh`, when started by hand and once a month
+([ADR 0029](docs/adr/0029-hand-out-the-app-through-internal-testflight.md)). It
+is the only job that compiles the Release configuration and the only one that
+holds a signing key; it never runs on a pull request.
+
 `build.sh` and `test.sh` need macOS with Xcode. `lint.sh` and
 `requirements-coverage.sh` do not: run them from a Linux container too.
 
