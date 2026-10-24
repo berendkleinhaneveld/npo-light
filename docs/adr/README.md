@@ -37,6 +37,7 @@ the old one as superseded instead of rewriting it.
 | [0026](0026-try-a-request-again-only-when-it-is-safe.md) | Try a request again only when it is safe, and only a few times | Proposed |
 | [0027](0027-add-npos-subtitles-to-the-manifest.md) | Add NPO's subtitles to the manifest the player is given | Proposed |
 | [0028](0028-share-positions-with-npo-through-its-stream-events.md) | Share playback positions with NPO through its stream events | Proposed |
+| [0029](0029-hand-out-the-app-through-internal-testflight.md) | Hand out the app through internal TestFlight, uploaded from CI | Proposed |
 
 ## How to add one
 
