@@ -25,20 +25,15 @@ struct SettingsView: View {
     @State private var question: Question?
 
     var body: some View {
-        ScrollView {
-            HStack(alignment: .top, spacing: 60) {
-                playback
-                    // The choices decide how wide this column is.
-                    .fixedSize(horizontal: true, vertical: false)
-                VStack(alignment: .leading, spacing: 48) {
-                    account
-                    localData
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .padding(.horizontal, 80)
-            .padding(.vertical, 40)
+        // A list of rows, as the system's own settings are (ADR 0030).
+        Form {
+            playback
+            account
+            localData
         }
+        // Across the whole screen a label and its value are too far apart
+        // to read as one row.
+        .frame(maxWidth: 1200)
         .navigationTitle("Instellingen")
         .confirmationDialog(title, isPresented: isAsking, titleVisibility: .visible, presenting: question) { asked in
             switch asked {
@@ -64,37 +59,30 @@ struct SettingsView: View {
     // MARK: Playback
 
     private var playback: some View {
-        VStack(alignment: .leading, spacing: 32) {
-            Text("Afspelen")
-                .font(.headline)
-            TimingChoices(label: "Pauze tussen afleveringen in kindermodus", setting: .kidsPause, model: model)
-            TimingChoices(label: "“Kijk je nog?” in kindermodus, na", setting: .kidsStillWatching, model: model)
-            TimingChoices(label: "“Kijk je nog?” in gewone modus, na", setting: .normalStillWatching, model: model)
+        Section("Afspelen") {
+            TimingPicker(label: "Pauze tussen afleveringen in kindermodus", setting: .kidsPause, model: model)
+            TimingPicker(label: "“Kijk je nog?” in kindermodus, na", setting: .kidsStillWatching, model: model)
+            TimingPicker(label: "“Kijk je nog?” in gewone modus, na", setting: .normalStillWatching, model: model)
         }
     }
 
     // MARK: Account
 
     private var account: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Account")
-                .font(.headline)
-            Text("Afmelden gebeurt alleen op deze Apple TV.")
-                .foregroundStyle(.secondary)
+        Section {
             Button("Afmelden") { question = .signOut }
                 .accessibilityIdentifier("settings-sign-out")
+        } header: {
+            Text("Account")
+        } footer: {
+            Text("Afmelden gebeurt alleen op deze Apple TV.")
         }
-        .focusSection()
     }
 
     // MARK: Local data
 
     private var localData: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Gegevens op deze Apple TV")
-                .font(.headline)
-            Text("Wat je vastzet, bewaart en zoekt staat alleen hier. Hoe ver je iets hebt gekeken weet NPO ook.")
-                .foregroundStyle(.secondary)
+        Section {
             Button("Wis gewone modus") { question = .erase([.normal]) }
                 .accessibilityIdentifier("settings-erase-normal")
             Button("Wis kindermodus") { question = .erase([.kids]) }
@@ -105,8 +93,11 @@ struct SettingsView: View {
                 Label("Gegevens gewist", systemImage: "checkmark.circle.fill")
                     .accessibilityIdentifier("settings-erased")
             }
+        } header: {
+            Text("Gegevens op deze Apple TV")
+        } footer: {
+            Text("Wat je vastzet, bewaart en zoekt staat alleen hier. Hoe ver je iets hebt gekeken weet NPO ook.")
         }
-        .focusSection()
     }
 
     // MARK: What is asked
@@ -149,35 +140,27 @@ struct SettingsView: View {
     }
 }
 
-/// One timing: its name, and its choices side by side. The one in use is
-/// marked with a symbol, not a colour alone (NFR-A11Y-04).
-struct TimingChoices: View {
+/// One timing as a row with the value in use, which opens a list of its
+/// choices, as the system's own settings do (ADR 0030). The list marks the
+/// one in use with a checkmark, not a colour alone (NFR-A11Y-04).
+struct TimingPicker: View {
     let label: LocalizedStringKey
     let setting: Timings.Setting
     let model: SettingsModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(label)
-            HStack(spacing: 12) {
-                ForEach(setting.choices, id: \.self) { value in
-                    Button { model.choose(value, for: setting) } label: {
-                        Label {
-                            // Whole, on one line: a value cut in two is not
-                            // a value.
-                            Text(Self.words(for: value))
-                                .fixedSize()
-                        } icon: {
-                            Image(systemName: "checkmark")
-                                .opacity(model.timings[setting] == value ? 1 : 0)
-                        }
-                    }
-                    .accessibilityAddTraits(model.timings[setting] == value ? .isSelected : [])
-                    .accessibilityIdentifier("setting-\(setting.rawValue)-\(value)")
-                }
+        Picker(label, selection: selection) {
+            ForEach(setting.choices, id: \.self) { value in
+                Text(Self.words(for: value))
+                    .tag(value)
             }
         }
-        .focusSection()
+        .pickerStyle(.navigationLink)
+        .accessibilityIdentifier("setting-\(setting.rawValue)")
+    }
+
+    private var selection: Binding<Int> {
+        Binding(get: { model.timings[setting] }, set: { model.choose($0, for: setting) })
     }
 
     /// A duration as the screen says it: none, seconds, minutes or hours.
@@ -197,6 +180,10 @@ struct TimingChoices: View {
 }
 
 #Preview("Timing") {
-    TimingChoices(label: "Pauze tussen afleveringen in kindermodus", setting: .kidsPause, model: .scripted())
+    NavigationStack {
+        Form {
+            TimingPicker(label: "Pauze tussen afleveringen in kindermodus", setting: .kidsPause, model: .scripted())
+        }
+    }
 }
 #endif
