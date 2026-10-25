@@ -70,34 +70,34 @@ extension EnvironmentValues {
 private struct ModeScreen: View {
     let modes: ModeModel
     let settings: SettingsModel
+    let searchModel: (Mode) -> SearchModel
     let seriesModel: (SeriesSummary, Mode) -> SeriesDetailModel
     let programmeModel: (Playable, Mode) -> ProgrammeDetailModel
     let playerModel: (PlayRequest, Mode) -> PlayerModel
 
     @State private var home: HomeModel
-    @State private var search: SearchModel
 
     init(modes: ModeModel,
          settings: SettingsModel,
          homeModel: (Mode) -> HomeModel,
-         searchModel: (Mode) -> SearchModel,
+         searchModel: @escaping (Mode) -> SearchModel,
          seriesModel: @escaping (SeriesSummary, Mode) -> SeriesDetailModel,
          programmeModel: @escaping (Playable, Mode) -> ProgrammeDetailModel,
          playerModel: @escaping (PlayRequest, Mode) -> PlayerModel) {
         self.modes = modes
         self.settings = settings
+        self.searchModel = searchModel
         self.seriesModel = seriesModel
         self.programmeModel = programmeModel
         self.playerModel = playerModel
         _home = State(initialValue: homeModel(modes.current))
-        _search = State(initialValue: searchModel(modes.current))
     }
 
     var body: some View {
         HomeView(model: home,
-                 search: search,
                  modes: modes,
                  settings: settings,
+                 searchModel: { searchModel(home.mode) },
                  seriesModel: { seriesModel($0, home.mode) },
                  programmeModel: { programmeModel($0, home.mode) },
                  playerModel: { playerModel($0, home.mode) })
