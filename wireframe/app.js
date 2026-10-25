@@ -28,7 +28,7 @@
 
   const SETTING_CHOICES = {
     kidsPause: [0, 5, 10, 15, 30],
-    kidsStill: [1800, 3600, 5400, 7200],
+    kidsStill: [600, 1200, 1800, 2700, 3600, 5400],
     normalStill: [3600, 7200, 10800, 14400],
   };
 
@@ -165,7 +165,7 @@
       signedIn: true,
       mode: 'normal',
       modes,
-      settings: { kidsPause: 5, kidsStill: 3600, normalStill: 10800 },
+      settings: { kidsPause: 5, kidsStill: 1800, normalStill: 10800 },
       scenario: { offline: false, slow: false, playbackFails: false, speed: 30 },
       clockOffset: 0,
       signin: null,
@@ -465,6 +465,7 @@
       plus: '<path d="M12 5v14M5 12h14"/>',
       pin: '<path d="M9 3h6l-1 6 4 4H6l4-4zM12 13v8"/>',
       back: '<path d="M15 5l-7 7 7 7"/>',
+      chevron: '<path d="M9 5l7 7-7 7"/>',
       del: '<path d="M9 6h11v12H9l-6-6z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/>',
     };
     return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name]}</svg>`;
@@ -479,6 +480,7 @@
     search: searchScreen,
     player: playerScreen,
     settings: settingsScreen,
+    settingChoice: settingChoiceScreen,
   };
 
   function modeBadge() {
@@ -1043,52 +1045,72 @@
 
   // ---- settings (FR-SET-*)
 
+  const TIMINGS = [
+    { key: 'kidsPause', label: 'Pauze tussen afleveringen in kindermodus', req: 'FR-SET-02 FR-PLAY-06' },
+    { key: 'kidsStill', label: '“Kijk je nog?” in kindermodus, na', req: 'FR-SET-02 FR-PLAY-08' },
+    { key: 'normalStill', label: '“Kijk je nog?” in gewone modus, na', req: 'FR-SET-02 FR-PLAY-08' },
+  ];
+
+  // Lists of rows, as the system's own settings are (ADR 0030): a timing is
+  // a row with its value, which opens a page of its choices. Two columns, so
+  // the whole page fits on one screen: what playback does on the left, the
+  // account and what is stored on the right.
   function settingsScreen() {
     screenReqs = 'FR-SET-01 FR-SET-02 FR-MODE-06';
-    const choices = (key, label, req) => `
-      <div class="setting">
-        <div class="setting-label">${esc(label)}</div>
-        <div class="chips" data-row="set-${key}">${SETTING_CHOICES[key].map((value) => {
-    const selected = S.settings[key] === value;
-    return focusable(`set:${key}:${value}`, {
-      cls: `chip${selected ? ' is-selected' : ''}`, req,
-      label: `${label}: ${durationSetting(value)}${selected ? ', gekozen' : ''}`,
-      onSelect: () => { S.settings[key] = value; commit(); },
-    }, `${selected ? icon('check') : ''}${durationSetting(value)}`);
-  }).join('')}</div>
-      </div>`;
-    // Two columns, so the whole page fits on one screen: what playback does on
-    // the left, the account and what is stored on the right.
+    const timing = ({ key, label, req }) => focusable(`set:${key}`, {
+      cls: 'form-row', req, label: `${label}: ${durationSetting(S.settings[key])}`,
+      onSelect: () => push('settingChoice', { key }),
+    }, `<span>${esc(label)}</span><span class="form-value">${durationSetting(S.settings[key])}${icon('chevron')}</span>`);
     return `<div class="screen settings">
       ${offlineBanner()}
       <div class="vscroll">
         <h1>Instellingen</h1>
-        <div class="settings-columns">
-          <section class="settings-group" aria-label="Afspelen">
+        <div class="form form-columns">
+          <section class="form-section" aria-label="Afspelen">
             <h2 class="row-title">Afspelen</h2>
-            ${choices('kidsPause', 'Pauze tussen afleveringen in kindermodus', 'FR-SET-02 FR-PLAY-06')}
-            ${choices('kidsStill', '“Kijk je nog?” in kindermodus, na', 'FR-SET-02 FR-PLAY-08')}
-            ${choices('normalStill', '“Kijk je nog?” in gewone modus, na', 'FR-SET-02 FR-PLAY-08')}
+            <div class="form-rows">${TIMINGS.map(timing).join('')}</div>
           </section>
-          <div class="settings-side">
-            <section class="settings-group" aria-label="Account">
+          <div class="form">
+            <section class="form-section" aria-label="Account">
               <h2 class="row-title">Account</h2>
+              <div class="form-rows">
+                ${focusable('set:signout', { cls: 'form-row', req: 'FR-SET-03 FR-AUTH-04', onSelect: confirmSignOut }, 'Afmelden')}
+              </div>
               <p class="setting-note"><b>Ingelogd met NPO Plus.</b> Afmelden gebeurt alleen op deze Apple TV.</p>
-              <div class="button-row" data-row="account">
-                ${focusable('set:signout', { cls: 'btn', req: 'FR-SET-03 FR-AUTH-04', onSelect: confirmSignOut }, 'Afmelden')}
-              </div>
             </section>
-            <section class="settings-group" aria-label="Gegevens op deze Apple TV">
+            <section class="form-section" aria-label="Gegevens op deze Apple TV">
               <h2 class="row-title">Gegevens op deze Apple TV</h2>
-              <p class="setting-note">Wat je vastzet, bewaart en zoekt staat alleen hier. Hoe ver je iets hebt gekeken weet NPO ook.</p>
-              <div class="button-stack" data-row="erase">
-                ${focusable('set:erase:normal', { cls: 'btn', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['normal']) }, 'Wis gewone modus')}
-                ${focusable('set:erase:kids', { cls: 'btn', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['kids']) }, 'Wis kindermodus')}
-                ${focusable('set:erase:both', { cls: 'btn', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['normal', 'kids']) }, 'Wis beide modi')}
+              <div class="form-rows">
+                ${focusable('set:erase:normal', { cls: 'form-row', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['normal']) }, 'Wis gewone modus')}
+                ${focusable('set:erase:kids', { cls: 'form-row', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['kids']) }, 'Wis kindermodus')}
+                ${focusable('set:erase:both', { cls: 'form-row', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['normal', 'kids']) }, 'Wis beide modi')}
               </div>
+              <p class="setting-note">Wat je vastzet, bewaart en zoekt staat alleen hier. Hoe ver je iets hebt gekeken weet NPO ook.</p>
             </section>
           </div>
         </div>
+      </div>
+    </div>`;
+  }
+
+  // The choices of one timing. The one in use carries a checkmark, not a
+  // colour alone (NFR-A11Y-04); choosing one goes back to settings.
+  function settingChoiceScreen({ key }) {
+    const { label, req } = TIMINGS.find((entry) => entry.key === key);
+    screenReqs = `${req} FR-SET-01`;
+    const rows = SETTING_CHOICES[key].map((value) => {
+      const selected = S.settings[key] === value;
+      return focusable(`choice:${value}`, {
+        cls: `form-row${selected ? ' is-selected' : ''}`, req,
+        label: `${durationSetting(value)}${selected ? ', gekozen' : ''}`,
+        onSelect: () => { S.settings[key] = value; save(); pop(); },
+      }, `<span>${durationSetting(value)}</span><span class="form-value">${selected ? icon('check') : ''}</span>`);
+    }).join('');
+    return `<div class="screen settings">
+      ${offlineBanner()}
+      <div class="vscroll">
+        <h1>${esc(label)}</h1>
+        <div class="form"><div class="form-rows">${rows}</div></div>
       </div>
     </div>`;
   }
@@ -1631,7 +1653,7 @@
       home: ['[data-row="pinned"] [data-f]', '[data-row="recent"] [data-f]', '[data-f]'],
       search: ['[data-f="kb:a"]'],
       detail: ['[data-f="detail:play"]', '[data-f]'],
-      settings: ['.chip.is-selected', '[data-f]'],
+      settingChoice: ['.form-row.is-selected', '[data-f]'],
     }[screen] || ['[data-f]'];
     const scope = focusables();
     for (const selector of order) {
@@ -1688,10 +1710,14 @@
       const scale = pageRect.height / page.clientHeight || 1;
       const topGap = (rect.top - pageRect.top) / scale;
       const bottomGap = (rect.bottom - pageRect.bottom) / scale;
-      const block = el.closest('.row, .setting, .recent-search, .result') || el;
+      const block = el.closest('.row, .form-section, .recent-search, .result') || el;
       const blockTop = (block.getBoundingClientRect().top - pageRect.top) / scale;
+      // A settings section ends in its note, which belongs with its rows;
+      // show it too, as far as the focused row stays on screen.
+      const section = el.closest('.form-section');
+      const sectionGap = section ? (section.getBoundingClientRect().bottom - pageRect.bottom) / scale : 0;
       if (topGap < 0 || blockTop < 0) page.scrollTop += Math.min(topGap, blockTop) - 30;
-      else if (bottomGap > 0) page.scrollTop += bottomGap + 40;
+      else if (bottomGap > 0 || sectionGap > 0) page.scrollTop += Math.min(Math.max(bottomGap, sectionGap), topGap) + 40;
     }
   }
 
@@ -1773,7 +1799,7 @@
     const minY = from.height * 0.3;
     // In a scrolling row of tiles, left and right stay in the row: at its end
     // focus stays put, as on tvOS, rather than jumping to a further-right
-    // tile in another row. Elsewhere (settings columns, dialogs) they may
+    // tile in another row. Elsewhere (settings, dialogs) they may
     // reach the nearest element that is not exactly level.
     const inRow = Boolean(current.closest('.scroller'));
     let best = null;
@@ -1987,6 +2013,7 @@
 
   const SCREEN_NAMES = {
     signin: 'Sign-in', home: 'Home', detail: 'Detail page', search: 'Search', player: 'Player', settings: 'Settings',
+    settingChoice: 'Settings, a timing\'s choices',
   };
 
   function reqItem(id) {

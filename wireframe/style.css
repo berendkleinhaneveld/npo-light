@@ -649,7 +649,8 @@ kbd {
 .btn-big { min-height: 100px; padding: 16px 64px; font-size: 40px; }
 .btn-spacer { display: block; min-height: 68px; }
 
-.pill.is-focused, .btn.is-focused, .chip.is-focused, .key.is-focused, .term.is-focused, .menu-item.is-focused, .ep.is-focused {
+.pill.is-focused, .btn.is-focused, .key.is-focused, .term.is-focused, .menu-item.is-focused, .ep.is-focused,
+.form-row.is-focused {
   background: var(--s-focus);
   color: var(--s-focus-ink);
   transform: scale(1.06);
@@ -1135,37 +1136,31 @@ kbd {
 .settings .vscroll { padding-top: 0; padding-bottom: var(--safe-y); }
 .settings h1 { margin: 0 0 20px; font-size: 64px; line-height: 1.1; }
 
-.settings-columns {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 120px;
-  align-items: start;
-}
-
-.settings-side { display: grid; gap: 56px; }
-.settings-group { display: grid; gap: 22px; align-content: start; }
-.settings-columns > .settings-group { gap: 30px; }
-.setting-note b { color: var(--s-text); }
-.button-stack { display: grid; justify-items: start; gap: 18px; padding: 6px 0; }
-.setting { display: grid; gap: 12px; }
-.setting-label { font-size: 30px; }
-.setting-note { margin: 0; font-size: 26px; color: var(--s-muted); max-width: 60ch; }
-.chips { display: flex; gap: 18px; padding: 6px 0; }
-
-.chip {
-  display: inline-flex;
+/* Lists of rows, as the system's own settings are (ADR 0030); on the
+ * settings page two of them side by side, so it fits without scrolling. A
+ * list of choices alone is no wider than a label and its value still read as
+ * one row. */
+.settings .form { display: grid; gap: 48px; max-width: 1200px; align-content: start; }
+.settings .form-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 80px; max-width: none; align-items: start; }
+.form-section { display: grid; gap: 16px; }
+.form-rows { display: grid; gap: 10px; }
+.form-row {
+  display: flex;
   align-items: center;
-  gap: 10px;
-  height: 72px;
-  padding: 0 32px;
-  border-radius: 36px;
+  justify-content: space-between;
+  gap: 32px;
+  min-height: 84px;
+  padding: 12px 36px;
+  border-radius: 14px;
   background: var(--s-surface);
-  font-size: 28px;
+  font-size: 30px;
+  text-align: left;
   transition: transform 0.15s ease;
 }
-
-.chip.is-selected { font-weight: 700; box-shadow: inset 0 0 0 4px var(--s-text); }
-.button-row { display: flex; flex-wrap: wrap; gap: 24px; padding: 6px 0; }
+.form-value { display: inline-flex; align-items: center; gap: 12px; color: var(--s-muted); white-space: nowrap; }
+.form-row.is-focused .form-value { color: var(--s-focus-ink); }
+.setting-note { margin: 0; font-size: 26px; color: var(--s-muted); max-width: 60ch; }
+.setting-note b { color: var(--s-text); }
 
 /* ------------------------------------------------------------ kids mode
  * Its own identity without leaning on colour (FR-MODE-03, NFR-A11Y-04):
@@ -1188,7 +1183,7 @@ kbd {
 }
 
 .tv.is-kids .art { border-radius: 28px; }
-.tv.is-kids .btn, .tv.is-kids .term, .tv.is-kids .ep { border-radius: 40px; }
+.tv.is-kids .btn, .tv.is-kids .term, .tv.is-kids .ep, .tv.is-kids .form-row { border-radius: 40px; }
 .tv.is-kids .tile-title, .tv.is-kids .brand, .tv.is-kids h1 { font-weight: 600; }
 .tv.is-kids .dialog, .tv.is-kids .menu { border-radius: 48px; }
 .tv.is-kids .detail .vscroll, .tv.is-kids .search { padding-top: 130px; }

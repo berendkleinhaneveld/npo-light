@@ -80,12 +80,15 @@ requirement settles it; if one is right, the requirement should say so.
   "a defined grace period"); the next-episode overlay in normal mode shows for
   8 seconds (FR-PLAY-05, "long enough to be used").
 - **Setting choices**: kids pause 0/5/10/15/30 s; kids still-watching
-  30 min–2 h; normal still-watching 1–4 h (FR-SET-02 asks for "a small set of
+  10–90 min; normal still-watching 1–4 h (FR-SET-02 asks for "a small set of
   sensible choices").
 - **Recent searches** are capped at ten terms (FR-SEARCH-04 asks for "a fixed
   number").
-- **Settings in two columns**: playback timings on the left, account and
-  local data on the right, so the page fits without scrolling. The account
+- **Settings in two columns** ([ADR 0030](../docs/adr/0030-settings-as-lists-with-picker-rows.md)):
+  playback timings on the left, account and local data on the right, so the
+  page fits without scrolling. Each timing is a row with its value, which
+  opens a page of its choices; signing out and erasing are rows, their notes
+  under them. The account
   group says the television is signed in with NPO Plus, which the app knows
   from the subscription check (FR-AUTH-08); no requirement asks for that line.
 - **The series page** (FR-CONTENT-07, FR-CONTENT-08): the header image runs

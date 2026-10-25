@@ -135,7 +135,7 @@ struct StillWatchingPrompt: View {
         VStack(spacing: 32) {
             Text("Kijk je nog?")
                 .font(.title2.bold())
-            Text("Er is \(Text(TimingChoices.words(for: played))) achter elkaar gekeken.")
+            Text("Er is \(Text(TimingPicker.words(for: played))) achter elkaar gekeken.")
                 .font(.headline)
             Text("Zonder antwoord stopt het afspelen over \(remaining) seconden.")
                 .monospacedDigit()

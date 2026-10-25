@@ -21,7 +21,7 @@ nonisolated struct Timings: Sendable, Equatable {
         var choices: [Int] {
             switch self {
             case .kidsPause: [0, 5, 10, 15, 30]
-            case .kidsStillWatching: [1800, 3600, 5400, 7200]
+            case .kidsStillWatching: [600, 1200, 1800, 2700, 3600, 5400]
             case .normalStillWatching: [3600, 7200, 10800, 14400]
             }
         }
@@ -30,7 +30,7 @@ nonisolated struct Timings: Sendable, Equatable {
         var standard: Int {
             switch self {
             case .kidsPause: 5
-            case .kidsStillWatching: 3600
+            case .kidsStillWatching: 1800
             case .normalStillWatching: 10800
             }
         }
