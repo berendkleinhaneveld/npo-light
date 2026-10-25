@@ -1051,8 +1051,10 @@
     { key: 'normalStill', label: '“Kijk je nog?” in gewone modus, na', req: 'FR-SET-02 FR-PLAY-08' },
   ];
 
-  // A list of rows, as the system's own settings are (ADR 0030): a timing is
-  // a row with its value, which opens a page of its choices.
+  // Lists of rows, as the system's own settings are (ADR 0030): a timing is
+  // a row with its value, which opens a page of its choices. Two columns, so
+  // the whole page fits on one screen: what playback does on the left, the
+  // account and what is stored on the right.
   function settingsScreen() {
     screenReqs = 'FR-SET-01 FR-SET-02 FR-MODE-06';
     const timing = ({ key, label, req }) => focusable(`set:${key}`, {
@@ -1063,27 +1065,29 @@
       ${offlineBanner()}
       <div class="vscroll">
         <h1>Instellingen</h1>
-        <div class="form">
+        <div class="form form-columns">
           <section class="form-section" aria-label="Afspelen">
             <h2 class="row-title">Afspelen</h2>
             <div class="form-rows">${TIMINGS.map(timing).join('')}</div>
           </section>
-          <section class="form-section" aria-label="Account">
-            <h2 class="row-title">Account</h2>
-            <div class="form-rows">
-              ${focusable('set:signout', { cls: 'form-row', req: 'FR-SET-03 FR-AUTH-04', onSelect: confirmSignOut }, 'Afmelden')}
-            </div>
-            <p class="setting-note"><b>Ingelogd met NPO Plus.</b> Afmelden gebeurt alleen op deze Apple TV.</p>
-          </section>
-          <section class="form-section" aria-label="Gegevens op deze Apple TV">
-            <h2 class="row-title">Gegevens op deze Apple TV</h2>
-            <div class="form-rows">
-              ${focusable('set:erase:normal', { cls: 'form-row', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['normal']) }, 'Wis gewone modus')}
-              ${focusable('set:erase:kids', { cls: 'form-row', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['kids']) }, 'Wis kindermodus')}
-              ${focusable('set:erase:both', { cls: 'form-row', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['normal', 'kids']) }, 'Wis beide modi')}
-            </div>
-            <p class="setting-note">Wat je vastzet, bewaart en zoekt staat alleen hier. Hoe ver je iets hebt gekeken weet NPO ook.</p>
-          </section>
+          <div class="form">
+            <section class="form-section" aria-label="Account">
+              <h2 class="row-title">Account</h2>
+              <div class="form-rows">
+                ${focusable('set:signout', { cls: 'form-row', req: 'FR-SET-03 FR-AUTH-04', onSelect: confirmSignOut }, 'Afmelden')}
+              </div>
+              <p class="setting-note"><b>Ingelogd met NPO Plus.</b> Afmelden gebeurt alleen op deze Apple TV.</p>
+            </section>
+            <section class="form-section" aria-label="Gegevens op deze Apple TV">
+              <h2 class="row-title">Gegevens op deze Apple TV</h2>
+              <div class="form-rows">
+                ${focusable('set:erase:normal', { cls: 'form-row', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['normal']) }, 'Wis gewone modus')}
+                ${focusable('set:erase:kids', { cls: 'form-row', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['kids']) }, 'Wis kindermodus')}
+                ${focusable('set:erase:both', { cls: 'form-row', req: 'FR-SET-04 NFR-PRIV-04', onSelect: () => confirmErase(['normal', 'kids']) }, 'Wis beide modi')}
+              </div>
+              <p class="setting-note">Wat je vastzet, bewaart en zoekt staat alleen hier. Hoe ver je iets hebt gekeken weet NPO ook.</p>
+            </section>
+          </div>
         </div>
       </div>
     </div>`;

@@ -1136,9 +1136,12 @@ kbd {
 .settings .vscroll { padding-top: 0; padding-bottom: var(--safe-y); }
 .settings h1 { margin: 0 0 20px; font-size: 64px; line-height: 1.1; }
 
-/* A list of rows, as the system's own settings are (ADR 0030); no wider
- * than a label and its value still read as one row. */
-.settings .form { display: grid; gap: 48px; max-width: 1200px; }
+/* Lists of rows, as the system's own settings are (ADR 0030); on the
+ * settings page two of them side by side, so it fits without scrolling. A
+ * list of choices alone is no wider than a label and its value still read as
+ * one row. */
+.settings .form { display: grid; gap: 48px; max-width: 1200px; align-content: start; }
+.settings .form-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 80px; max-width: none; align-items: start; }
 .form-section { display: grid; gap: 16px; }
 .form-rows { display: grid; gap: 10px; }
 .form-row {

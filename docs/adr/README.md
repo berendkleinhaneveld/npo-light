@@ -38,7 +38,7 @@ the old one as superseded instead of rewriting it.
 | [0027](0027-add-npos-subtitles-to-the-manifest.md) | Add NPO's subtitles to the manifest the player is given | Proposed |
 | [0028](0028-share-positions-with-npo-through-its-stream-events.md) | Share playback positions with NPO through its stream events | Proposed |
 | [0029](0029-hand-out-the-app-through-internal-testflight.md) | Hand out the app through internal TestFlight, uploaded from CI | Proposed |
-| [0030](0030-settings-as-a-list-with-picker-rows.md) | Show settings as a list, with a picker row per timing | Proposed |
+| [0030](0030-settings-as-lists-with-picker-rows.md) | Show settings as lists, with a picker row per timing | Proposed |
 
 ## How to add one
 

@@ -25,15 +25,18 @@ struct SettingsView: View {
     @State private var question: Question?
 
     var body: some View {
-        // A list of rows, as the system's own settings are (ADR 0030).
-        Form {
-            playback
-            account
-            localData
+        // Lists of rows, as the system's own settings are, side by side so
+        // that the whole page is seen at a glance (ADR 0030): what playback
+        // does on the left, the account and what is kept on the right.
+        HStack(alignment: .top, spacing: 60) {
+            Form {
+                playback
+            }
+            Form {
+                account
+                localData
+            }
         }
-        // Across the whole screen a label and its value are too far apart
-        // to read as one row.
-        .frame(maxWidth: 1200)
         .navigationTitle("Instellingen")
         .confirmationDialog(title, isPresented: isAsking, titleVisibility: .visible, presenting: question) { asked in
             switch asked {

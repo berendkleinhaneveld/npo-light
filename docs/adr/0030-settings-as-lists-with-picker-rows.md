@@ -1,4 +1,4 @@
-# 0030. Show settings as a list, with a picker row per timing
+# 0030. Show settings as lists, with a picker row per timing
 
 - **Status:** Proposed
 - **Date:** 2026-10-25
@@ -25,12 +25,15 @@ with a checkmark on the one in use.
 
 ## Decision
 
-**Settings is a `Form`, and each timing is a `Picker` with the
-`.navigationLink` style.** The row shows the setting and its value; selecting
-it opens the list of choices, and choosing one goes back. Signing out and
-erasing are ordinary rows in their own sections, their explanations in the
-section footers. The form is no wider than 1200 points, so that a label and
-its value still read as one row.
+**Each timing is a `Picker` with the `.navigationLink` style, in a `Form`.**
+The row shows the setting and its value; selecting it opens the list of
+choices, and choosing one goes back.
+
+**The page keeps its two columns, each a `Form` of its own.** The timings are
+on the left; signing out and erasing are ordinary rows in their own sections
+on the right, their explanations in the section footers. Side by side, with no
+scroll view around them, the whole page is still seen at a glance, and the
+remote moves between the columns as between any two lists.
 
 ## Alternatives considered
 
@@ -43,10 +46,13 @@ its value still read as one row.
 - **A control of our own that changes the value with left and right** — it
   would take the swipe that moves focus, and nothing else on tvOS behaves
   like it.
-- **Picker rows in the left column, the two columns kept** — a `Form` is a
+- **One `Form` for the whole page** — it is closest to the system's
+  Settings, but three sections one below the other no longer fit on one
+  screen, and the page had been laid out in two columns precisely so that
+  everything is seen at once.
+- **Picker rows on the left, plain buttons on the right** — a `Form` is a
   scrolling list of its own and does not sit inside another scroll view;
-  rows on one side and plain buttons on the other would look like two
-  screens.
+  rows on one side and buttons on the other would look like two screens.
 
 ## Consequences
 
@@ -54,8 +60,7 @@ its value still read as one row.
   choices as FR-SET-02 allows without changing the layout.
 - Changing a timing takes two clicks instead of one, and only the value in use
   is visible until the row is opened.
-- The page no longer fits on one screen without scrolling; focus scrolls it.
 - The picker draws its own rows and list, so a choice is no longer an element
   of ours with its own accessibility identifier: a UI test finds the row by
   its identifier and a choice by its words.
-- The wireframe shows the same list and the same page of choices.
+- The wireframe shows the same two columns and the same page of choices.
