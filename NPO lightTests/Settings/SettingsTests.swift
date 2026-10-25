@@ -35,6 +35,11 @@ struct SettingsTests {
         #expect((3...6).contains(setting.choices.count))
     }
 
+    @Test("FR-SET-02: kids mode can ask whether anyone is still watching after ten minutes to an hour and a half")
+    func kidsStillWatchingChoices() {
+        #expect(Timings.Setting.kidsStillWatching.choices == [600, 1200, 1800, 2700, 3600, 5400])
+    }
+
     @Test("FR-SET-02: a chosen value is used at once and is there after a relaunch")
     func chosenValuePersists() async {
         await withSuite { suite in

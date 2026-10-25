@@ -79,7 +79,7 @@ struct StillWatchingTests {
         let normal = model(in: .normal, timings: { timings })
         await kids.start()
         await normal.start()
-        timings[.kidsStillWatching] = 7200
+        timings[.kidsStillWatching] = 5400
 
         clock.advance(by: Self.hour)
         kids.checkAttention()

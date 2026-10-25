@@ -80,7 +80,7 @@ requirement settles it; if one is right, the requirement should say so.
   "a defined grace period"); the next-episode overlay in normal mode shows for
   8 seconds (FR-PLAY-05, "long enough to be used").
 - **Setting choices**: kids pause 0/5/10/15/30 s; kids still-watching
-  30 min–2 h; normal still-watching 1–4 h (FR-SET-02 asks for "a small set of
+  10–90 min; normal still-watching 1–4 h (FR-SET-02 asks for "a small set of
   sensible choices").
 - **Recent searches** are capped at ten terms (FR-SEARCH-04 asks for "a fixed
   number").

@@ -28,7 +28,7 @@
 
   const SETTING_CHOICES = {
     kidsPause: [0, 5, 10, 15, 30],
-    kidsStill: [1800, 3600, 5400, 7200],
+    kidsStill: [600, 1200, 1800, 2700, 3600, 5400],
     normalStill: [3600, 7200, 10800, 14400],
   };
 

@@ -1137,7 +1137,8 @@ kbd {
 
 .settings-columns {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  /* As in the app, the choices decide how wide the timings column is. */
+  grid-template-columns: max-content minmax(0, 1fr);
   gap: 120px;
   align-items: start;
 }
@@ -1151,6 +1152,8 @@ kbd {
 .setting-label { font-size: 30px; }
 .setting-note { margin: 0; font-size: 26px; color: var(--s-muted); max-width: 60ch; }
 .chips { display: flex; gap: 18px; padding: 6px 0; }
+/* Whole, on one line: a value cut in two is not a value. */
+.chips > * { white-space: nowrap; }
 
 .chip {
   display: inline-flex;
