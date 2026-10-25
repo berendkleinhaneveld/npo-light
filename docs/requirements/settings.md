@@ -23,7 +23,7 @@ Three durations can be changed, with these defaults:
 | Setting | Default | Requirement |
 | --- | --- | --- |
 | Pause between episodes in kids mode | 5 seconds | FR-PLAY-06 |
-| Still-watching prompt in kids mode | 1 hour | FR-PLAY-08 |
+| Still-watching prompt in kids mode | 30 minutes | FR-PLAY-08 |
 | Still-watching prompt in normal mode | 3 hours | FR-PLAY-08 |
 
 **Acceptance criteria**

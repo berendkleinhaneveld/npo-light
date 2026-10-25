@@ -61,15 +61,20 @@ struct StillWatchingTests {
         #expect(model.attentionLimit == 10800)
     }
 
-    @Test("FR-PLAY-08: kids mode asks after one hour")
-    func kidsModeAsksAfterAnHour() async {
+    @Test("FR-PLAY-08: kids mode asks after thirty minutes, and not before")
+    func kidsModeAsksAfterHalfAnHour() async {
         let model = model(in: .kids)
         await model.start()
 
-        clock.advance(by: Self.hour)
+        clock.advance(by: Self.hour / 2 - .seconds(1))
+        model.checkAttention()
+        #expect(isPlaying(model))
+
+        clock.advance(by: .seconds(1))
         model.checkAttention()
 
         #expect(isAsking(model))
+        #expect(model.attentionLimit == 1800)
     }
 
     @Test("FR-PLAY-08, FR-SET-02: each mode uses its own setting, as it is when the question comes up")

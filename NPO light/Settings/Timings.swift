@@ -30,7 +30,7 @@ nonisolated struct Timings: Sendable, Equatable {
         var standard: Int {
             switch self {
             case .kidsPause: 5
-            case .kidsStillWatching: 3600
+            case .kidsStillWatching: 1800
             case .normalStillWatching: 10800
             }
         }

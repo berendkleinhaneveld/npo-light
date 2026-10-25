@@ -143,7 +143,7 @@ continue to.
 - **Status:** Implemented
 
 After a stretch of continuous playback the app asks whether anyone is still
-there: one hour in kids mode, three hours in normal mode, both configurable
+there: thirty minutes in kids mode, three hours in normal mode, both configurable
 (FR-SET-02).
 
 **Acceptance criteria**

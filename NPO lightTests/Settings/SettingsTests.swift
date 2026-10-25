@@ -15,15 +15,15 @@ struct SettingsTests {
         try await body(suite)
     }
 
-    @Test("FR-SET-02: a fresh install uses five seconds, one hour and three hours")
+    @Test("FR-SET-02: a fresh install uses five seconds, thirty minutes and three hours")
     func defaults() async {
         await withSuite { suite in
             let timings = StoredTimings(suite: suite).timings
 
             #expect(timings[.kidsPause] == 5)
-            #expect(timings[.kidsStillWatching] == 3600)
+            #expect(timings[.kidsStillWatching] == 1800)
             #expect(timings[.normalStillWatching] == 10800)
-            #expect(timings.stillWatching(in: .kids) == .seconds(3600))
+            #expect(timings.stillWatching(in: .kids) == .seconds(1800))
             #expect(timings.stillWatching(in: .normal) == .seconds(10800))
         }
     }
@@ -52,7 +52,7 @@ struct SettingsTests {
             #expect(model.timings[.kidsPause] == 15)
             #expect(StoredTimings(suite: suite).timings[.kidsPause] == 15)
             // The other two are independent of it.
-            #expect(StoredTimings(suite: suite).timings[.kidsStillWatching] == 3600)
+            #expect(StoredTimings(suite: suite).timings[.kidsStillWatching] == 1800)
         }
     }
 
@@ -66,7 +66,7 @@ struct SettingsTests {
             let timings = StoredTimings(suite: suite).timings
 
             #expect(timings[.kidsPause] == 5)
-            #expect(timings[.kidsStillWatching] == 3600)
+            #expect(timings[.kidsStillWatching] == 1800)
         }
     }
 

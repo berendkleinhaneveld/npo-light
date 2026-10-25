@@ -165,7 +165,7 @@
       signedIn: true,
       mode: 'normal',
       modes,
-      settings: { kidsPause: 5, kidsStill: 3600, normalStill: 10800 },
+      settings: { kidsPause: 5, kidsStill: 1800, normalStill: 10800 },
       scenario: { offline: false, slow: false, playbackFails: false, speed: 30 },
       clockOffset: 0,
       signin: null,
