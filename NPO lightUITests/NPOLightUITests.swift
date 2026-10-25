@@ -166,7 +166,7 @@ final class NPOLightUITests: XCTestCase {
         XCTAssertTrue(thirdSeason.isSelected)
     }
 
-    // Requirement: FR-SEARCH-04, FR-SEARCH-05, FR-SEARCH-07
+    // Requirement: FR-SEARCH-04, FR-SEARCH-05, FR-SEARCH-07, FR-SEARCH-11
     @MainActor
     func testRecentSearchesAreKeptAndCleared() throws {
         let app = XCUIApplication()
@@ -188,6 +188,7 @@ final class NPOLightUITests: XCTestCase {
         remote.press(.select)
         XCTAssertTrue(app.buttons["season-season-1"].waitForExistence(timeout: 10))
         remote.press(.menu)
+        // Still the same visit to search: the term and its results stay.
         XCTAssertTrue(app.buttons["Freeks wilde wereld, serie"].waitForExistence(timeout: 10))
 
         // Emptying the field shows the term, with what was picked for it.

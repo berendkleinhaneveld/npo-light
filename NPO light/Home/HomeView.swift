@@ -11,9 +11,9 @@ import SwiftUI
 /// later while something is saved (FR-HOME-01).
 struct HomeView: View {
     @Bindable var model: HomeModel
-    let search: SearchModel
     let modes: ModeModel
     let settings: SettingsModel
+    let searchModel: () -> SearchModel
     let seriesModel: (SeriesSummary) -> SeriesDetailModel
     let programmeModel: (Playable) -> ProgrammeDetailModel
     let playerModel: (PlayRequest) -> PlayerModel
@@ -82,7 +82,7 @@ struct HomeView: View {
                                           playbacksEnded: model.playbacksEnded,
                                           makeModel: programmeModel) { model.play($0) }
                 case .search:
-                    SearchView(model: search, open: { model.open($0) }, actions: playableActions)
+                    SearchScreen(makeModel: searchModel, open: { model.open($0) }, actions: playableActions)
                 case .series(let series):
                     SeriesDetailScreen(series: series,
                                        playbacksEnded: model.playbacksEnded,
@@ -158,6 +158,27 @@ struct ResetNotice: View {
         }
         .padding(.horizontal, 80)
         .focusSection()
+    }
+}
+
+/// Keeps one model for as long as the search page is on the stack: back from
+/// a result the field still holds its term, and search opened again from home
+/// starts with an empty field (FR-SEARCH-11).
+private struct SearchScreen: View {
+    @State private var model: SearchModel
+    private let open: (SearchPick) -> Void
+    private let actions: PlayableActions
+
+    init(makeModel: () -> SearchModel,
+         open: @escaping (SearchPick) -> Void,
+         actions: PlayableActions) {
+        _model = State(initialValue: makeModel())
+        self.open = open
+        self.actions = actions
+    }
+
+    var body: some View {
+        SearchView(model: model, open: open, actions: actions)
     }
 }
 
@@ -244,9 +265,9 @@ private struct PlayerScreen: View {
 
 #Preview("Home") {
     HomeView(model: .scripted(pinned: ScriptedCatalogue.results.series),
-             search: .scripted(),
              modes: .scripted(),
              settings: .scripted(),
+             searchModel: { .scripted() },
              seriesModel: { .scripted($0) },
              programmeModel: { .scripted($0) },
              playerModel: { .scripted($0.playable) })

@@ -179,3 +179,25 @@ looked for, so it comes before the episodes.
 - A programme NPO does not mark either way is shown among the episodes, which
   is what nearly all programmes are.
 - Within a row the order is NPO's.
+
+## FR-SEARCH-11 — Search opened from home starts empty
+
+- **Status:** Implemented
+
+Each visit to search from the home page starts with an empty field, ready for
+a new term. Within one visit what was typed stays: coming back to search from
+a page opened from its results finds the same term and the same results.
+
+**Rationale.** Going back to the home page is how the user says they are done
+with a search. Finding the old term in the field on the next visit means
+deleting it first, one character at a time on the remote, before typing what
+they came for. The term itself is not lost: it is among the recent searches
+(FR-SEARCH-04, FR-SEARCH-05).
+
+**Acceptance criteria**
+
+- Search opened from home after an earlier search shows an empty field and the
+  recent searches, not the earlier term or its results.
+- Back on search from a series, a programme or anything else opened from the
+  results, the field still holds the term and its results are shown.
+- In kids mode the same holds, for kids mode's own search (FR-MODE-05).
