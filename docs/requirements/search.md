@@ -13,6 +13,9 @@ both modes.
 **Acceptance criteria**
 
 - Home offers search without opening a menu first.
+- The home page opens with focus on that way to search, at the top of the
+  page, whatever its rows hold: an empty row's own way to search does not
+  take it.
 - Opening search puts focus on the text field, ready to type.
 - Leaving search returns to home with the previous focus restored.
 

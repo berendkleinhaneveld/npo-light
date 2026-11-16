@@ -22,6 +22,9 @@ struct HomeView: View {
     @Environment(LaunchNotice.self) private var notice: LaunchNotice?
     @Environment(\.isOffline) private var isOffline
 
+    /// Whether focus is on the header's way to search.
+    @FocusState private var isOnSearch: Bool
+
     var body: some View {
         NavigationStack(path: $model.path) {
             VStack(alignment: .leading, spacing: 48) {
@@ -61,6 +64,10 @@ struct HomeView: View {
                     }
                 }
             }
+            // Said, and not left to where the buttons happen to stand: with
+            // two empty rows the page opened on the second row's own way to
+            // search, halfway down the screen.
+            .defaultFocus($isOnSearch, true)
             .task {
                 await model.refresh()
                 await model.catchUp()
@@ -133,6 +140,7 @@ struct HomeView: View {
             Spacer()
             // Search first: it is what the page opens on (FR-SEARCH-01).
             Button("Zoeken", systemImage: "magnifyingglass") { model.openSearch() }
+                .focused($isOnSearch)
                 .accessibilityIdentifier("home-search")
             ModeSwitch(modes: modes)
             // No way in from kids mode (FR-MODE-06).
