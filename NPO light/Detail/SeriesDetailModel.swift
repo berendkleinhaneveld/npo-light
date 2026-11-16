@@ -178,10 +178,17 @@ final class SeriesDetailModel {
     /// What was seen of the series before is shown at once, and NPO is asked
     /// again behind it: the page changes only when the answer differs
     /// (FR-CONTENT-04).
+    ///
+    /// Called again on a page that is showing, when the television wakes on
+    /// it: what is shown stays, and its season is asked for again too
+    /// (FR-CONTENT-09).
     func load() async {
         isPinned = await pins.isPinned(summary.id, in: mode)
         await readWatched()
-        if let remembered = await catalogue.rememberedSeries(summary.id, in: mode) {
+        var showing: SeasonID?
+        if case .loaded = page {
+            showing = shownSeason
+        } else if let remembered = await catalogue.rememberedSeries(summary.id, in: mode) {
             present(remembered)
         } else {
             page = .loading
@@ -189,6 +196,8 @@ final class SeriesDetailModel {
         do {
             let detail = try await catalogue.series(summary.id, in: mode)
             if page != .loaded(detail) { present(detail) }
+            if let showing, showing == shownSeason { askAgain(for: showing) }
+            await lookForMore()
         } catch BackendError.itemUnavailable {
             page = .unavailable
         } catch is CancellationError {
@@ -198,6 +207,25 @@ final class SeriesDetailModel {
             if case .loaded = page { return }
             page = .failed
         }
+    }
+
+    /// Asks for the shown season again, behind its list, and forgets the
+    /// other seasons: they are asked for again when they are shown.
+    private func askAgain(for season: SeasonID) {
+        fetched = fetched.filter { $0.key == season }
+        pending?.cancel()
+        pending = Task {
+            await self.fetch(season)
+        }
+    }
+
+    /// A series that was watched to its end may have more to watch by now
+    /// (FR-HOME-14).
+    private func lookForMore() async {
+        guard hasNothingNext,
+              await NewEpisodes(catalogue: catalogue, watched: watched).take(for: [summary.id], in: mode)
+        else { return }
+        await readWatched()
     }
 
     /// Shows the series, on the season it opens on — or on the one already
@@ -326,7 +354,9 @@ final class SeriesDetailModel {
             return
         } catch {
             // With something to show, a failed refresh changes nothing.
-            guard remembered == nil, !Task.isCancelled, shownSeason == season else { return }
+            guard remembered == nil, fetched[season] == nil, !Task.isCancelled, shownSeason == season else {
+                return
+            }
             episodes = .failed
         }
     }

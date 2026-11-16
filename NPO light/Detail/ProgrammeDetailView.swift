@@ -23,6 +23,9 @@ struct ProgrammeDetailView: View {
         .background(Color.black)
         .ignoresSafeArea()
         .task { await model.load() }
+        // The television woke on this page: what it shows may be a day old
+        // (FR-CONTENT-09).
+        .onWake { await model.load() }
     }
 
     private var detail: ProgrammeDetail? {

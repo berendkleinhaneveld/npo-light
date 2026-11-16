@@ -91,6 +91,13 @@ struct HomeView: View {
                 }
             }
         }
+        // The television woke on the home page: the rows may be a day old
+        // (FR-CONTENT-09). Under another page they are read when it closes.
+        .onWake {
+            guard model.path.isEmpty else { return }
+            await model.refresh()
+            await model.catchUp()
+        }
         // On every page of the stack, and not on the player: which mode this
         // is, in a symbol and in words (FR-MODE-03).
         .overlay(alignment: .bottomTrailing) {

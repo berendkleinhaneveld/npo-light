@@ -59,6 +59,9 @@ struct SeriesDetailView: View {
         .background(Color.black)
         .ignoresSafeArea()
         .task { await model.load() }
+        // The television woke on this page: what it shows may be a day old
+        // (FR-CONTENT-09).
+        .onWake { await model.load() }
     }
 
     /// The second screen: exactly as high as the television, inside its safe
