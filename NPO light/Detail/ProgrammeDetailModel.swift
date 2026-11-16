@@ -62,9 +62,14 @@ final class ProgrammeDetailModel {
 
     /// What was seen of it before is shown at once, and NPO is asked again
     /// behind it (FR-CONTENT-04).
+    ///
+    /// Called again on a page that is showing, when the television wakes on
+    /// it: what is shown stays until the answer differs (FR-CONTENT-09).
     func load() async {
         await readWatched()
-        if let remembered = await catalogue.rememberedProgramme(summary.id, in: mode) {
+        if case .loaded = page {
+            // Stays, while NPO is asked again.
+        } else if let remembered = await catalogue.rememberedProgramme(summary.id, in: mode) {
             page = .loaded(remembered)
         } else {
             page = .loading

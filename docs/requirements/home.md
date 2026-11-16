@@ -298,3 +298,40 @@ position kept.
   (FR-HOME-08).
 - Something watched again, here or elsewhere, comes back to the row
   (FR-HOME-08, FR-HOME-12).
+
+## FR-HOME-14 — A series watched to its end says when there is more
+
+- **Status:** Implemented
+
+A series' tile that says everything was watched (FR-HOME-04) stops saying so
+when NPO has an episode that was not there before: the home page asks NPO
+about such a series, behind the rows, and the tile then offers that episode
+([ADR 0031](../adr/0031-ask-again-when-the-television-wakes.md)).
+
+**Rationale.** Nothing else tells the tile. What a series continues with is
+written down when an episode is played, so a series somebody is up to date
+with stayed "watched" on the home page until its own page was opened —
+which is the opposite of what pinning a series is for.
+
+**Acceptance criteria**
+
+- Asked about are the series whose tile on the pinned row or on the recently
+  watched row says everything was watched, and no other: a tile that offers
+  an episode already has something to offer.
+- A programme NPO lists latest season first offers its latest episode, when
+  that one was not watched to its end (FR-HOME-04).
+- Any other series offers the episode after the last one that was watched to
+  its end, in the season it is in or in a season added since
+  (FR-CONTENT-02).
+- The series' own page asks the same when it opens on a series that was
+  watched to its end, and when the television wakes on it (FR-CONTENT-09):
+  its main action then offers that episode.
+- The tile keeps its place in its row: finding an episode is not watching
+  one. A series taken off the recently watched row by hand stays off it
+  (FR-HOME-08).
+- The rows are shown at once, as the television knows them, and change in
+  place when NPO's answer differs (NFR-PERF-03). NPO not answering changes
+  nothing.
+- NPO is asked no more often than the catalogue's cache allows
+  (FR-CONTENT-04): at most every half hour for a programme followed as it is
+  broadcast, and once a day for any other series.

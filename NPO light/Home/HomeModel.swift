@@ -109,12 +109,25 @@ final class HomeModel {
         mark()
     }
 
-    /// Asks NPO what was started elsewhere, behind the rows the television
-    /// already shows, and reads them again when that changed them
-    /// (FR-HOME-12).
+    /// Asks NPO what the television cannot know, behind the rows it already
+    /// shows, and reads them again when that changed them: what was started
+    /// elsewhere (FR-HOME-12), and whether a series that was watched to its
+    /// end has more to watch (FR-HOME-14).
     func catchUp() async {
-        guard let elsewhere, await elsewhere.take(in: mode) else { return }
-        await refresh()
+        if let elsewhere, await elsewhere.take(in: mode) {
+            await refresh()
+        }
+        if await NewEpisodes(catalogue: catalogue, watched: watched).take(for: watchedToTheEnd, in: mode) {
+            await refresh()
+        }
+    }
+
+    /// The series whose tile says that everything was watched.
+    private var watchedToTheEnd: [ItemID] {
+        var seen = Set<ItemID>()
+        return (pinned + continuing)
+            .filter { $0.kind == .series && $0.state == .finished && seen.insert($0.id).inserted }
+            .map(\.id)
     }
 
     /// Puts what is known about availability on the tiles.
