@@ -39,6 +39,7 @@ the old one as superseded instead of rewriting it.
 | [0028](0028-share-positions-with-npo-through-its-stream-events.md) | Share playback positions with NPO through its stream events | Proposed |
 | [0029](0029-hand-out-the-app-through-internal-testflight.md) | Hand out the app through internal TestFlight, uploaded from CI | Proposed |
 | [0030](0030-settings-as-lists-with-picker-rows.md) | Show settings as lists, with a picker row per timing | Proposed |
+| [0031](0031-ask-again-when-the-television-wakes.md) | Ask again when the television wakes, and about a series that was watched to its end | Proposed |
 
 ## How to add one
 

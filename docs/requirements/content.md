@@ -212,3 +212,31 @@ turning the list into a wall of thumbnails.
   description leaves no empty box.
 - The preview is announced with the focused episode, so VoiceOver reads the
   description too (NFR-A11Y-02).
+
+## FR-CONTENT-09 — A page left on screen is current when the television wakes
+
+- **Status:** Implemented
+
+A page that was on screen when the television went to sleep, or when the app
+went to the background, is brought up to date when the app is in front
+again, without leaving the page and coming back to it
+([ADR 0031](../adr/0031-ask-again-when-the-television-wakes.md)).
+
+**Rationale.** A television is not switched off: it sleeps with the app on
+the page it was left on, and wakes on that page a day later. A page that only
+asks when it opens then shows yesterday.
+
+**Acceptance criteria**
+
+- A series' page asks for the series again, and for the episodes of the
+  season it shows: an episode added since is in the list, and is what the
+  main action offers when the series continues with it.
+- A programme's page asks for the programme again.
+- The home page reads its rows again and asks NPO what it asks when it comes
+  back on screen (FR-HOME-10, FR-HOME-12, FR-HOME-14).
+- What is on screen stays there while NPO is asked, and changes only when
+  the answer differs: no progress indicator in place of a page that was
+  showing, the season that was shown stays shown, and focus stays where it
+  was (NFR-A11Y-01).
+- How often NPO is really asked is the cache's decision (FR-CONTENT-04). NPO
+  not answering changes nothing.
